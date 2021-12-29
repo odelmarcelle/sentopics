@@ -1,0 +1,44 @@
+Package: sentopics
+Type: Package
+Title: Tools for estimating and analyzing various classes of sentiment/topic models
+Version: 0.2.1
+Date: 2021-04-19
+Authors@R: c(person("Olivier", "Delmarcelle", email = "delmarcelle.olivier@gmail.com", role = c("aut", "cre")),
+  person("Samuel", "Borms", email = "samuel.borms@unine.ch", role = c("aut"), comment = c(ORCID = "0000-0001-9533-1870")))
+Maintainer: Olivier Delmarcelle <delmarcelle.olivier@gmail.com>
+Description: Various textual topic models enhanced with sentiment information, including contra LDA and reverse JST.
+License: GPL (>= 2)
+BugReports: https://github.com/odelmarcelle/sentopics/issues
+URL: https://github.com/odelmarcelle/sentopics
+Encoding: UTF-8
+Depends: R (>= 2.10)
+Imports: Rcpp (>= 1.0.4.6), 
+  methods,
+  quanteda,
+  data.table,
+  RcppProgress,
+  foreach,
+  future,
+  doFuture,
+  doRNG,
+  progressr,
+  RcppHungarian
+Suggests: ggplot2,
+  ggridges,
+  tidytext,
+  plotly,
+  RColorBrewer,
+  xts,
+  zoo,
+  testthat,
+  covr,
+  textcat,
+  stringr,
+  sentometrics,
+  spacyr
+LinkingTo: Rcpp, RcppArmadillo, RcppProgress
+RcppModules: model_module
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+LazyData: true
+SystemRequirements: C++11

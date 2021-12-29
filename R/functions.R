@@ -1,0 +1,368 @@
+
+#' TITLE
+#'
+#' @author Olivier Delmarcelle
+#'
+#' @description Extract the top words in each topic/sentiment from a
+#'   `sentopicmodel`.
+#'
+#' @param x a `sentopicmodel` created from the [LDA()], [JST()], [rJST()] or
+#'   [sentopicmodel()] function
+#' @param nWords the number of top words to extract
+#' @param method specify if a re-ranking function should be applied before
+#'   returning the top Words
+#' @param output determines the output of the function
+#'
+#' @return the top words of the topic model. Depending on the output chosen, can
+#'   result in either a long-style data.frame, a ggplot2 object or a matrix.
+#'
+#' @import data.table
+#' @export
+#' @examples
+#' model <- LDA(ECB_speeches)
+#' model <- grow(model, 10)
+#' topWords(model)
+#' plot_topWords(model)
+#' topWords(model, output = "matrix")
+
+### TODO : check term-score...
+topWords <- function(x,
+                     nWords = 10,
+                     method = c("frequency", "probability", "term-score"),
+                     output = c("data.frame", "plot", "matrix")) {
+
+  ## CMD check
+  word <- value <- overall <- NULL
+
+  if (x$it < 1) stop("No top words yet. Iterate the model with grow() first.")
+  class <- class(x)[1]
+  method <- match.arg(method)
+  output <- match.arg(output)
+  x <- reorder_sentopicmodel(x)
+  top <- topWords_dt(x, nWords, method)
+
+  switch(output,
+         "matrix" = {
+           res <- matrix(top$word, nrow = nWords)
+           colnames(res) <- create_labels(x, class)
+           res
+         },
+         "plot" = {
+           mis <- missingSuggets(c("ggplot2", "RColorBrewer"))
+           if (length(mis) > 0) stop("Suggested packages are missing for the plot output.\n",
+                                     "Please install first the following packages: ",
+                                     paste0(mis, collapse = ", "),".\n",
+                                     "Install command: install.packages(",
+                                     paste0("'", mis, "'", collapse = ", "),")" )
+           tmp <- paste0(top$L1, "_", top$L2)
+           top$label <- factor(
+             tmp,
+             levels = unique(tmp),
+             labels = create_labels(x, class)
+           )
+           p <- ggplot2::ggplot(
+             top,
+             ggplot2::aes(
+               tidytext::reorder_within(
+                 tidytext::reorder_within(word, value, L1),
+                 value, L2),
+               value, L1, fill = factor(L1))) +
+             {if (attr(top, "method") == "frequency")
+               ggplot2::geom_col(
+                 ggplot2::aes(y = overall),
+                 show.legend = FALSE,
+                 fill = "grey", alpha = .8
+               )} +
+             ggplot2::geom_col(show.legend = FALSE) +
+             # ggplot2::facet_wrap(ggplot2::vars(L1, L2), strip.position = "top", scales = "free", ncol = 3
+             ggplot2::facet_wrap(
+               . ~ label,
+               strip.position = "top",
+               scales = "free"
+               # ,labeller = labeller( L2 = setNames(rep("",3), 1:3))
+             ) +
+             ggplot2::coord_flip() +
+             tidytext::scale_x_reordered() +
+             ggplot2::labs(x = "word", y = attr(top, "method")) +
+             # ggplot2::ggtitle(title) +
+             ggplot2::theme(
+               strip.text.x = ggplot2::element_text(
+                 size = 8,
+                 margin = ggplot2::margin(.5,0,3,0)
+               ))
+           p
+         },
+         "data.frame" = {
+           params <- sentopicmodel_params(x)
+           labs <- create_labels(x, class, flat = FALSE)
+           for (i in names(labs)) {
+             top[[i]] <- factor(top[[i]], labels = labs[[i]])
+           }
+           if (class %in% c("rJST", "LDA")) colnames(top) <-
+               sub("L1", "topic", sub("L2", "sentiment", colnames(top), fixed = TRUE), fixed = TRUE)
+           if (class == "JST") colnames(top) <-
+               sub("L1", "sentiment", sub("L2", "topic", colnames(top), fixed = TRUE), fixed = TRUE)
+           if (class == "LDA") top$sentiment <- NULL
+           top
+         }
+  )
+}
+
+topWords_dt <- function(x, nWords = 10, method = c("frequency", "probability", "term-score")) {
+
+  ## CMD check
+  word <- value <- prob <- tprob <- sprob <- NULL
+  phiStats <- x$phi
+  # Removing dimnames in order to have topic and sentiment number only in the next table
+  dimnames(phiStats)[2:3] <- list(NULL, NULL)
+  phiStats <- data.table::as.data.table(phiStats, sort = FALSE)
+  colnames(phiStats) <- c("word", "L2", "L1", "value")
+
+  # Add epsilon to avoid division per zero
+  epsilon <- 10^-100
+
+  method <- match.arg(method)
+
+  nClusters <- max(phiStats$L1) * max(phiStats$L2)
+  switch(method,
+         ### TODO: add frequency and overall count..
+         "frequency" = {
+           freq <- rebuild_zw(x, array = TRUE)
+           freq <- aperm(freq, c(3, 1, 2))
+           overall <- rowSums(freq)
+           freq <- data.table::as.data.table(freq, sort = FALSE)
+           colnames(freq) <- c("word", "L2", "L1", "value")
+           freq$overall <- rep(overall, times = x$L1 * x$L2)
+           freq$word <- phiStats$word
+           phiStats <- freq
+         },
+          "term-score" = {phiStats <-
+            phiStats[, list(L1, L2, value = value * log(value / Reduce("*", value)^(1/nClusters))), by = word]},
+          "topics" = {
+            ## TODO: to update?
+            #### disregard sentiments and compute probability mass for each L1
+            tmp <- melt(x)[, list(prob = mean(prob), tprob = mean(tprob)), by = list(L1, L2)]
+            tmp[, sprob := prob/tprob]
+            phiStats <- phiStats[tmp, on = c("L1", "L2")][, value := value*sprob]
+            phiStats <- phiStats[, list(value = sum(value)), by = list(word, L1)]
+            phiStats[, L2 := 1L]
+          }
+  )
+  topWords <- phiStats[order(-value), utils::head(.SD, nWords), by = list(L1, L2)][order(L1, L2)]
+  class(topWords) <- c("topWords", class(phiStats))
+  attr(topWords, "method") <- method
+  topWords
+}
+
+#' @rdname topWords
+#' @export
+plot_topWords <- function(x,
+                          nWords = 10,
+                          method = c("frequency", "probability", "term-score")) {
+  topWords(x, nWords, method, output = "plot")
+}
+
+
+#' Coherence of estimated topics
+#'
+#' @author Olivier Delmarcelle
+#'
+#' @description Computes various coherence based metrics for topic models. It
+#'   assesses the quality of estimated topics based on co-occurrences of words.
+#'   For best results, consider cleaning the initial tokens object with `padding
+#'   = TRUE`.
+#'
+#' @param x a LDA, JST, rJST or sentopicmodel object.
+#' @param method the coherence method used.
+#' @param nWords the number of words in each topic used for evaluation.
+#' @param window optional. If `NULL`, use the default window for each coherence
+#'   metric (10 for C_NPMI and 110 for C_V). It is possible to override these
+#'   default windows by providing an integeror `"boolean"` to this argument,
+#'   determining a new window size for all measures. No effect is the `NPMIs`
+#'   argument is also provided.
+#' @param NPMIs optional NPMI matrix. If provided, skip the computation of NPMI
+#'   between words, substantially decreasing computing time.
+#'
+#' @return Return a vector or matrix containing the coherence score of each
+#'   topic.
+#' @details Currently, only C_NPMI and C_V are documented. The implementation
+#'   follows Röder & al. (2015). For C_NPMI, the sliding window is 10 whereas it
+#'   is 110 for C_V.
+#'
+#' @references Röder, M., Both, A., & Hinneburg, A. (2015). [Exploring the Space
+#'   of Topic Coherence Measures](https://doi.org/10.1145/2684822.2685324).
+#'   Proceedings of the Eighth ACM International Conference on Web Search and
+#'   Data Mining, 399–408.
+#' @export
+coherence <- function(x, nWords = 10, method = c("C_NPMI", "C_V"), window = NULL, NPMIs = NULL) {
+  UseMethod("coherence")
+}
+#' @export
+coherence.LDA <- function(x, nWords = 10, method = c("C_NPMI", "C_V"), window = NULL, NPMIs = NULL) {
+  res <- coherence(as.sentopicmodel(x), nWords, method, window, NPMIs)
+  rowSums(res)
+}
+#' @export
+coherence.JST <- function(x, nWords = 10, method = c("C_NPMI", "C_V"), window = NULL, NPMIs = NULL) {
+  ### TODO: need to make this more robust
+  coherence(as.sentopicmodel(x), nWords, method, window, NPMIs)
+}
+#' @export
+coherence.rJST <- function(x, nWords = 10, method = c("C_NPMI", "C_V"), window = NULL, NPMIs = NULL) {
+  coherence(as.sentopicmodel(x), nWords, method, window, NPMIs)
+}
+
+#' @export
+coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"), window = NULL, NPMIs = NULL) {
+  # method <- match.arg(method)
+  if (length(method) > 1) method <- method[1]
+  ## TODO: this is ugly
+
+  if (is.null(window)) {
+    window_C_NPMI <- 10
+    window_C_V <- 110
+  } else {
+    window_C_NPMI <- window_C_V <- window
+  }
+
+  if (class(x)[1] != "sentopicmodel" & !(method %in% c("C_NPMI", "C_V")) ) stop("Only C_NPMI and C_V are accepted.")
+  stopifnot(is.numeric(nWords))
+  nWords <- as.integer(nWords)
+  if (nWords < 2) stop("The number of words must be at least 2.")
+  if (inherits(x, "sentopicmodel")) {
+
+    ## TODO: check methods
+    switch(method,
+            C_NPMI = C_NPMI(x, nWords, window_C_NPMI, NPMIs = NPMIs),
+            C_V = C_V(x, nWords, window_C_V, NPMIs = NPMIs),
+            C_VExtended = C_V2(x, window_C_V, NPMIs = NPMIs),
+            topics = C_Topics(x, window_C_V, NPMIs = NPMIs),
+            topicsScaled = C_TopicsScaled(x, window_C_V, NPMIs = NPMIs),
+            stop("Undefined method"))
+  } else {
+    stop("Please provide a correct sentopicmodel object")
+  }
+}
+
+
+#' Distances between topic models (chains)
+#'
+#' @author Olivier Delmarcelle
+#'
+#' @description Computes the distance between different estimates of a topic
+#'   model. Since the estimation of a topic model is random, the results may
+#'   largely differ as the process is repeated. This function allows to compute
+#'   the distance between distinct realizations of the estimation process.
+#'   Estimates are referred to as *chains*.
+#'
+#' @param x a valid `multiChains` object, obtained through the estimation of a
+#'   topic model using [grow()] and the argument `nChains` greater than `1`.
+#' @param method the method used to measure the distance between chains.
+#'
+#'
+#' @details the `method` argument determines how are computed distance. In
+#'   general, you would want to use *invariantEuclidean* distance. TODO
+#'
+#' @return a matrix of distance between the elements of `w`
+#' @examples
+#' model <- LDA(ECB_speeches)
+#' model <- grow(model, 10, nChains = 5)
+#' chainsDistances(model)
+#'
+#' @seealso [plot.multiChains()] [chainsScores()]
+#' @export
+chainsDistances <- function(x, method = c("euclidean", "hellinger", "cosine", "minMax", "stupidEuclidean", "stupidEuclidean2", "stupidEuclideanDistances23JST", "invariantEuclidean")) {
+  if (!inherits(x, "multiChains")) stop("Please provide a correct multiChains object")
+
+  ## hacky. Preserve L1/L2 labels of elements when accessing through [[ and $
+  x <- as.sentopicmodel(x)
+  # attr(x, "containedClass") <- "sentopicmodel"
+
+  method <- match.arg(method)
+  switch(method,
+         "cosine" = cosineDistances(x),
+         "hellinger" = hellingerDistances(x),
+         "euclidean" = euclideanDistances(x),
+         "stupidEuclidean" = stupidEuclideanDistances(x),
+         "stupidEuclidean2" = stupidEuclideanDistances2(x),
+         "stupidEuclideanDistances23JST" = stupidEuclideanDistances23JST(x),
+         "minMax" = minMaxEuclidean(x),
+         "invariantEuclidean" = invariantEuclideanOptim(x),
+         stop("Error in distance method")
+  )
+}
+
+#' Compute scores of topic models (chains)
+#'
+#' @param x a valid `multiChains` object, obtained through the estimation of a
+#'   topic model using [grow()] and the argument `nChains` greater than `1`.
+#' @param nWords the number of words used to compute coherence. See
+#'   [coherence()].
+#' @param nCores allows for parallel computation by setting a number greater
+#'   than 1.
+#' @param window optional. If `NULL`, use the default window for each coherence
+#'   metric (10 for C_NPMI and 110 for C_V). It is possible to override these
+#'   default windows by providing an integeror `"boolean"` to this argument,
+#'   determining a new window size for all measures.
+#'
+#' @return a `data.table` with some statistics about each chain. For the
+#'   coherence metrics, the value shown is the mean coherence across all topics
+#'   of a chain
+#'
+#' @examples
+#' model <- LDA(ECB_speeches[1:10])
+#' model <- grow(model, 10, nChains = 5)
+#' chainsScores(model)
+#' chainsScores(model, window = "boolean")
+#'
+#' @seealso [chainsDistances()] [coherence()]
+#'
+#' @export
+chainsScores <- function(x, window = 110, nWords = 10, nCores = 1) {
+  if (!inherits(x, "multiChains")) stop("Please provide a correct multiChains object")
+
+  ## CMD check
+  name <- NULL
+
+  if (is.null(window)) {
+    NPMIsW <- computeNPMI(x$tokens, 110)
+    NPMIs10 <- computeNPMI(x$tokens, 10)
+  } else {
+    NPMIsW <- NPMIs10 <- computeNPMI(x$tokens, window)
+  }
+
+  ## Registering backend
+  doFuture::registerDoFuture()
+  if (nCores > 1) {
+    cl <- parallel::makeCluster(nCores)
+    future::plan("cluster", workers = cl)
+  } else {
+    future::plan("sequential")
+  }
+
+  chainsScores <- foreach::foreach(x = x, name = names(x), .combine = 'rbind', .export = c("NPMIsW", "NPMIs10", "iterations", "nWords", "nWordsHierarchy"), .packages = c("sentopics")) %dopar% {
+
+    score <- data.table::data.table(
+      name = name,
+      logLikelihood = c(utils::tail(x$logLikelihood, 1)),
+      max_logLikelihood = max(x$logLikelihood)
+    )
+    if (score$logLikelihood == 0) {
+      score$logLikelihood <- sentopics:::multLikelihood(x)[1, 1]
+    }
+
+    ## Coherence measures
+    score$C_NPMI <- mean(coherence(x, nWords, method = "C_NPMI", NPMIs = NPMIs10))
+    score$C_V <- mean(coherence(x, nWords, method = "C_V", NPMIs = NPMIsW))
+
+    score
+  }
+
+  ## Close backend
+  if (nCores > 1) {
+    future::plan("sequential")
+    parallel::stopCluster(cl)
+  }
+
+  chainsScores
+}

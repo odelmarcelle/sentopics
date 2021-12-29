@@ -1,0 +1,8 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^plots$
+^papers$
+^data-raw$
+^\.github$
+^[a-zA-Z1-9_]*.RData$
+^.*\.udpipe$

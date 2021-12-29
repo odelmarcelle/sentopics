@@ -315,12 +315,12 @@ plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosin
 #'   Latent variables will be re-initialized if `x` has not been grown before.
 #' @param nCores if `nChains` is greater than 1, this allows to compute the the multiple chains in a parallel setting
 #' @param displayProgress if `TRUE`, a progress bar will be displayed indicating the progress of the computation.
-#'   Disabled when `nChains` is greated than 1.
-#' @param computeLikelihood bolean. If set to FALSE, does not compute the likelihood at each iteration.
+#'   Disabled when `nChains` is greater than 1.
+#' @param computeLikelihood boolean. If set to FALSE, does not compute the likelihood at each iteration.
 #'   This can slightly decrease the computing time.
-#' @param seed for reproductibility, a seed can be provided
+#' @param seed for reproducibility, a seed can be provided
 #'
-#' @return a `sentopicmodel` of relevant model class if `nChains` is unspeficied or equal to 1. A `multiChains` object
+#' @return a `sentopicmodel` of relevant model class if `nChains` is unspecified or equal to 1. A `multiChains` object
 #'   if `nChains` is greater than 1.
 #'
 #' @seealso [LDA()], [JST()], [rJST()] [sentopicmodel()]

@@ -12,7 +12,7 @@ NULL
 #' @references ...
 "_PACKAGE"
 
-#' Example tokenized speechs
+#' Example tokenized speeches
 #'
 #' @docType data
 #'

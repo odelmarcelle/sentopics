@@ -39,7 +39,7 @@ model <- grow(model, 100)
 #### Extracting results
 
 Most probables words are extracted through the `topWords()` function. Otherwise, a `melt()` method is
-defined and returns a data.table in the long format containig all estimated distributions.
+defined and returns a data.table in the long format containing all estimated distributions.
 
 ``` r
 head(topWords(model))

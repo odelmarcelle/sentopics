@@ -10,11 +10,11 @@
 #'   [sentopicmodel()] function
 #' @param nWords the number of top words to extract
 #' @param method specify if a re-ranking function should be applied before
-#'   returning the top Words
+#'   returning the top words
 #' @param output determines the output of the function
 #'
 #' @return the top words of the topic model. Depending on the output chosen, can
-#'   result in either a long-style data.frame, a ggplot2 object or a matrix.
+#'   result in either a long-style data.frame, a `ggplot2` object or a matrix.
 #'
 #' @import data.table
 #' @export
@@ -177,7 +177,7 @@ plot_topWords <- function(x,
 #' @param nWords the number of words in each topic used for evaluation.
 #' @param window optional. If `NULL`, use the default window for each coherence
 #'   metric (10 for C_NPMI and 110 for C_V). It is possible to override these
-#'   default windows by providing an integeror `"boolean"` to this argument,
+#'   default windows by providing an integer or `"boolean"` to this argument,
 #'   determining a new window size for all measures. No effect is the `NPMIs`
 #'   argument is also provided.
 #' @param NPMIs optional NPMI matrix. If provided, skip the computation of NPMI
@@ -214,9 +214,7 @@ coherence.rJST <- function(x, nWords = 10, method = c("C_NPMI", "C_V"), window =
 
 #' @export
 coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"), window = NULL, NPMIs = NULL) {
-  # method <- match.arg(method)
-  if (length(method) > 1) method <- method[1]
-  ## TODO: this is ugly
+  method <- match.arg(method)
 
   if (is.null(window)) {
     window_C_NPMI <- 10
@@ -225,19 +223,13 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
     window_C_NPMI <- window_C_V <- window
   }
 
-  if (class(x)[1] != "sentopicmodel" & !(method %in% c("C_NPMI", "C_V")) ) stop("Only C_NPMI and C_V are accepted.")
   stopifnot(is.numeric(nWords))
   nWords <- as.integer(nWords)
   if (nWords < 2) stop("The number of words must be at least 2.")
   if (inherits(x, "sentopicmodel")) {
-
-    ## TODO: check methods
     switch(method,
             C_NPMI = C_NPMI(x, nWords, window_C_NPMI, NPMIs = NPMIs),
             C_V = C_V(x, nWords, window_C_V, NPMIs = NPMIs),
-            C_VExtended = C_V2(x, window_C_V, NPMIs = NPMIs),
-            topics = C_Topics(x, window_C_V, NPMIs = NPMIs),
-            topicsScaled = C_TopicsScaled(x, window_C_V, NPMIs = NPMIs),
             stop("Undefined method"))
   } else {
     stop("Please provide a correct sentopicmodel object")
@@ -284,8 +276,6 @@ chainsDistances <- function(x, method = c("euclidean", "hellinger", "cosine", "m
          "hellinger" = hellingerDistances(x),
          "euclidean" = euclideanDistances(x),
          "stupidEuclidean" = stupidEuclideanDistances(x),
-         "stupidEuclidean2" = stupidEuclideanDistances2(x),
-         "stupidEuclideanDistances23JST" = stupidEuclideanDistances23JST(x),
          "minMax" = minMaxEuclidean(x),
          "invariantEuclidean" = invariantEuclideanOptim(x),
          stop("Error in distance method")
@@ -302,7 +292,7 @@ chainsDistances <- function(x, method = c("euclidean", "hellinger", "cosine", "m
 #'   than 1.
 #' @param window optional. If `NULL`, use the default window for each coherence
 #'   metric (10 for C_NPMI and 110 for C_V). It is possible to override these
-#'   default windows by providing an integeror `"boolean"` to this argument,
+#'   default windows by providing an integer or `"boolean"` to this argument,
 #'   determining a new window size for all measures.
 #'
 #' @return a `data.table` with some statistics about each chain. For the

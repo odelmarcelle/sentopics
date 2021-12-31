@@ -495,9 +495,8 @@ sentiment_breakdown <- function(x,
                                 as.xts = TRUE,
                                 ...) {
   ## CMD check
-  .id <- .date <- .sentiment <- .sentiment_scaled <- sentiment <-
-    value <- variable <- width <- Topic <- date_center <- ..cols <- 
-    theta <- s <- NULL
+  .id <- .date <- .sentiment <- .sentiment_scaled <- sentiment <- value <-
+    variable <- width <- Topic <- date_center <- theta <- s <- NULL
 
   if (!inherits(x, c("LDA", "rJST"))) stop("`sentiment_breakdown` is only implemented for LDA and rJST models.")
   
@@ -525,7 +524,7 @@ sentiment_breakdown <- function(x,
     tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
     cols <- grepl("^\\.s", names(tmp_sent)) & grepl("_scaled$", names(tmp_sent))
     cols <- names(tmp_sent)[cols]
-    tmp_sent <- tmp_sent[, c(".id", ..cols)]
+    tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
     # names(tmp_sent) <- gsub("(^\\.(s_)?(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
     names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
   } else {
@@ -533,7 +532,7 @@ sentiment_breakdown <- function(x,
     tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
     cols <- grepl("^\\.s", names(tmp_sent)) & !grepl("_scaled$", names(tmp_sent))
     cols <- names(tmp_sent)[cols]
-    tmp_sent <- tmp_sent[, c(".id", ..cols)]
+    tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
     # names(tmp_sent) <- gsub("(^\\.(s_)?(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
     names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
   }
@@ -731,8 +730,8 @@ sentiment_topics <- function(x,
                              as.xts = TRUE,
                              ...) {
   ## CMD check
-  .id <- .date <- .sentiment <- .sentiment_scaled <- sentiment <-
-    value <- variable <- ..cols <- theta <- s <- NULL
+  .id <- .date <- .sentiment <- .sentiment_scaled <- sentiment <- value <-
+    variable <- theta <- s <- NULL
 
   if (!inherits(x, c("LDA", "rJST"))) stop("`sentiment_topics` is only implemented for LDA and rJST models.")
   
@@ -761,7 +760,7 @@ sentiment_topics <- function(x,
     tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
     cols <- grepl("^\\.s", names(tmp_sent)) & grepl("_scaled$", names(tmp_sent))
     cols <- names(tmp_sent)[cols]
-    tmp_sent <- tmp_sent[, c(".id", ..cols)]
+    tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
     # names(tmp_sent) <- gsub("(^\\.(s_)?(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
     names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
   } else {
@@ -769,7 +768,7 @@ sentiment_topics <- function(x,
     tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
     cols <- grepl("^\\.s", names(tmp_sent)) & !grepl("_scaled$", names(tmp_sent))
     cols <- names(tmp_sent)[cols]
-    tmp_sent <- tmp_sent[, c(".id", ..cols)]
+    tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
     # names(tmp_sent) <- gsub("(^\\.(s_)?(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
     names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
   }

@@ -553,27 +553,10 @@ grow.multiChains <- function(x, iterations = 100, nChains = NULL, nCores = 1, di
 
 # melt --------------------------------------------------------------------
 
-#' Temporary melt generic
-#'
-#' @author Olivier Delmarcelle
-#'
-#' @description ...
-#'
-#' @param data ...
-#' @param ... ...
-#' @param na.rm ...
-#' @param value.name ...
-#'
-#' @return ...
-#'
+#' @importFrom data.table melt
 #' @export
-melt <- function(data, ..., na.rm = FALSE, value.name = "value") {
-  if (inherits(data, "sentopicmodel")) {
-    UseMethod("melt", data)
-  } else {
-    data.table::melt(data, ..., na.rm = na.rm, value.name = value.name)
-  }
-}
+data.table::melt
+
 
 #' Melt for sentopicmodels
 #'

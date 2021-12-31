@@ -15,7 +15,7 @@ Depends: R (>= 2.10)
 Imports: Rcpp (>= 1.0.4.6), 
   methods,
   quanteda (>= 3.2.0),
-  data.table (>= 1.14.2),
+  data.table (>= 1.14.3),
   RcppProgress,
   foreach,
   future,

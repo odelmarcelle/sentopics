@@ -14,8 +14,8 @@ Encoding: UTF-8
 Depends: R (>= 2.10)
 Imports: Rcpp (>= 1.0.4.6), 
   methods,
-  quanteda,
-  data.table,
+  quanteda (>= 3.2.0),
+  data.table (>= 1.14.3),
   RcppProgress,
   foreach,
   future,
@@ -23,22 +23,26 @@ Imports: Rcpp (>= 1.0.4.6),
   doRNG,
   progressr,
   RcppHungarian
-Suggests: ggplot2,
-  ggridges,
-  tidytext,
-  plotly,
-  RColorBrewer,
-  xts,
-  zoo,
-  testthat,
-  covr,
-  textcat,
-  stringr,
-  sentometrics,
-  spacyr
+Suggests: 
+    ggplot2,
+    ggridges,
+    tidytext,
+    plotly,
+    RColorBrewer,
+    xts,
+    zoo,
+    testthat,
+    covr,
+    textcat,
+    stringr,
+    sentometrics,
+    spacyr,
+    knitr,
+    rmarkdown
 LinkingTo: Rcpp, RcppArmadillo, RcppProgress
 RcppModules: model_module
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 LazyData: true
 SystemRequirements: C++11
+VignetteBuilder: knitr

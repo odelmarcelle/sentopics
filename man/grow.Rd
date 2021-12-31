@@ -25,15 +25,15 @@ Latent variables will be re-initialized if \code{x} has not been grown before.}
 \item{nCores}{if \code{nChains} is greater than 1, this allows to compute the the multiple chains in a parallel setting}
 
 \item{displayProgress}{if \code{TRUE}, a progress bar will be displayed indicating the progress of the computation.
-Disabled when \code{nChains} is greated than 1.}
+Disabled when \code{nChains} is greater than 1.}
 
-\item{computeLikelihood}{bolean. If set to FALSE, does not compute the likelihood at each iteration.
+\item{computeLikelihood}{boolean. If set to FALSE, does not compute the likelihood at each iteration.
 This can slightly decrease the computing time.}
 
-\item{seed}{for reproductibility, a seed can be provided}
+\item{seed}{for reproducibility, a seed can be provided}
 }
 \value{
-a \code{sentopicmodel} of relevant model class if \code{nChains} is unspeficied or equal to 1. A \code{multiChains} object
+a \code{sentopicmodel} of relevant model class if \code{nChains} is unspecified or equal to 1. A \code{multiChains} object
 if \code{nChains} is greater than 1.
 }
 \description{

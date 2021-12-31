@@ -21,7 +21,7 @@ coherence(
 
 \item{window}{optional. If \code{NULL}, use the default window for each coherence
 metric (10 for C_NPMI and 110 for C_V). It is possible to override these
-default windows by providing an integeror \code{"boolean"} to this argument,
+default windows by providing an integer or \code{"boolean"} to this argument,
 determining a new window size for all measures. No effect is the \code{NPMIs}
 argument is also provided.}
 

@@ -3,7 +3,7 @@
 \docType{data}
 \name{ECB_speeches}
 \alias{ECB_speeches}
-\title{Example tokenized speechs}
+\title{Example tokenized speeches}
 \format{
 A \code{quanteda::tokens} object.
 }

@@ -2,6 +2,7 @@
 % Please edit documentation in R/timeSeries.R
 \name{sentopics_sentiment}
 \alias{sentopics_sentiment}
+\alias{sentopics_sentiment<-}
 \title{Internal sentiment}
 \usage{
 sentopics_sentiment(
@@ -11,6 +12,8 @@ sentopics_sentiment(
   quiet = FALSE,
   include_docvars = FALSE
 )
+
+sentopics_sentiment(x) <- value
 }
 \arguments{
 \item{x}{a \code{sentopicmodel} created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} or
@@ -23,12 +26,18 @@ already stored.}
 \item{override}{by default, the function computes sentiment only if no
 internal sentiment is already stored within the \code{sentopicmodel} object.
 This avoid, for example, erasing externally provided sentiment. Set to
-\code{TRUE} to force computation of new sentiment values.}
+\code{TRUE} to force computation of new sentiment values. Only useful for models
+with a sentiment layer.}
 
 \item{quiet}{if \code{FALSE}, print a message when internal sentiment is found.}
 
 \item{include_docvars}{if \code{TRUE} the function will return all docvars stored
 in the internal \code{tokens} object of the model}
+
+\item{value}{a numeric vector of sentiment to input into the model.}
+}
+\value{
+a data.frame with the stored sentiment per document.
 }
 \description{
 Compute, extract or replace the internal sentiment of a
@@ -38,24 +47,36 @@ model contains a sentiment layer, sentiment can be computed directly from
 the output of the model. Otherwise, sentiment obtained externally should be
 added for each document.
 }
+\details{
+the computed sentiment varies depending on the model. For \link{LDA},
+sentiment computation is not possible.
+
+For \link{JST}, the sentiment is computed on a per-document basis according to
+the document-level sentiment mixtures.
+
+For a \link{rJST} model, a sentiment is computed for each topic, resulting in
+\code{K} sentiment values per document. In that case, the \code{.sentiment} column is
+an average of the \code{K} sentiment values, weighted by they respective topical
+proportions.
+}
 \examples{
+# example dataset already contains ".sentiment" docvar
+docvars(ECB_speeches)
+# sentiment is automatically stored in the sentopicmodel object
+lda <- LDA(ECB_speeches)
+sentopics_sentiment(lda)
+
+# sentiment can be removed or modified by the assignment operator
+sentopics_sentiment(lda) <- NULL
+sentopics_sentiment(lda) <- docvars(ECB_speeches, ".sentiment")
+
+# for JST models, sentiment can be computed from the output of the model
 jst <- JST(ECB_speeches, lexicon = LoughranMcDonald)
-sentopics_sentiment(jst)
+sentopics_sentiment(jst, override = TRUE) # replace existing sentiment
 
-jst <- grow(jst, 10)
-sentopics_sentiment(jst, override = TRUE)
-
-## Multivariate sentiment for rJST models
+## for rJST models one sentiment value is computed by topic
 rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
-rjst <- grow(rjst, 10)
 sentopics_sentiment(rjst, override = TRUE)
-
-
-
-
-
-
-
 }
 \seealso{
 Other sentopics helpers: 

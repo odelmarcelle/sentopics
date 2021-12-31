@@ -126,6 +126,9 @@ generateDocuments <- function(vocab, nDocs = 100, L1prior = 1, L2prior = 5, nWor
 
 generatePartialLexicon <- function(toks, Sindex = c(1,3)) {
 
+  ## CMD check
+  word <- value <- NULL
+  
   vocab <- data.table::data.table(word = c(attr(toks, "types")))
   lex <- vocab[grep(paste0("sentiment[",paste0(Sindex, collapse = ""),"]"), word)]
   lex$value <- 1

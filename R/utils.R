@@ -218,7 +218,7 @@ computeTheta <- function(x, base = core(x)) {
   }
 
   L1post <- t(L1post)
-  dimnames(L1post) <- list(doc_id = names(base$tokens), L1 = labels_sentopicmodel(x, FALSE, base)[["L1"]] )
+  dimnames(L1post) <- list(doc_id = names(base$tokens), L1 = labels_sentopicmodel(x, base)[["L1"]] )
   # dimnames(theta)[[2]] <- paste0("topic", 1:x$T)
   # dimnames(theta)[[1]] <- names(base$intTokens)
 
@@ -230,7 +230,7 @@ computePi <- function(x, base = core(x)) {
 
   if (x$L2 == 1L) {
     L2post <- array(1, dim = c(1, x$L1, length(base$tokens)))
-    dimnames(L2post) <- list(L2 = labels_sentopicmodel(x, FALSE, base)[["L2"]], L1 = labels_sentopicmodel(x, FALSE, base)[["L1"]], doc_id = names(base$tokens))
+    dimnames(L2post) <- list(L2 = labels_sentopicmodel(x, base)[["L2"]], L1 = labels_sentopicmodel(x, base)[["L1"]], doc_id = names(base$tokens))
     return(L2post)
   }
 
@@ -256,7 +256,7 @@ computePi <- function(x, base = core(x)) {
   }
 
   L2post <- array(L2post, dim = c(L2, L1, length(base$tokens)))
-  dimnames(L2post) <- list(L2 = labels_sentopicmodel(x, FALSE, base)[["L2"]], L1 = labels_sentopicmodel(x, FALSE, base)[["L1"]], doc_id = names(base$tokens))
+  dimnames(L2post) <- list(L2 = labels_sentopicmodel(x, base)[["L2"]], L1 = labels_sentopicmodel(x, base)[["L1"]], doc_id = names(base$tokens))
   # dimnames(pi)[[2]] <- paste0("topic", 1:x$T)
   # dimnames(pi)[[1]] <- paste0("sent", 1:x$S)
   # dimnames(pi)[[3]] <- names(base$intTokens)
@@ -280,7 +280,7 @@ computePhi <- function(x, base = core(x)) {
 
   phi <- aperm(array(phi, dim = c(x$L2, x$L1, ncol(x$zw))), c(3,1,2))
 
-  dimnames(phi) <- list(word = base$vocabulary$word, L2 = labels_sentopicmodel(x, FALSE, base)[["L2"]], L1 = labels_sentopicmodel(x, FALSE, base)[["L1"]])
+  dimnames(phi) <- list(word = base$vocabulary$word, L2 = labels_sentopicmodel(x, base)[["L2"]], L1 = labels_sentopicmodel(x, base)[["L1"]])
 
   # dimnames(phi)[[1]] <- base$vocabulary$word
   # dimnames(phi)[[3]] <- paste0("topic", 1:x$T)
@@ -788,6 +788,9 @@ recompileVocabulary <- function(x) {
 # Experimental ---------------------------------------------------------
 
 makeVocabulary <- function(toks, dictionary, S) {
+  
+  ## CMD checks
+  word <- NULL
 
   ## compound valence shifter if presents
   valence <- dictionary[grepl("valence_", names(dictionary), fixed = TRUE)]
@@ -980,13 +983,13 @@ getTexts <- function(x, topic, sentiment, n = 3, collapsed = TRUE) {
   }
   x <- as.sentopicmodel(x)
   # names <- names(head(sort(x$pi[sentiment, topic, ], decreasing = TRUE), n))
-  names <- head(melt(x)[L1 == ..L1 & L2 == ..L2][order(-prob), .id], n)
+  names <- utils::head(melt(x)[L1 == ..L1 & L2 == ..L2][order(-prob), .id], n)
   toks <- x$tokens[names]
   toks <- quanteda::tokens_remove(toks, "")
   if (collapsed) lapply(toks, paste0, collapse = " ")
   else toks
 }
-# melt(y)[topic == 14 & sentiment == 3][order(-prob), id]
+
 
 reset <- function(x) {
 
@@ -1027,25 +1030,37 @@ create_labels <- function(x, class, flat = TRUE) {
   x <- as.sentopicmodel(x)
   if (!is.null(attr(x, "labels"))) {
     res <- attr(x, "labels")
+    empty_lab <- !c("L1", "L2") %in% names(res)
+    empty_lab <- empty_lab & (unlist(x[c("L1", "L2")]) > 1)
+    if (any(empty_lab)) {
+      res2 <- switch(class,
+                    "sentopicmodel" = labels_sentopicmodel(x),
+                    "JST" = labels_JST(x),
+                    "rJST" = labels_rJST(x),
+                    "LDA" = labels_LDA(x),
+                    stop("Error creating labels.")
+      )
+      res <- c(res, res2[empty_lab])
+    } 
   } else {
     res <- switch(class,
-           "sentopicmodel" = labels_sentopicmodel(x, flat),
-           "JST" = labels_JST(x, flat),
-           "rJST" = labels_rJST(x, flat),
+           "sentopicmodel" = labels_sentopicmodel(x),
+           "JST" = labels_JST(x),
+           "rJST" = labels_rJST(x),
            "LDA" = labels_LDA(x),
            stop("Error creating labels.")
     )
   }
-  if (flat & !is.null(res$L2)) {
+  if (flat & all(!is.null(res$L1), !is.null(res$L2)) ) {
     c(sapply(res$L1, paste0, "_", res$L2))
   } else if (flat) {
-    unlist(res)
+    unlist(res, use.names = FALSE)
   } else {
     res
   }
 }
 
-labels_sentopicmodel <- function(x, flat = TRUE, base = x) {
+labels_sentopicmodel <- function(x, base = x) {
   labs <- list(L1 = paste0("l1-", 1:x$L1),
                L2 = paste0("l2-", 1:x$L2))
   labs[[attr(base, "Sdim")]] <- levels(base$vocabulary$lexicon)
@@ -1053,12 +1068,12 @@ labels_sentopicmodel <- function(x, flat = TRUE, base = x) {
 }
 
 
-labels_JST <- function(x, flat = TRUE) {
+labels_JST <- function(x) {
   labs <- list(L1 = levels(x$vocabulary$lexicon),
                L2 = paste0("topic", 1:x$L2))
 }
 
-labels_rJST <- function(x, flat = TRUE) {
+labels_rJST <- function(x) {
   labs <- list(L1 = paste0("topic", 1:x$L1),
                L2 = levels(x$vocabulary$lexicon))
 }

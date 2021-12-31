@@ -2,40 +2,57 @@
 % Please edit documentation in R/timeSeries.R
 \name{sentopics_labels}
 \alias{sentopics_labels}
-\title{Title}
+\alias{sentopics_labels<-}
+\title{Setting topic or sentiment labels}
 \usage{
-sentopics_labels(x)
+sentopics_labels(x, flat = TRUE)
+
+sentopics_labels(x) <- value
 }
 \arguments{
 \item{x}{a \code{sentopicmodel} created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} or
 \code{\link[=sentopicmodel]{sentopicmodel()}} function}
+
+\item{flat}{if FALSE, return a list of dimension labels instead of a
+character vector.}
+
+\item{value}{a list of future labels for the topic model. The list should be
+named and contain a character vector for each dimension to label. See the
+examples for a correct usage.}
+}
+\value{
+a character vector of topic/sentiment labels.
 }
 \description{
-Compute, extract or replace the internal sentiment of a
-\code{sentopicmodel}. The internal sentiment is used to create time series using
-the functions \code{\link[=sentiment_series]{sentiment_series()}} or \code{\link[=sentiment_topics]{sentiment_topics()}}. If the input
-model contains a sentiment layer, sentiment can be computed directly from
-the output of the model. Otherwise, sentiment obtained externally should be
-added for each document.
+Extract or replace the labels of a \code{sentopicmodel}. The replaced
+labels will appear in most functions dealing with the output of the
+\code{sentomicmodel}.
 }
 \examples{
-jst <- JST(ECB_speeches, lexicon = LoughranMcDonald)
-sentopics_sentiment(jst)
+# by default, sentopics_labels() generate standard topic names
+lda <- LDA(ECB_speeches)
+sentopics_labels(lda)
 
-jst <- grow(jst, 10)
-sentopics_sentiment(jst, override = TRUE)
+# to change labels, a named list must be provided
+sentopics_labels(lda) <- list(
+ topic = paste0("superTopic", 1:lda$K)
+)
+sentopics_labels(lda)
 
-## Multivariate sentiment for rJST models
-rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
-rjst <- grow(rjst, 10)
-sentopics_sentiment(rjst, override = TRUE)
+# using NULL remove labels
+sentopics_labels(lda) <- NULL
+sentopics_labels(lda)
 
+# also works for JST/rJST models
+jst <- JST(ECB_speeches)
+sentopics_labels(jst) <- list(
+  topic = paste0("superTopic", 1:jst$K),
+  sentiment = c("negative", "neutral", "positive")
+)
+sentopics_labels(jst)
 
-
-
-
-
-
+# setting flat = FALSE return a list or labels for each dimension
+sentopics_labels(jst, flat = FALSE)
 }
 \seealso{
 Other sentopics helpers: 

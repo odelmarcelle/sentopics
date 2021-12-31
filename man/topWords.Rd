@@ -25,13 +25,13 @@ plot_topWords(
 \item{nWords}{the number of top words to extract}
 
 \item{method}{specify if a re-ranking function should be applied before
-returning the top Words}
+returning the top words}
 
 \item{output}{determines the output of the function}
 }
 \value{
 the top words of the topic model. Depending on the output chosen, can
-result in either a long-style data.frame, a ggplot2 object or a matrix.
+result in either a long-style data.frame, a \code{ggplot2} object or a matrix.
 }
 \description{
 Extract the top words in each topic/sentiment from a

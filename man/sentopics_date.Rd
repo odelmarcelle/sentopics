@@ -2,9 +2,12 @@
 % Please edit documentation in R/timeSeries.R
 \name{sentopics_date}
 \alias{sentopics_date}
-\title{Title}
+\alias{sentopics_date<-}
+\title{Internal date}
 \usage{
 sentopics_date(x, include_docvars = FALSE)
+
+sentopics_date(x) <- value
 }
 \arguments{
 \item{x}{a \code{sentopicmodel} created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} or
@@ -12,33 +15,29 @@ sentopics_date(x, include_docvars = FALSE)
 
 \item{include_docvars}{if \code{TRUE} the function will return all docvars stored
 in the internal \code{tokens} object of the model}
+
+\item{value}{a \code{Date}-coercible vector of dates to input into the model.}
+}
+\value{
+a data.frame with the stored date per document.
 }
 \description{
-Compute, extract or replace the internal sentiment of a
-\code{sentopicmodel}. The internal sentiment is used to create time series using
-the functions \code{\link[=sentiment_series]{sentiment_series()}} or \code{\link[=sentiment_topics]{sentiment_topics()}}. If the input
-model contains a sentiment layer, sentiment can be computed directly from
-the output of the model. Otherwise, sentiment obtained externally should be
-added for each document.
+Extract or replace the internal dates of a \code{sentopicmodel}. The
+internal dates are used to create time series using the functions
+\code{\link[=sentiment_series]{sentiment_series()}} or \code{\link[=sentiment_topics]{sentiment_topics()}}. Dates should be provided by
+using \code{sentopics_date(x) <- value} or by storing a '.date' docvars in
+the \link{tokens} object used to create the model.
 }
 \examples{
-jst <- JST(ECB_speeches, lexicon = LoughranMcDonald)
-sentopics_sentiment(jst)
+# example dataset already contains ".date" docvar
+docvars(ECB_speeches)
+# dates are automatically stored in the sentopicmodel object
+lda <- LDA(ECB_speeches)
+sentopics_date(lda)
 
-jst <- grow(jst, 10)
-sentopics_sentiment(jst, override = TRUE)
-
-## Multivariate sentiment for rJST models
-rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
-rjst <- grow(rjst, 10)
-sentopics_sentiment(rjst, override = TRUE)
-
-
-
-
-
-
-
+# dates can be removed or modified by the assignment operator
+sentopics_date(lda) <- NULL
+sentopics_date(lda) <- docvars(ECB_speeches, ".date")
 }
 \seealso{
 Other sentopics helpers: 

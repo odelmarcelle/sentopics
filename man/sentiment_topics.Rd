@@ -3,7 +3,7 @@
 \name{sentiment_topics}
 \alias{sentiment_topics}
 \alias{plot_sentiment_topics}
-\title{Title}
+\title{Compute time series of topical sentiments}
 \usage{
 sentiment_topics(
   x,
@@ -28,33 +28,83 @@ plot_sentiment_topics(
 )
 }
 \arguments{
-\item{x}{...}
+\item{x}{a \code{\link[=LDA]{LDA()}} or \code{\link[=rJST]{rJST()}} model populated with internal dates and/or
+internal sentiment.}
 
-\item{period}{...}
+\item{period}{the sampling period within which the sentiment of documents
+will be averaged.}
 
-\item{rolling_window}{...}
+\item{rolling_window}{if greater than 1, determines the rolling window to
+compute a moving average of sentiment. The rolling window is based on the
+period unit and rely on actual dates (i.e, is not affected by unequally
+spaced data points).}
 
-\item{scale}{...}
+\item{scale}{if \code{TRUE}, the resulting time series will be scaled to a mean of
+zero and a standard deviation of 1.}
 
-\item{scaling_period}{...}
+\item{scaling_period}{the date range over which the scaling should be
+applied. Particularly useful to normalize only the beginning of the time
+series.}
 
-\item{plot}{...}
+\item{plot}{if \code{TRUE}, prints a plot of the time series attaches it as an
+attribute to the returned object. If \code{'silent'}, do not print the plot but
+still attaches it as an attribute.}
 
-\item{plot_ridgelines}{...}
+\item{plot_ridgelines}{if \code{TRUE}, time series are plotted as ridgelines.
+Requires \code{ggridges} package installed. If \code{FALSE}, the plot will use only
+standards \code{ggplot2} functions.}
 
-\item{as.xts}{...}
+\item{as.xts}{if \code{TRUE}, returns an \link{xts} object. Otherwise, returns a
+data.frame.}
 
-\item{...}{...}
+\item{...}{other arguments passed on to \code{\link[zoo:rollapply]{zoo::rollapply()}} or \code{\link[=mean]{mean()}} and
+\code{\link[=sd]{sd()}}.}
 }
 \value{
-...
+an \code{\link[=xts]{xts()}} or data.frame containing the time series of topical
+sentiments.
 }
 \description{
-Title
+Derive topical time series of sentiment from a \code{\link[=LDA]{LDA()}} or
+\code{\link[=rJST]{rJST()}} model. The time series are created by leveraging on estimated
+topic proportions and internal sentiment (for \code{LDA} models) or topical
+sentiment (for \code{rJST} models).
+}
+\details{
+A topical sentiment is computed at the document level for each
+topic. For an LDA model, the sentiment of each topic is considered equal to
+the document sentiment (i.e. \eqn{s_i = s \forall i \in K}). For a rJST
+model, these result from the proportions in the sentiment layer under each
+topic. To compute the topical time series, the topical sentiment of all
+documents in a period are aggregated according to their respective topic
+proportion. For example, for a given topic, the topical sentiment in period
+\eqn{t} is computed using: \deqn{s_t = \frac{\sum_{d = 1}^D s_d \times
+  \theta_d}{\sum_{d = 1}^D \theta_d}}, where \eqn{s_d} is the sentiment of
+the topic in document d and \eqn{theta_d} the topic proportion in a
+document d.
+}
+\examples{
+lda <- LDA(ECB_speeches)
+lda <- grow(lda, 100)
+sentiment_topics(lda)
+
+# plot shortcut
+plot_sentiment_topics(lda, period = month, rolling_window = 3)
+# with or without ridgelines
+plot_sentiment_topics(lda, period = month, plot_ridgelines = FALSE)
+
+# also available for rJST models with internal sentiment computation
+rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
+rjst <- grow(rjst, 100)
+sentopics_sentiment(rjst, override = TRUE)
+sentiment_topics(rjst)
 }
 \seealso{
-Other plot functions: 
+sentopics_sentiment sentopics_date
+
+Other series functions: 
 \code{\link{proportion_topics}()},
-\code{\link{sentiment_breakdown}()}
+\code{\link{sentiment_breakdown}()},
+\code{\link{sentiment_series}()}
 }
-\concept{plot functions}
+\concept{series functions}

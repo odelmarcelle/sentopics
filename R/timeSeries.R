@@ -19,31 +19,44 @@
 #' @param override by default, the function computes sentiment only if no
 #'   internal sentiment is already stored within the `sentopicmodel` object.
 #'   This avoid, for example, erasing externally provided sentiment. Set to
-#'   `TRUE` to force computation of new sentiment values.
+#'   `TRUE` to force computation of new sentiment values. Only useful for models
+#'   with a sentiment layer.
 #' @param quiet if `FALSE`, print a message when internal sentiment is found.
 #' @param include_docvars if `TRUE` the function will return all docvars stored
 #'   in the internal `tokens` object of the model
 #'
+#' @return a data.frame with the stored sentiment per document.
+#'
+#' @details the computed sentiment varies depending on the model. For [LDA],
+#'   sentiment computation is not possible.
+#'
+#'   For [JST], the sentiment is computed on a per-document basis according to
+#'   the document-level sentiment mixtures.
+#'
+#'   For a [rJST] model, a sentiment is computed for each topic, resulting in
+#'   `K` sentiment values per document. In that case, the `.sentiment` column is
+#'   an average of the `K` sentiment values, weighted by they respective topical
+#'   proportions.
+#'
 #' @export
 #' @examples
+#' # example dataset already contains ".sentiment" docvar
+#' docvars(ECB_speeches)
+#' # sentiment is automatically stored in the sentopicmodel object
+#' lda <- LDA(ECB_speeches)
+#' sentopics_sentiment(lda)
+#'
+#' # sentiment can be removed or modified by the assignment operator
+#' sentopics_sentiment(lda) <- NULL
+#' sentopics_sentiment(lda) <- docvars(ECB_speeches, ".sentiment")
+#'
+#' # for JST models, sentiment can be computed from the output of the model
 #' jst <- JST(ECB_speeches, lexicon = LoughranMcDonald)
-#' sentopics_sentiment(jst)
+#' sentopics_sentiment(jst, override = TRUE) # replace existing sentiment
 #'
-#' jst <- grow(jst, 10)
-#' sentopics_sentiment(jst, override = TRUE)
-#'
-#' ## Multivariate sentiment for rJST models
+#' ## for rJST models one sentiment value is computed by topic
 #' rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
-#' rjst <- grow(rjst, 10)
 #' sentopics_sentiment(rjst, override = TRUE)
-#'
-#'
-#'
-#'
-#'
-#'
-#'
-
 sentopics_sentiment <- function(x,
                       method = "proportionalPol",
                       override = FALSE,
@@ -53,28 +66,35 @@ sentopics_sentiment <- function(x,
   .id <- positive <- negative <- topic <- NULL
 
   docvars <- attr(x$tokens, "docvars")
-
+  
   if (!override & ".sentiment" %in% names(docvars)) {
     if (!quiet) message("'.sentiment' docvars found. Returning these values. To re-compute sentiment, please set `override = TRUE`.")
     if (include_docvars) {
       res <- data.table(.id = names(x$tokens), docvars(x$tokens))
       if (".sentiment_scaled" %in% names(docvars))
         data.table::setcolorder(res, c(".id", ".sentiment", ".sentiment_scaled")) else
-        data.table::setcolorder(res, c(".id", ".sentiment"))
+          data.table::setcolorder(res, c(".id", ".sentiment"))
     } else {
-      if (".sentiment_scaled" %in% names(docvars)) res <-
+      if (".sentiment_scaled" %in% names(docvars)) {
+        res <-
           data.table(.id = names(x$tokens),
                      .sentiment = docvars$`.sentiment`,
-                     .sentiment_scaled = docvars$`.sentiment_scaled`
-          ) else res <-
-              data.table(.id = names(x$tokens),
-                         .sentiment = docvars$`.sentiment`)
+                     .sentiment_scaled = docvars$`.sentiment_scaled`)
+      }  else  {
+        res <- data.table(.id = names(x$tokens),
+                     .sentiment = docvars$`.sentiment`)
+      }
+      if (attr(x, "Sdim") == "L2") {
+        idx <- grepl("^\\.s_", names(docvars))
+        res <- cbind(res, docvars[, idx])
+      }
     }
     return(res[])
   }
 
-  if (inherits(x, "LDA")) stop("Impossible to compute sentiment for a LDA model. Please input first a '.sentiment' docvars by either \n\t1: ensuring the presence of a '.sentiment' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_sentiment(x) <- value` to register a vector of sentiment values in the topic model object.")
-
+  if (inherits(x, "LDA")) stop("Impossible to compute sentiment for a LDA model. Please input first a '.sentiment' docvars by either\n\t1: ensuring the presence of a '.sentiment' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_sentiment(x) <- value` to register a vector of sentiment values in the topic model object.")
+  if (any(!c("positive", "negative") %in% levels(x$vocabulary$lexicon))) stop("Sentiment computation requires defined positive and negative sentiment. Ensure that a lexicon containing negative and positive categories was provided when creating the model or input a '.sentiment' docvars by either\n\t1: ensuring the presence of a '.sentiment' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_sentiment(x) <- value` to register a vector of sentiment values in the topic model object.")
+  
   method <- match.arg(method)
   melted <- melt(x, include_docvars = FALSE)
   ## store order to reverse dcast ordering
@@ -87,30 +107,42 @@ sentopics_sentiment <- function(x,
            }
          })
 
-  if ( names(melted)[1] != "sent" ) { ## then it is JST
+  if ( attr(x, "Sdim") == "L1" ) { ## then it is JST
 
     ## discard topics, only need L1_prob
     res <- dcast(melted, .id ~ sent, value.var = "L1_prob", fun.aggregate = mean)
     res <- fn(res)
+    
+    ## recover initial ordering
+    setkey(res, NULL)
+    res <- res[order(ord)]
+    stopifnot(identical(res$.id, names(x$tokens)))
+    
+    docvars$`.sentiment` <- res$`.sentiment`
+    data.table::setattr(x$tokens, "docvars", docvars)
+    message("Sentiment computed and assigned internally")
 
   } else {
     LIST <- lapply(
-      stats::setNames(levels(melted$topic), nm = paste0("s_", levels(melted$topic))),
+      stats::setNames(levels(melted$topic), nm = paste0(".s_", levels(melted$topic))),
       function(t) {
         fn(dcast(melted[topic == t], .id ~ sent, value.var = "prob"))
       })
     res <- data.table::rbindlist(LIST, idcol = "topic")
     res <- dcast(res, .id ~ topic, value.var = ".sentiment")
+    
+    ## recover initial ordering
+    setkey(res, NULL)
+    res <- res[order(ord)]
+    stopifnot(identical(res$.id, names(x$tokens)))
+    
+    res$.sentiment <- rowSums(as.matrix(res, rownames = ".id") * x$theta)
+    data.table::setcolorder(res, c(".id", ".sentiment"))
+    
+    docvars <- modifyList(docvars, res[, -".id"])
+    data.table::setattr(x$tokens, "docvars", docvars)
+    message("Sentiment computed and assigned internally")
   }
-
-  ## recover initial ordering
-  setkey(res, NULL)
-  res <- res[order(ord)]
-  stopifnot(identical(res$.id, names(x$tokens)))
-
-  docvars$`.sentiment` <- res$`.sentiment`
-  data.table::setattr(x$tokens, "docvars", docvars)
-  message("Sentiment computed and assigned internally")
 
   if (include_docvars) { res <- cbind(res, docvars(x$tokens)) }
 
@@ -118,6 +150,9 @@ sentopics_sentiment <- function(x,
 }
 
 
+#' @rdname sentopics_sentiment
+#' @param value a numeric vector of sentiment to input into the model.
+#' @export
 `sentopics_sentiment<-` <- function(x, value) {
   if (!inherits(x, "sentopicmodel")) stop("Replacement of internal sentiment is only possible for topic models of package `sentopics`")
 
@@ -131,11 +166,27 @@ sentopics_sentiment <- function(x,
   x
 }
 
-#' Title
+#' Internal date
+#' @author Olivier Delmarcelle
 #' @family sentopics helpers
-#' @inherit sentopics_sentiment
+#' @inheritParams sentopics_sentiment
+#' @description Extract or replace the internal dates of a `sentopicmodel`. The
+#'   internal dates are used to create time series using the functions
+#'   [sentiment_series()] or [sentiment_topics()]. Dates should be provided by
+#'   using `sentopics_date(x) <- value` or by storing a '.date' docvars in
+#'   the [tokens] object used to create the model.
 #' @export
+#' @return a data.frame with the stored date per document.
+#' @examples
+#' # example dataset already contains ".date" docvar
+#' docvars(ECB_speeches)
+#' # dates are automatically stored in the sentopicmodel object
+#' lda <- LDA(ECB_speeches)
+#' sentopics_date(lda)
 #'
+#' # dates can be removed or modified by the assignment operator
+#' sentopics_date(lda) <- NULL
+#' sentopics_date(lda) <- docvars(ECB_speeches, ".date")
 sentopics_date <- function(x, include_docvars = FALSE) {
   docvars <- quanteda::docvars(x$tokens)
   if (!".date" %in% names(docvars)) stop("No dates stored internally. Please add dates to the documents by either\n\t1: ensuring the presence of a '.date' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_date(x) <- value` to register a vector of Dates in the topic model object.")
@@ -147,6 +198,9 @@ sentopics_date <- function(x, include_docvars = FALSE) {
   }
   res[]
 }
+#' @rdname sentopics_date
+#' @param value a `Date`-coercible vector of dates to input into the model.
+#' @export
 `sentopics_date<-` <- function(x, value) {
   if (!inherits(x, "sentopicmodel")) stop("Replacement of internal date is only possible for topic models of package `sentopics`")
 
@@ -161,19 +215,57 @@ sentopics_date <- function(x, include_docvars = FALSE) {
   x
 }
 
-#' Title
-#' @family sentopics helpers
-#' @inherit sentopics_sentiment
-#' @export
+
+#' Setting topic or sentiment labels
 #'
-sentopics_labels <- function(x) {
-  if (is.null(attr(x, "labels"))) res <- create_labels(as.sentopicmodel(x), class(x)[1])
-  else {
-    res <- is.null(attr(x, "labels"))
-    res <- sapply(res$L1, paste0, "_", res$L2, simplify = FALSE)
+#' @author Olivier Delmarcelle
+#' @family sentopics helpers
+#' @inheritParams sentopics_sentiment
+#' @description Extract or replace the labels of a `sentopicmodel`. The replaced
+#'   labels will appear in most functions dealing with the output of the
+#'   `sentomicmodel`.
+#' @param flat if FALSE, return a list of dimension labels instead of a
+#'   character vector.
+#' @export
+#' @return a character vector of topic/sentiment labels.
+#' @examples
+#' # by default, sentopics_labels() generate standard topic names
+#' lda <- LDA(ECB_speeches)
+#' sentopics_labels(lda)
+#'
+#' # to change labels, a named list must be provided
+#' sentopics_labels(lda) <- list(
+#'  topic = paste0("superTopic", 1:lda$K)
+#' )
+#' sentopics_labels(lda)
+#'
+#' # using NULL remove labels
+#' sentopics_labels(lda) <- NULL
+#' sentopics_labels(lda)
+#'
+#' # also works for JST/rJST models
+#' jst <- JST(ECB_speeches)
+#' sentopics_labels(jst) <- list(
+#'   topic = paste0("superTopic", 1:jst$K),
+#'   sentiment = c("negative", "neutral", "positive")
+#' )
+#' sentopics_labels(jst)
+#'
+#' # setting flat = FALSE return a list or labels for each dimension
+#' sentopics_labels(jst, flat = FALSE)
+sentopics_labels <- function(x, flat = TRUE) {
+  res <- create_labels(x, flat = flat)
+  if (!flat) {
+    params <- sentopicmodel_params(x)
+    names(res) <- c(params$L1_name, params$L2_name)[seq_along(res)]
   }
   res
 }
+#' @rdname sentopics_labels
+#' @param value a list of future labels for the topic model. The list should be
+#'   named and contain a character vector for each dimension to label. See the
+#'   examples for a correct usage.
+#' @export
 `sentopics_labels<-` <- function(x, value) {
 
   if (is.null(value)) {
@@ -184,16 +276,19 @@ sentopics_labels <- function(x) {
   if (!is.list(x)) stop("Only accepts list as input")
   if ( length( setdiff(names(value), c("topic", "sentiment")) ) > 0 ) stop("List should only contain named components 'topic' or 'sentiment'.")
   if (length(value) < 1) warning("Empty input, nothing is replaced.")
+  if (length(names(value)) < 1) warning("Input list should be named.")
 
   params <- sentopicmodel_params(x)
   if (is.null(attr(x, "labels"))) attr(x, "labels") <- list()
   if ( params$L1_name %in% names(value) ) {
     if ( length(value[[params$L1_name]]) != params$L1 ) stop("The number of ", params$L1_name, " labels should match the number of topics.")
     attr(x, "labels")[["L1"]] <- value[[params$L1_name]]
+    if (params$Sdim == "L1") levels(x$vocabulary$lexicon) <- value[[params$L1_name]]
   }
   if ( params$L2_name %in% names(value) ) {
     if ( length(value[[params$L2_name]]) != params$L2 ) stop("The number of ", params$L2_name, " labels should match the number of topics.")
     attr(x, "labels")[["L2"]] <- value[[params$L2_name]]
+    if (params$Sdim == "L2") levels(x$vocabulary$lexicon) <- value[[params$L2_name]]
   }
 
   ## force update of labels on theta phi ect..
@@ -202,15 +297,51 @@ sentopics_labels <- function(x) {
   # x <- as.sentopicmodel(x)
   # fun <- get(paste0("as.", class))
   # x <- fun(reorder_sentopicmodel(x))
+  
+  
+  ## manually adjust stored sentiment in docvars (if any)
+  docvars <- attr(x$tokens, "docvars")
+  idx <- grepl("^\\.s_", names(docvars))
+  if (any(idx) & !is.null(value$topic)) {
+    names(docvars)[idx] <- paste0(".s_", value$topic)
+    attr(x$tokens, "docvars") <- docvars
+  }
+  
 
   x
 }
 
-#' Title
+
+
+
+#' Compute a sentiment time series
 #'
-#' @inherit sentiment_topics
+#' @family series functions
+#' @inheritParams sentiment_topics
+#'
+#' @param x a [LDA()], [JST()] or [rJST()] model populated with internal dates
+#'   and/or internal sentiment.
+#'
+#' @description Compute a sentiment time series based on the internal sentiment
+#'   and dates of a `sentopicmodel`. The time series computation supports
+#'   multiple sampling period and optionally allow computing a moving average.
+#'
+#' @return A time series of sentiment, stored as an [xts()] or
+#'   data.frame.
 #' @export
+#' @seealso sentopics_sentiment sentopics_date
+#' @examples
+#' lda <- LDA(ECB_speeches)
+#' series <- sentiment_series(lda, period = "month")
 #'
+#' # JST and rJST models can use computed sentiment from the sentiment layer,
+#' # but the model must be estimated first.
+#' rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald) 
+#' sentiment_series(rjst)
+#' 
+#' sentiment_topics(rjst) <- NULL ## remove existing sentiment
+#' rjst <- grow(rjst, 10) ## estimating the model is then needed
+#' sentiment_series(rjst)
 sentiment_series <- function(x,
                              period = c("year", "month", "day"),
                              rolling_window = 1,
@@ -282,14 +413,27 @@ sentiment_series <- function(x,
     ## Set default parameter for scaling
     dots <- list(...)
     if (is.null(dots$na.rm)) na.rm <- TRUE
+    if (is.null(dots$trim)) trim <- 0
     params <- res[date >= scaling_period[1] & date <= scaling_period[2],
-                    c(sigma = stats::sd(sentiment, na.rm = na.rm), mu = mean(sentiment, na.rm = na.rm))]
+                    c(sigma = stats::sd(sentiment, na.rm = na.rm), mu = mean(sentiment, na.rm = na.rm, trim = trim))]
 
     res[, sentiment := (sentiment - params["mu"]) / params["sigma"] ]
     ## Add scaled sentiment at the document level by reference
     {
       docvars <- attr(x$tokens, "docvars")
       docvars$`.sentiment_scaled` <- (docvars$`.sentiment` - params["mu"]) / params["sigma"]
+      
+      ## dealing with multiple values for rJST
+      idx <- grepl("^\\.s_", names(docvars), perl = TRUE) &
+        !grepl("_scaled$", names(docvars), perl = TRUE)
+      if (any(idx)) {
+        idx <- names(docvars)[idx]
+        for (s in idx) {
+          docvars[[paste0(s, "_scaled")]] <- (docvars[[s]] - params["mu"]) / params["sigma"]
+        }
+      }
+      
+      ## putting back the results in docvars
       data.table::setattr(x$tokens, "docvars", docvars)
     }
   }
@@ -303,11 +447,44 @@ sentiment_series <- function(x,
 }
 
 
-#' Title
+#' Breakdown the sentiment into topical components
 #'
-#' @inherit sentiment_topics
+#' @family series functions
+#' @inheritParams sentiment_topics
+#'
+#' @description Break down the sentiment series obtained with
+#'   [sentiment_series()] into topical components. Sentiment is broken down at
+#'   the document level using estimated topic proportions, then processed to
+#'   create a time series and its components.
+#'
+#' @return A time series of sentiment, stored as an [xts()] object or as a
+#'   data.frame.
 #' @export
 #'
+#' @details The sentiment is broken down at the sentiment level assuming the
+#'   following composition: \deqn{s = \sum^K_{i=1} s_i \times \theta_i}, where
+#'   \eqn{s_i} is the sentiment of topic i and \eqn{theta_i} the proportion of
+#'   topic i in a given document. For an LDA model, the sentiment of each topic
+#'   is considered equal to the document sentiment (i.e. \eqn{s_i = s \forall i
+#'   \in K}). The topical sentiment attention, defined by \eqn{s*_i = s_i \times
+#'   \theta_i} represent the effective sentiment conveyed by a topic in a
+#'   document. The topical sentiment attention of all documents in a period are
+#'   averaged to compute the breakdown of the sentiment time series.
+#' @seealso sentopics_sentiment sentopics_date
+#' @examples
+#' lda <- LDA(ECB_speeches)
+#' lda <- grow(lda, 100)
+#' sentiment_breakdown(lda)
+#'
+#' # plot shortcut
+#' plot_sentiment_breakdown(lda)
+#'
+#' # also available for rJST models (with topic-level sentiment)
+#' rjst <- rJST(ECB_speeches)
+#' rjst <- grow(rjst, 100)
+#'
+#' sentopics_sentiment(rjst, override = TRUE)
+#' plot_sentiment_breakdown(rjst)
 sentiment_breakdown <- function(x,
                                 period = c("year", "month", "day"),
                                 rolling_window = 1,
@@ -320,6 +497,8 @@ sentiment_breakdown <- function(x,
   .id <- .date <- .sentiment <- .sentiment_scaled <- sentiment <-
     value <- variable <- width <- Topic <- date_center <- NULL
 
+  if (!inherits(x, c("LDA", "rJST"))) stop("`sentiment_breakdown` is only implemented for LDA and rJST models.")
+  
   period <- match.arg(period)
   plot <- as.character(plot)
   plot <- match.arg(plot)
@@ -336,16 +515,28 @@ sentiment_breakdown <- function(x,
                             "Install command: install.packages(",
                             paste0("'", mis, "'", collapse = ", "),")" )
 
-  proportions <- dcast(melt(x), .id ~ topic, value.var = "prob")
+  proportions <- dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
 
   if (scale) {
     invisible(sentiment_series(x, period = period, rolling_window = rolling_window, scale = scale, scaling_period = scaling_period, ...))
-    tmp_sent <- sentopics_sentiment(x, quiet = TRUE)[, list(.id, sentiment = .sentiment_scaled)]
+    # tmp_sent <- sentopics_sentiment(x, quiet = TRUE)[, list(.id, sentiment = .sentiment_scaled)]
+    tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
+    cols <- grepl("^\\.s", names(tmp_sent)) & grepl("_scaled$", names(tmp_sent))
+    cols <- names(tmp_sent)[cols]
+    tmp_sent <- tmp_sent[, c(".id", ..cols)]
+    # names(tmp_sent) <- gsub("(^\\.(s_)?(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
+    names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
   } else {
-    tmp_sent <- sentopics_sentiment(x, quiet = TRUE)[, list(.id, sentiment = .sentiment)]
+    # tmp_sent <- sentopics_sentiment(x, quiet = TRUE)[, list(.id, sentiment = .sentiment)]
+    tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
+    cols <- grepl("^\\.s", names(tmp_sent)) & !grepl("_scaled$", names(tmp_sent))
+    cols <- names(tmp_sent)[cols]
+    tmp_sent <- tmp_sent[, c(".id", ..cols)]
+    # names(tmp_sent) <- gsub("(^\\.(s_)?(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
+    names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
   }
-
-
+  
+  
   proportions <- merge(
     merge(
       sentopics_date(x),
@@ -355,12 +546,35 @@ sentiment_breakdown <- function(x,
     proportions,
     by = ".id", sort = FALSE
   )
+  
 
-  breakdown <- proportions[, c(list(sentiment = mean(sentiment)),
-                               lapply(.SD, function(x) mean(x * sentiment) )), .SDcols = -c(".id", ".date", "sentiment"),
-                           by = list(date = floor_date(.date, period))]
+  if (length(tmp_sent) <= 2) {
+    ## then there is only one sentiment column
+    if (inherits(x, "rJST")) warning("Sentiment for the rJST model comes from an external source. This means that the sentiment layer of the model is ignored. Was it really your intent? Perhaps should you run `sentopics_sentiment(x, override = TRUE)` on the model before calling this function, or instead remove the sentiment layer by using an LDA.")
+    breakdown <- proportions[, c(list(sentiment = mean(sentiment)),
+                                 lapply(.SD, function(x) mean(x * sentiment) )), .SDcols = -c(".id", ".date", "sentiment"),
+                             by = list(date = floor_date(.date, period))]
+  } else {
+    ## deal with topical sentiment values (rJST)
+    sCols <- names(proportions)[grepl("^s_", names(proportions))]
+    thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
+    breakdown <- proportions[, c(list(sentiment = mean(sentiment)),
+                                 mapply(function(s_i, theta_i) mean(s_i * theta_i),
+                                        theta_i = .SD[, theta], s_i = .SD[, s],
+                                        SIMPLIFY = FALSE)),
+                             by = list(date = floor_date(.date, period)),
+                             env = I(list( s = sCols, theta = thetaCols))]
+  }
+
+  
   breakdown <- breakdown[order(date)]
-
+  
+  ## quick check
+  if (!isTRUE(all.equal(
+              breakdown$sentiment - rowSums(breakdown[, -c("date", "sentiment")]),
+              rep(0, nrow(breakdown)))))
+    stop("Computation of breakdown failed. Please contact the author of the package to work on a solution.")
+  
   if (rolling_window > 1) {
     ## Store existing dates
     idx <- breakdown$date
@@ -431,7 +645,6 @@ sentiment_breakdown <- function(x,
 }
 #' @rdname sentiment_breakdown
 #' @export
-#' @family plot functions
 plot_sentiment_breakdown <- function(x,
                                      period = c("year", "month", "day"),
                                      rolling_window = 1,
@@ -443,21 +656,69 @@ plot_sentiment_breakdown <- function(x,
   attr(res, "plot")
 }
 
-#' Title
+#' Compute time series of topical sentiments
 #'
-#' @param x ...
-#' @param period ...
-#' @param rolling_window ...
-#' @param scale ...
-#' @param scaling_period ...
-#' @param plot ...
-#' @param plot_ridgelines ...
-#' @param as.xts ...
-#' @param ... ...
+#' @family series functions
 #'
-#' @return ...
+#' @description Derive topical time series of sentiment from a [LDA()] or
+#'   [rJST()] model. The time series are created by leveraging on estimated
+#'   topic proportions and internal sentiment (for `LDA` models) or topical
+#'   sentiment (for `rJST` models).
+#'
+#' @param x a [LDA()] or [rJST()] model populated with internal dates and/or
+#'   internal sentiment.
+#' @param period the sampling period within which the sentiment of documents
+#'   will be averaged.
+#' @param rolling_window if greater than 1, determines the rolling window to
+#'   compute a moving average of sentiment. The rolling window is based on the
+#'   period unit and rely on actual dates (i.e, is not affected by unequally
+#'   spaced data points).
+#' @param scale if `TRUE`, the resulting time series will be scaled to a mean of
+#'   zero and a standard deviation of 1.
+#' @param scaling_period the date range over which the scaling should be
+#'   applied. Particularly useful to normalize only the beginning of the time
+#'   series.
+#' @param plot if `TRUE`, prints a plot of the time series attaches it as an
+#'   attribute to the returned object. If `'silent'`, do not print the plot but
+#'   still attaches it as an attribute.
+#' @param plot_ridgelines if `TRUE`, time series are plotted as ridgelines.
+#'   Requires `ggridges` package installed. If `FALSE`, the plot will use only
+#'   standards `ggplot2` functions.
+#' @param as.xts if `TRUE`, returns an [xts] object. Otherwise, returns a
+#'   data.frame.
+#' @param ... other arguments passed on to [zoo::rollapply()] or [mean()] and
+#'   [sd()].
+#'
+#' @details A topical sentiment is computed at the document level for each
+#'   topic. For an LDA model, the sentiment of each topic is considered equal to
+#'   the document sentiment (i.e. \eqn{s_i = s \forall i \in K}). For a rJST
+#'   model, these result from the proportions in the sentiment layer under each
+#'   topic. To compute the topical time series, the topical sentiment of all
+#'   documents in a period are aggregated according to their respective topic
+#'   proportion. For example, for a given topic, the topical sentiment in period
+#'   \eqn{t} is computed using: \deqn{s_t = \frac{\sum_{d = 1}^D s_d \times
+#'   \theta_d}{\sum_{d = 1}^D \theta_d}}, where \eqn{s_d} is the sentiment of
+#'   the topic in document d and \eqn{theta_d} the topic proportion in a
+#'   document d.
+#' @seealso sentopics_sentiment sentopics_date
+#' @return an [xts()] or data.frame containing the time series of topical
+#'   sentiments.
 #' @export
+#' @examples
+#' lda <- LDA(ECB_speeches)
+#' lda <- grow(lda, 100)
+#' sentiment_topics(lda)
 #'
+#' # plot shortcut
+#' plot_sentiment_topics(lda, period = month, rolling_window = 3)
+#' # with or without ridgelines
+#' plot_sentiment_topics(lda, period = month, plot_ridgelines = FALSE)
+#'
+#' # also available for rJST models with internal sentiment computation
+#' rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
+#' rjst <- grow(rjst, 100)
+#' sentopics_sentiment(rjst, override = TRUE)
+#' sentiment_topics(rjst)
 sentiment_topics <- function(x,
                              period = c("year", "month", "day"),
                              rolling_window = 1,
@@ -471,6 +732,8 @@ sentiment_topics <- function(x,
   .id <- .date <- .sentiment <- .sentiment_scaled <- sentiment <-
     value <- variable <- NULL
 
+  if (!inherits(x, c("LDA", "rJST"))) stop("`sentiment_topics` is only implemented for LDA and rJST models.")
+  
   period <- match.arg(period)
   plot <- as.character(plot)
   plot <- match.arg(plot)
@@ -488,15 +751,26 @@ sentiment_topics <- function(x,
                             "Install command: install.packages(",
                             paste0("'", mis, "'", collapse = ", "),")" )
 
-  proportions <- dcast(melt(x), .id ~ topic, value.var = "prob")
+  proportions <- dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
 
   if (scale) {
     invisible(sentiment_series(x, period = period, rolling_window = rolling_window, scale = scale, scaling_period = scaling_period, ...))
-    tmp_sent <- sentopics_sentiment(x, quiet = TRUE)[, list(.id, sentiment = .sentiment_scaled)]
+    # tmp_sent <- sentopics_sentiment(x, quiet = TRUE)[, list(.id, sentiment = .sentiment_scaled)]
+    tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
+    cols <- grepl("^\\.s", names(tmp_sent)) & grepl("_scaled$", names(tmp_sent))
+    cols <- names(tmp_sent)[cols]
+    tmp_sent <- tmp_sent[, c(".id", ..cols)]
+    # names(tmp_sent) <- gsub("(^\\.(s_)?(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
+    names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
   } else {
-    tmp_sent <- sentopics_sentiment(x, quiet = TRUE)[, list(.id, sentiment = .sentiment)]
+    # tmp_sent <- sentopics_sentiment(x, quiet = TRUE)[, list(.id, sentiment = .sentiment)]
+    tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
+    cols <- grepl("^\\.s", names(tmp_sent)) & !grepl("_scaled$", names(tmp_sent))
+    cols <- names(tmp_sent)[cols]
+    tmp_sent <- tmp_sent[, c(".id", ..cols)]
+    # names(tmp_sent) <- gsub("(^\\.(s_)?(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
+    names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
   }
-
 
   proportions <- merge(
     merge(
@@ -508,9 +782,23 @@ sentiment_topics <- function(x,
     by = ".id", sort = FALSE
   )
 
-  topical_sent <- proportions[, c(lapply(.SD, function(w) sum(w * sentiment) / sum(w) )),
-                           .SDcols = -c(".id", ".date", "sentiment"),
-                           by = list(date = floor_date(.date, period))]
+  if (length(tmp_sent) <= 2) {
+    ## then there is only one sentiment column
+    if (inherits(x, "rJST")) warning("Sentiment for the rJST model comes from an external source. This means that the sentiment layer of the model is ignored. Was it really your intent? Perhaps should you run `sentopics_sentiment(x, override = TRUE)` on the model before calling this function, or instead remove the sentiment layer by using an LDA.")
+    topical_sent <- proportions[, c(lapply(.SD, function(w) sum(w * sentiment) / sum(w) )),
+                                .SDcols = -c(".id", ".date", "sentiment"),
+                                by = list(date = floor_date(.date, period))]
+  } else {
+    ## deal with topical sentiment values (rJST)
+    sCols <- names(proportions)[grepl("^s_", names(proportions))]
+    thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
+    topical_sent <- proportions[, mapply(function(s_i, theta_i) mean(s_i * theta_i) / sum(theta_i),
+                                         theta_i = .SD[, theta], s_i = .SD[, s],
+                                         SIMPLIFY = FALSE),
+                                by = list(date = floor_date(.date, period)),
+                                env = I(list( s = sCols, theta = thetaCols))]
+  }
+  
   topical_sent <- topical_sent[order(date)]
 
   if (rolling_window > 1) {
@@ -587,7 +875,6 @@ sentiment_topics <- function(x,
 }
 #' @rdname sentiment_topics
 #' @export
-#' @family plot functions
 plot_sentiment_topics <- function(x,
                                   period = c("year", "month", "day"),
                                   rolling_window = 1,
@@ -600,14 +887,46 @@ plot_sentiment_topics <- function(x,
   attr(res, "plot")
 }
 
-#' Title
+#' Compute the topic or sentiment proportion time series
 #'
-#' @inherit sentiment_topics
+#' @family series functions
+#' @inheritParams sentiment_topics
+#'
+#' @param x a [LDA()], [JST()] or [rJST()] model populated with internal dates
+#'   and/or internal sentiment.
+#' @param complete if FALSE, only compute proportions at the upper level of the
+#'   topic model hierarchy (topics for [rJST] and sentiment for [JST]). No
+#'   effect on [LDA] models.
+#'
+#' @description Aggregate the topical or sentiment proportions at the document
+#'   level into time series.
+#'
+#' @return A time series of proportions, stored as an [xts()] object or as a
+#'   data.frame.
 #' @export
 #'
+#' @seealso sentopics_sentiment sentopics_date
+#' @examples
+#' lda <- LDA(ECB_speeches)
+#' lda <- grow(lda, 100)
+#' proportion_topics(lda)
+#'
+#' # plot shortcut
+#' plot_proportion_topics(lda, period = month, rolling_window = 3)
+#' # with or without ridgelines
+#' plot_proportion_topics(lda, period = month, plot_ridgelines = FALSE)
+#'
+#' # also available for rJST and JST models
+#' jst <- JST(ECB_speeches, lexicon = LoughranMcDonald)
+#' jst <- grow(jst, 100)
+#' # including both layers
+#' proportion_topics(jst)
+#' # or not
+#' proportion_topics(jst, complete = FALSE)
 proportion_topics <- function(x,
                               period = c("year", "month", "day"),
                               rolling_window = 1,
+                              complete = TRUE,
                               plot = c(FALSE,  TRUE, "silent"),
                               plot_ridgelines = TRUE,
                               as.xts = TRUE,
@@ -632,10 +951,22 @@ proportion_topics <- function(x,
                             "Install command: install.packages(",
                             paste0("'", mis, "'", collapse = ", "),")" )
 
+  if (complete) {
+    proportions <- switch(class(x)[1],
+                          LDA = {dcast(melt(x), .id ~ topic, value.var = "prob")},
+                          rJST = {dcast(melt(x), .id ~ topic + sent, value.var = "prob")},
+                          JST = {dcast(melt(x), .id ~ sent + topic, value.var = "prob")},
+                          stop("Undefined input"))
+  } else {
+    proportions <- switch(class(x)[1],
+                          LDA = {dcast(melt(x), .id ~ topic, value.var = "prob")},
+                          rJST = {dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)},
+                          JST = {dcast(melt(x), .id ~ sent, value.var = "prob", fun.aggregate = sum)},
+                          stop("Undefined input"))
+  }
+  
 
-
-  proportions <- dcast(melt(x), .id ~ topic, value.var = "prob")
-
+  
   proportions <- merge(
     sentopics_date(x),
     proportions,
@@ -646,6 +977,12 @@ proportion_topics <- function(x,
                               .SDcols = -c(".id", ".date"),
                               by = list(date = floor_date(`.date`, period))]
   proportions <- proportions[order(date)]
+  
+  ## quick check
+  if (!isTRUE(all.equal(
+    rowSums(proportions[, -c("date")]),
+    rep(1, nrow(proportions)))))
+    stop("Computation of breakdown failed. Please contact the author of the package to work on a solution.")
 
   if (rolling_window > 1) {
     ## Store existing dates
@@ -681,6 +1018,7 @@ proportion_topics <- function(x,
     plot_data <- proportions[, lapply(.SD, nafill, type = "locf")]
     plot_data <- stats::na.omit(melt(plot_data, id.vars = "date"))
 
+    if (inherits(x, "LDA") | !complete) colorScope <- "L1" else colorScope <- c("L1", "L2")
 
     if (plot_ridgelines & length(missingSuggets("ggridges")) == 0) {
       plot_data <- plot_data[, list(date, value = value / max(abs(`value`)), `variable`)]
@@ -689,10 +1027,10 @@ proportion_topics <- function(x,
         ggplot2::ggplot(plot_data, ggplot2::aes(date, height = value, y = variable, group = variable, fill = variable)) +
         ggridges::geom_ridgeline(min_height = 0, scale = 1/1.1) +
         # ggplot2::scale_x_date(expand = c(0,0)) +
-        ggplot2::scale_fill_manual(values = make_colors(x, "L1")) +
+        ggplot2::scale_fill_manual(values = make_colors(x, colorScope)) +
         ggplot2::guides(fill = "none") +
-        ggplot2::ylab("Topical proportion")
-      p_proportions
+        ggplot2::ylab(ifelse(inherits(x, "JST"), "Sentiment proportion", "Topical proportion"))
+
     } else {
 
       if (plot_ridgelines) message("Package `ggridges` is missing. Defaulting to standard ggplot.")
@@ -701,15 +1039,30 @@ proportion_topics <- function(x,
       p_proportions <-
         ggplot2::ggplot(plot_data, ggplot2::aes(date, value, fill = variable)) +
         ggplot2::geom_area(position = ggplot2::position_stack(reverse = TRUE)) +
-        ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE, title = "Topic")) +
-        ggplot2::scale_fill_manual(values = make_colors(x, "L1")) +
+        ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE,
+                                                     title = ifelse(inherits(x, "JST"), "Sentiment", "Topic"))) +
+        ggplot2::scale_fill_manual(values = make_colors(x, colorScope)) +
         ggplot2::scale_y_continuous(expand = c(0,0), labels = function(breaks) sprintf("%.f%%", breaks * 100) ) +
         ggplot2::scale_x_date(expand = c(0,0)) +
         ggplot2::theme_bw() +
-        # ggplot2::geom_line(ggplot2::aes(date, cum_value, group = variable),
-        #                    inherit.aes = FALSE) +
-        ggplot2::geom_line(position = ggplot2::position_stack(reverse = TRUE)) +
-        ggplot2::ylab("Topical proportion")
+        ggplot2::ylab(ifelse(inherits(x, "JST"), "Sentiment proportion", "Topical proportion"))
+
+      # for non-LDA models, draw line only at intersection between upper layer
+      # labels
+      if (inherits(x, "LDA") | !complete) {
+        p_proportions <- p_proportions +
+          ggplot2::geom_line(position = ggplot2::position_stack(reverse = TRUE))
+      } else {
+        tmp <- create_labels(x, flat = FALSE)
+        tmp <- sapply(tmp$L1, paste0, "_", tmp$L2[length(tmp$L2)], USE.NAMES = FALSE)
+        plot_data_alt <- plot_data[, list(variable, value = cumsum(value)), by = "date"]
+        plot_data_alt <- plot_data_alt[variable %in% tmp]
+        p_proportions <- p_proportions +
+          ggplot2::geom_line(data = plot_data_alt)
+      }
+
+      
+      
     }
 
 
@@ -726,13 +1079,13 @@ proportion_topics <- function(x,
 }
 #' @rdname proportion_topics
 #' @export
-#' @family plot functions
 plot_proportion_topics <- function(x,
                                    period = c("year", "month", "day"),
                                    rolling_window = 1,
+                                   complete = TRUE,
                                    plot_ridgelines = TRUE,
                                    ...) {
-  res <- proportion_topics(x, period, rolling_window, plot_ridgelines,
+  res <- proportion_topics(x, period, rolling_window, complete, plot_ridgelines,
                              plot = "silent", as.xts = FALSE, ...)
   attr(res, "plot")
 }
@@ -774,104 +1127,3 @@ sentopicmodel_params <- function(x) {
   )
 }
 
-
-## TODO: REMOVE?
-mixture_series <- function(x,
-                             period = c("year", "month", "day"),
-                             date_docvar = ".date",
-                             as.xts = TRUE,
-                             plot = TRUE) {
-  period <- match.arg(period)
-  if (is.character(date_docvar)) {
-    if (!date_docvar %in% colnames(docvars(x$tokens)))
-      stop("\"", date_docvar, "\" not found in the docvars of the quanteda object. Please check that the input of the model retained his docvars using `docvars()`. Instead of providing a column name, you can also directly input a date vector to this function.")
-  } else if (inherits(date_docvar, "Date")) {
-    x$tokens$date <- date_docvar
-    date_docvar <- "date"
-  } else {
-    stop("Incorrect input to date_docvar.")
-  }
-  melted <- melt(x, include_docvars = TRUE)
-  if (inherits(x, "LDA")) {
-    L1_name <- "topic"
-    L2_name <- "....PLACEHOLDER"
-    melted$L1_prob <- melted$prob
-    x$S <- 1
-  } else {
-    L1_name <- colnames(melted)[2]
-    L2_name <- colnames(melted)[1]
-  }
-
-  # res <- melted[, lapply(.SD, mean),
-  #                by = list(date = floor_date(melted[[date_docvar]], period),
-  #                       L2_name = melted[[L2_name]],
-  #                       melted[[L1_name]],
-  #                       sentopic),
-  #                .SDcols = c("L1_prob", "prob")]
-  byList <- stats::setNames(list(
-    floor_date(melted[[date_docvar]], period),
-    melted[[L2_name]],
-    melted[[L1_name]],
-    melted[["sentopic"]]),
-    c("date", L2_name, L1_name, "sentopic" ) )
-  byList <- byList[!sapply(byList, is.null)]
-  res <- melted[, lapply(.SD, mean),
-                by = byList,
-                .SDcols = c("L1_prob", "prob")]
-  # res <- melted[, lapply(.SD, mean),
-  #               by = setNames(list(
-  #                 floor_date(melted[[date_docvar]], period),
-  #                 melted[[L2_name]],
-  #                 melted[[L1_name]],
-  #                 melted[["sentopic"]]),
-  #                 c("date", L2_name, L1_name, "sentopic" ) ),
-  #               .SDcols = c("L1_prob", "prob")]
-  if (plot) {
-    lines <- unique(res[, c("date", ..L1_name, "L1_prob")])
-    data.table::setnames(lines, L1_name, "L1")
-    lines <- lines[, list(L1, y = cumsum(L1_prob)), by = "date"]
-
-    if (attr(x, "reversed")) {
-      L1 <- x$K
-      L2 <- x$S
-    } else {
-      L1 <- x$S
-      L2 <- x$K
-    }
-
-    if (L1 < 10) {
-      cols <- unlist(lapply(RColorBrewer::brewer.pal(max(L1, 3), "Set1"), spreadColor, L2, range = .2))
-    }
-    else cols <- grDevices::colorRampPalette(
-      RColorBrewer::brewer.pal(7, "Set1"))(L1)
-
-
-    if (inherits(x, "LDA")) {
-      p <- ggplot2::ggplot(res, ggplot2::aes(date, prob, fill = topic))
-    } else {
-      p <- ggplot2::ggplot(res, ggplot2::aes(date, prob, fill = sentopic))
-    }
-
-    p <- p +
-      ggplot2::geom_area(position = ggplot2::position_stack(reverse = TRUE)) +
-      ggplot2::scale_fill_manual(values = cols,
-                                 guide = ggplot2::guide_legend(reverse = TRUE)) +
-      ggplot2::scale_y_continuous(expand = c(0,0)) +
-      ggplot2::scale_x_date(expand = c(0,0)) +
-      ggplot2::theme_bw() +
-      ggplot2::geom_line(data = lines, ggplot2::aes(date, y, group = L1),
-                         inherit.aes = FALSE)
-    print(p)
-  }
-  res$L1_prob <- NULL
-
-  if (as.xts & length(missingSuggets("xts")) == 0) {
-    if (inherits(x, "LDA")) {
-      xts::as.xts(data.table::dcast(res, date ~ topic, value.var = "prob"))
-    } else {
-      xts::as.xts(data.table::dcast(res, date ~ sentopic, value.var = "prob"))
-    }
-  } else {
-    res[order(date)]
-  }
-}

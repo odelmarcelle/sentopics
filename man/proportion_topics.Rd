@@ -3,12 +3,13 @@
 \name{proportion_topics}
 \alias{proportion_topics}
 \alias{plot_proportion_topics}
-\title{Title}
+\title{Compute the topic or sentiment proportion time series}
 \usage{
 proportion_topics(
   x,
   period = c("year", "month", "day"),
   rolling_window = 1,
+  complete = TRUE,
   plot = c(FALSE, TRUE, "silent"),
   plot_ridgelines = TRUE,
   as.xts = TRUE,
@@ -19,34 +20,73 @@ plot_proportion_topics(
   x,
   period = c("year", "month", "day"),
   rolling_window = 1,
+  complete = TRUE,
   plot_ridgelines = TRUE,
   ...
 )
 }
 \arguments{
-\item{x}{...}
+\item{x}{a \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}} model populated with internal dates
+and/or internal sentiment.}
 
-\item{period}{...}
+\item{period}{the sampling period within which the sentiment of documents
+will be averaged.}
 
-\item{rolling_window}{...}
+\item{rolling_window}{if greater than 1, determines the rolling window to
+compute a moving average of sentiment. The rolling window is based on the
+period unit and rely on actual dates (i.e, is not affected by unequally
+spaced data points).}
 
-\item{plot}{...}
+\item{complete}{if FALSE, only compute proportions at the upper level of the
+topic model hierarchy (topics for \link{rJST} and sentiment for \link{JST}). No
+effect on \link{LDA} models.}
 
-\item{plot_ridgelines}{...}
+\item{plot}{if \code{TRUE}, prints a plot of the time series attaches it as an
+attribute to the returned object. If \code{'silent'}, do not print the plot but
+still attaches it as an attribute.}
 
-\item{as.xts}{...}
+\item{plot_ridgelines}{if \code{TRUE}, time series are plotted as ridgelines.
+Requires \code{ggridges} package installed. If \code{FALSE}, the plot will use only
+standards \code{ggplot2} functions.}
 
-\item{...}{...}
+\item{as.xts}{if \code{TRUE}, returns an \link{xts} object. Otherwise, returns a
+data.frame.}
+
+\item{...}{other arguments passed on to \code{\link[zoo:rollapply]{zoo::rollapply()}} or \code{\link[=mean]{mean()}} and
+\code{\link[=sd]{sd()}}.}
 }
 \value{
-...
+A time series of proportions, stored as an \code{\link[=xts]{xts()}} object or as a
+data.frame.
 }
 \description{
-Title
+Aggregate the topical or sentiment proportions at the document
+level into time series.
+}
+\examples{
+lda <- LDA(ECB_speeches)
+lda <- grow(lda, 100)
+proportion_topics(lda)
+
+# plot shortcut
+plot_proportion_topics(lda, period = month, rolling_window = 3)
+# with or without ridgelines
+plot_proportion_topics(lda, period = month, plot_ridgelines = FALSE)
+
+# also available for rJST and JST models
+jst <- JST(ECB_speeches, lexicon = LoughranMcDonald)
+jst <- grow(jst, 100)
+# including both layers
+proportion_topics(jst)
+# or not
+proportion_topics(jst, complete = FALSE)
 }
 \seealso{
-Other plot functions: 
+sentopics_sentiment sentopics_date
+
+Other series functions: 
 \code{\link{sentiment_breakdown}()},
+\code{\link{sentiment_series}()},
 \code{\link{sentiment_topics}()}
 }
-\concept{plot functions}
+\concept{series functions}

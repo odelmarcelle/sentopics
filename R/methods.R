@@ -132,20 +132,6 @@ plot.sentopicmodel <- function(x, layers = 3, nWords = 15, topicsOnly = FALSE, .
     }
   }
 
-  ## Relic from topicsOnly?
-  # if (identical(unique(l3$L2), 1L)) {
-  #   l1$id <- paste0(l1$id, "sent1")
-  #   fig <- plotly::plot_ly(
-  #     ids = unlist(sapply(list(l1, l3), "[[", "id")),
-  #     labels = unlist(sapply(list(l1, l3), "[[", "name")),
-  #     parents = unlist(sapply(list(l1, l3), "[[", "parent")),
-  #     values = unlist(sapply(list(l1, l3), "[[", "value")),
-  #     type = "sunburst",
-  #     branchvalues = "total",
-  #     leaf = list(opacity = 1)
-  #   )
-  # } else {
-
   LIST <- list(l1[, -1], l2[, -(1:2)], l3[, -(1:3)])
   data <- data.table::rbindlist(LIST, use.names = TRUE)
 
@@ -154,10 +140,6 @@ plot.sentopicmodel <- function(x, layers = 3, nWords = 15, topicsOnly = FALSE, .
     data$parent <- sub("l2_[0-9]+$", "", data$parent)
   }
   labels <- data$name
-  # if (class %in% c("rJST", "LDA")) labels <-
-  #   sub("l1_", "topic", sub("l2_", "sent", labels, fixed = TRUE), fixed = TRUE)
-  # if (class == "JST") labels <-
-  #   sub("l1_", "sent", sub("l2_", "topic", labels, fixed = TRUE), fixed = TRUE)
 
     fig <- plotly::plot_ly(
       ids = data$id,
@@ -174,98 +156,9 @@ plot.sentopicmodel <- function(x, layers = 3, nWords = 15, topicsOnly = FALSE, .
       hoverlabel = list(font = list(size = 20))
     )
 
-    # fig <- plotly::layout(fig, sunburstcolorway = unlist(sapply(LIST, "[[", "color")))
-  # }
-
   fig
 }
 
-
-plotRJST <- function(x, nWords = 5, title = NULL, ...) {
-  freq <- rebuild_zw(x, array = TRUE)
-  freq <- aperm(freq, c(3, 1, 2))
-  overall <- rowSums(freq)
-  freq <- data.table::as.data.table(freq, sort = FALSE)
-  if (attr(x, "reversed")) {
-    colnames(freq) <- c("word", "sentiment", "topic", "value")
-  } else  {
-    colnames(freq) <- c("word", "topic", "sentiment", "value")
-  }
-  freq$overall <- rep(overall, times = x$T * x$S)
-  freq$word <- rep(x$vocabulary$word, times = x$T * x$S)
-  # freq
-  freq_sub <- freq[order(-value), utils::head(.SD, nWords), by = list(topic, sentiment)][order(topic, sentiment)]
-  tmp <- sapply(1:x$T, function(t) {
-    freq_sub[topic == t]
-    freq[topic == t & word %in% freq_sub[topic == t, word]]
-  }, simplify = FALSE)
-  tmp <- Reduce(rbind, tmp)
-
-  # ggplot(tmp2, aes(x = word, y = value, fill = factor(sentiment))) +
-  #   ggplot2::geom_col(ggplot2::aes(y = overall),
-  #                     # Need to restrict overall to a single pair of
-  #                     # topic/sentiment, otherwise it will sum the overal
-  #                     # frequency multiple times
-  #                     tmp[topic == 1 & sentiment == 1],
-  #                     show.legend = FALSE, fill = "grey", alpha = .8) +
-  #   geom_col() +
-  #   facet_wrap(vars(topic), scales = "free") +
-  #   ggplot2::coord_flip()
-
-
-  # ggplot(tmp2, aes(x = tidytext::reorder_within(word, value, topic), y = value, fill = factor(sentiment))) +
-  #   # geom_col() +
-  #   ggplot2::geom_col(ggplot2::aes(y = overall),
-  #                     # Need to restrict overall to a single pair of
-  #                     # topic/sentiment, otherwise it will sum the overal
-  #                     # frequency multiple times
-  #                     position = position_dodge2(padding = 0),
-  #                     show.legend = FALSE, fill = "grey", alpha = .8) +
-  #   geom_col() +
-  #   facet_wrap(vars(topic), scales = "free") +
-  #   ggplot2::coord_flip() +
-  #   tidytext::scale_x_reordered()
-
-  ## manually adjust the ordering of factors for ggplot2
-  ## from tidytext::reorder_within
-  new_x <- paste(tmp$word, tmp$topic, sep = "___")
-  target_order <- freq_sub
-  target_order$word <- paste(target_order$word, target_order$topic, sep = "___")
-  ## Remove conflicts when one word is selected for more than one sentiment
-  target_order <- target_order[, .SD[which.max(value)], by = word]
-  target_order <- target_order[order(-sentiment, value)]
-  new_x <- factor(new_x, levels = target_order$word)
-
-  ggplot2::ggplot(tmp, ggplot2::aes(x = new_x, y = value,
-                                     fill = factor(sentiment))) +
-    ggplot2::geom_col(ggplot2::aes(y = overall),
-                      # Need to restrict overall to a single pair of
-                      # topic/sentiment, otherwise it will sum the overal
-                      # frequency multiple times
-                      position = ggplot2::position_dodge2(padding = 0),
-                      show.legend = FALSE, fill = "grey", alpha = .8) +
-    ggplot2::geom_col(position = ggplot2::position_stack(reverse = TRUE)) +
-    ggplot2::facet_wrap(ggplot2::vars(topic), scales = "free") +
-    ggplot2::coord_flip() +
-    tidytext::scale_x_reordered()
-
-
-  # ggplot(tmp2, aes(x = tidytext::reorder_within(tidytext::reorder_within(word, value, topic), sentiment, topic), y = value, fill = factor(sentiment))) +
-  #   # geom_col() +
-  #   # ggplot2::geom_col(ggplot2::aes(y = overall),
-  #   #                   # Need to restrict overall to a single pair of
-  #   #                   # topic/sentiment, otherwise it will sum the overal
-  #   #                   # frequency multiple times
-  #   #                   position = position_dodge2(padding = 0),
-  #   #                   show.legend = FALSE, fill = "grey", alpha = .8) +
-  #   geom_col() +
-  #   facet_wrap(vars(topic), scales = "free") +
-  #   ggplot2::coord_flip() +
-  #   tidytext::scale_x_reordered()
-
-
-
-}
 
 #' Plot the distances between topic models (chains)
 #'
@@ -290,18 +183,20 @@ plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosin
   method <- match.arg(method)
   d <- stats::as.dist(chainsDistances(x, method))
   coord <- stats::cmdscale(d)
-  # coord <- data.table::as.data.table(coord)
-  # coord$maxLik <- sapply(x, function(xx) max(xx$logLikelihood))
-  # coord$lastLik <- sapply(x, function(xx) tail(xx$logLikelihood, 1))
-  # coord
-  # ggplot(coord, aes(x = V1, y = V2, colour = lastLik)) + geom_point(size = 4)
+  ## Possible ggplot2 way of doing it
+  # local({
+  #   coord <- data.table::as.data.table(coord)
+  #   coord$maxLik <- sapply(x, function(xx) max(xx$logLikelihood))
+  #   coord$lastLik <- sapply(x, function(xx) tail(xx$logLikelihood, 1))
+  #   coord
+  #   print(ggplot(coord, aes(x = V1, y = V2, colour = lastLik)) + geom_point(size = 4))
+  # })
   plot(coord[, 1], coord[, 2], type = "n", xlab = "Coordinate 1", ylab = "Coordinate 2", main = paste0("Chains multidimensional scaling of ", deparse(substitute(x))))
   graphics::text(coord[, 1], coord[, 2], rownames(coord), cex = 0.8)
   graphics::abline(h = 0, v = 0, col = "gray75")
 }
 
 # grow --------------------------------------------------------------------
-# TODO: branch on initLDA if S = 1... faster
 #' Estimate a topic model
 #'
 #' @author Olivier Delmarcelle
@@ -658,7 +553,7 @@ grow.multiChains <- function(x, iterations = 100, nChains = NULL, nCores = 1, di
 
 # melt --------------------------------------------------------------------
 
-#' Melt for sentopicmodel object
+#' Melt for sentopicmodels
 #'
 #' @author Olivier Delmarcelle
 #'
@@ -666,26 +561,16 @@ grow.multiChains <- function(x, iterations = 100, nChains = NULL, nCores = 1, di
 #'
 #' @param data ...
 #' @param ... ...
-#' @param na.rm ...
-#' @param value.name ...
+#' @param include_docvars ...
 #'
 #' @return ...
 #'
-#' @export
-melt <- function(data, ..., na.rm = FALSE, value.name = "value") {
-  if (inherits(data, "sentopicmodel")) {
-    UseMethod("melt", data)
-  } else {
-    data.table::melt(data, ..., na.rm = na.rm, value.name = value.name)
-  }
-}
-### TODO: adjust output for LDA/JST/rJST
 #' @export
 melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
   if (data$it <= 0) stop("Nothing to melt. Iterate the model with grow() first.")
   class <- class(data)[1]
   data <- as.sentopicmodel(data)
-  id <- topic <- sentiment <- L1_prob <- L2_prob <- NULL # due to NSE notes in R CMD check
+  .id <- topic <- sentiment <- prob <- L1_prob <- L2_prob <- NULL # due to NSE notes in R CMD check
 
   L1stats <- data.table::as.data.table(data$L1post, sorted = FALSE, keep.rownames = ".id")
   # colnames(L1stats) <- c(".id", 1:(ncol(L1stats) - 1))

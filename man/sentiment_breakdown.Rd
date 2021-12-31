@@ -3,7 +3,7 @@
 \name{sentiment_breakdown}
 \alias{sentiment_breakdown}
 \alias{plot_sentiment_breakdown}
-\title{Title}
+\title{Breakdown the sentiment into topical components}
 \usage{
 sentiment_breakdown(
   x,
@@ -26,31 +26,76 @@ plot_sentiment_breakdown(
 )
 }
 \arguments{
-\item{x}{...}
+\item{x}{a \code{\link[=LDA]{LDA()}} or \code{\link[=rJST]{rJST()}} model populated with internal dates and/or
+internal sentiment.}
 
-\item{period}{...}
+\item{period}{the sampling period within which the sentiment of documents
+will be averaged.}
 
-\item{rolling_window}{...}
+\item{rolling_window}{if greater than 1, determines the rolling window to
+compute a moving average of sentiment. The rolling window is based on the
+period unit and rely on actual dates (i.e, is not affected by unequally
+spaced data points).}
 
-\item{scale}{...}
+\item{scale}{if \code{TRUE}, the resulting time series will be scaled to a mean of
+zero and a standard deviation of 1.}
 
-\item{scaling_period}{...}
+\item{scaling_period}{the date range over which the scaling should be
+applied. Particularly useful to normalize only the beginning of the time
+series.}
 
-\item{plot}{...}
+\item{plot}{if \code{TRUE}, prints a plot of the time series attaches it as an
+attribute to the returned object. If \code{'silent'}, do not print the plot but
+still attaches it as an attribute.}
 
-\item{as.xts}{...}
+\item{as.xts}{if \code{TRUE}, returns an \link{xts} object. Otherwise, returns a
+data.frame.}
 
-\item{...}{...}
+\item{...}{other arguments passed on to \code{\link[zoo:rollapply]{zoo::rollapply()}} or \code{\link[=mean]{mean()}} and
+\code{\link[=sd]{sd()}}.}
 }
 \value{
-...
+A time series of sentiment, stored as an \code{\link[=xts]{xts()}} object or as a
+data.frame.
 }
 \description{
-Title
+Break down the sentiment series obtained with
+\code{\link[=sentiment_series]{sentiment_series()}} into topical components. Sentiment is broken down at
+the document level using estimated topic proportions, then processed to
+create a time series and its components.
+}
+\details{
+The sentiment is broken down at the sentiment level assuming the
+following composition: \deqn{s = \sum^K_{i=1} s_i \times \theta_i}, where
+\eqn{s_i} is the sentiment of topic i and \eqn{theta_i} the proportion of
+topic i in a given document. For an LDA model, the sentiment of each topic
+is considered equal to the document sentiment (i.e. \eqn{s_i = s \forall i
+  \in K}). The topical sentiment attention, defined by \eqn{s*_i = s_i \times
+  \theta_i} represent the effective sentiment conveyed by a topic in a
+document. The topical sentiment attention of all documents in a period are
+averaged to compute the breakdown of the sentiment time series.
+}
+\examples{
+lda <- LDA(ECB_speeches)
+lda <- grow(lda, 100)
+sentiment_breakdown(lda)
+
+# plot shortcut
+plot_sentiment_breakdown(lda)
+
+# also available for rJST models (with topic-level sentiment)
+rjst <- rJST(ECB_speeches)
+rjst <- grow(rjst, 100)
+
+sentopics_sentiment(rjst, override = TRUE)
+plot_sentiment_breakdown(rjst)
 }
 \seealso{
-Other plot functions: 
+sentopics_sentiment sentopics_date
+
+Other series functions: 
 \code{\link{proportion_topics}()},
+\code{\link{sentiment_series}()},
 \code{\link{sentiment_topics}()}
 }
-\concept{plot functions}
+\concept{series functions}

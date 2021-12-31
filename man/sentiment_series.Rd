@@ -2,7 +2,7 @@
 % Please edit documentation in R/timeSeries.R
 \name{sentiment_series}
 \alias{sentiment_series}
-\title{Title}
+\title{Compute a sentiment time series}
 \usage{
 sentiment_series(
   x,
@@ -15,28 +15,58 @@ sentiment_series(
 )
 }
 \arguments{
-\item{x}{...}
+\item{x}{a \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}} model populated with internal dates
+and/or internal sentiment.}
 
-\item{period}{...}
+\item{period}{the sampling period within which the sentiment of documents
+will be averaged.}
 
-\item{rolling_window}{...}
+\item{rolling_window}{if greater than 1, determines the rolling window to
+compute a moving average of sentiment. The rolling window is based on the
+period unit and rely on actual dates (i.e, is not affected by unequally
+spaced data points).}
 
-\item{scale}{...}
+\item{scale}{if \code{TRUE}, the resulting time series will be scaled to a mean of
+zero and a standard deviation of 1.}
 
-\item{scaling_period}{...}
+\item{scaling_period}{the date range over which the scaling should be
+applied. Particularly useful to normalize only the beginning of the time
+series.}
 
-\item{as.xts}{...}
+\item{as.xts}{if \code{TRUE}, returns an \link{xts} object. Otherwise, returns a
+data.frame.}
 
-\item{...}{...}
+\item{...}{other arguments passed on to \code{\link[zoo:rollapply]{zoo::rollapply()}} or \code{\link[=mean]{mean()}} and
+\code{\link[=sd]{sd()}}.}
 }
 \value{
-...
+A time series of sentiment, stored as an \code{\link[=xts]{xts()}} or
+data.frame.
 }
 \description{
-Title
+Compute a sentiment time series based on the internal sentiment
+and dates of a \code{sentopicmodel}. The time series computation supports
+multiple sampling period and optionally allow computing a moving average.
+}
+\examples{
+lda <- LDA(ECB_speeches)
+series <- sentiment_series(lda, period = "month")
+
+# JST and rJST models can use computed sentiment from the sentiment layer,
+# but the model must be estimated first.
+rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald) 
+sentiment_series(rjst)
+
+sentiment_topics(rjst) <- NULL ## remove existing sentiment
+rjst <- grow(rjst, 10) ## estimating the model is then needed
+sentiment_series(rjst)
 }
 \seealso{
-Other plot functions: 
+sentopics_sentiment sentopics_date
+
+Other series functions: 
 \code{\link{proportion_topics}()},
-\code{\link{sentiment_breakdown}()}
+\code{\link{sentiment_breakdown}()},
+\code{\link{sentiment_topics}()}
 }
+\concept{series functions}

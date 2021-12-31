@@ -111,10 +111,10 @@ test_that("series functions works for LDA", {
   expect_equal(as.matrix(res$sentiment), as.matrix(breakdown$sentiment))
   
   # check plots
-  plot_sentiment_topics(lda)
+  plot_sentiment_topics(lda, period = "day", rolling_window = 30)
   plot_sentiment_topics(lda, plot_ridgelines = FALSE)
-  plot_sentiment_breakdown(lda)
-  plot_proportion_topics(lda)
+  plot_sentiment_breakdown(lda, period = "day", rolling_window = 30)
+  plot_proportion_topics(lda, period = "day", rolling_window = 30)
   plot_proportion_topics(lda, plot_ridgelines = FALSE)
 })
 

@@ -1,34 +1,6 @@
 
 context("Test utils")
 
-test_that("minimalStemmer works", {
-
-  # This fails because encodings of test environment is UTF-8. Direct transition to C++ produces incorrec treatement of "é".
-  # expect_identical(
-  #   cpp_minimalFrenchStemmer( c("bananes", "baronnes", "création", "créations", "duplicité")),
-  #   c("banan", "baron", "création", "création", "duplicit")
-  # )
-  expect_identical(
-    minimalFrenchStemmer( c("bananes", "baronnes", "création", "créations", "duplicité")),
-    c("banan", "baron", "création", "création", "duplicit")
-  )
-})
-
-
-test_that("dictionary_wordstem", {
-
-  expect_identical(
-    dictionary_wordstem(LSDfr, function(x) x),
-    LSDfr
-  )
-
-  expect_false(identical(
-    dictionary_wordstem(LSDfr, minimalFrenchStemmer),
-    LSDfr
-  ))
-
-})
-
 test_that("virtualDocuments works", {
   toks <- ECB_speeches[1:10]
   expect_warning(virtualDocuments(vD <- toks, window = 1000), "Some documents")

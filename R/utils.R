@@ -730,37 +730,6 @@ multLikelihood <- function(x) {
 
 # Stemming ----------------------------------------------------------------
 
-minimalFrenchStemmer <- function(x) {
-
-  # x <- data.table::copy(x)
-  # x <- enc2native(x)
-  # # x <- enc2utf8(x)
-  # x <- cpp_minimalFrenchStemmer(x)
-  # # Encoding(x) <- "UTF-8" ## std:string does not retain encoding
-  # x <- enc2utf8(x)
-  # x
-
-  x <- data.table::copy(x)
-  x <- enc2utf8(x)
-  # x <- enc2utf8(x)
-  x <- cpp_minimalFrenchStemmer3(x)
-  # Encoding(x) <- "UTF-8" ## std:string does not retain encoding
-  x <- enc2utf8(x)
-  x
-}
-
-dictionary_wordstem <- function(x, f) {
-  x <- unclass(x)
-  for (i in seq_along(x)) {
-    # index <- grep("\\*$", x[[i]][[1]])
-    # x[[i]][[1]] <- sub("\\*$", "", x[[i]][[1]])
-    x[[i]][[1]] <- f(x[[i]][[1]])
-    # x[[i]][[1]][index] <- paste0(x[[i]][[1]][index], "*")
-  }
-  methods::new("dictionary2", x)
-}
-
-
 recompileVocabulary <- function(x) {
   class <- class(x)[1]
   x <- as.sentopicmodel(x)

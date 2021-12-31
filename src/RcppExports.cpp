@@ -57,39 +57,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cpp_minimalFrenchStemmer2
-SEXP cpp_minimalFrenchStemmer2(SEXP x);
-RcppExport SEXP _sentopics_cpp_minimalFrenchStemmer2(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_minimalFrenchStemmer2(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cpp_minimalFrenchStemmer
-CharacterVector cpp_minimalFrenchStemmer(CharacterVector x);
-RcppExport SEXP _sentopics_cpp_minimalFrenchStemmer(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_minimalFrenchStemmer(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cpp_minimalFrenchStemmer3
-CharacterVector cpp_minimalFrenchStemmer3(CharacterVector x);
-RcppExport SEXP _sentopics_cpp_minimalFrenchStemmer3(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_minimalFrenchStemmer3(x));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 RcppExport SEXP _rcpp_module_boot_model_module();
 
@@ -98,9 +65,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_sentopics_cpp_cosineSimilarity", (DL_FUNC) &_sentopics_cpp_cosineSimilarity, 2},
     {"_sentopics_wrapper_cpp_rebuild_zw", (DL_FUNC) &_sentopics_wrapper_cpp_rebuild_zw, 4},
     {"_sentopics_wrapper_cpp_rebuild_zd", (DL_FUNC) &_sentopics_wrapper_cpp_rebuild_zd, 2},
-    {"_sentopics_cpp_minimalFrenchStemmer2", (DL_FUNC) &_sentopics_cpp_minimalFrenchStemmer2, 1},
-    {"_sentopics_cpp_minimalFrenchStemmer", (DL_FUNC) &_sentopics_cpp_minimalFrenchStemmer, 1},
-    {"_sentopics_cpp_minimalFrenchStemmer3", (DL_FUNC) &_sentopics_cpp_minimalFrenchStemmer3, 1},
     {"_rcpp_module_boot_model_module", (DL_FUNC) &_rcpp_module_boot_model_module, 0},
     {NULL, NULL, 0}
 };

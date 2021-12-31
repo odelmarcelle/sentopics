@@ -17,15 +17,3 @@ wrapper_cpp_rebuild_zd <- function(za_, Z) {
     .Call(`_sentopics_wrapper_cpp_rebuild_zd`, za_, Z)
 }
 
-cpp_minimalFrenchStemmer2 <- function(x) {
-    .Call(`_sentopics_cpp_minimalFrenchStemmer2`, x)
-}
-
-cpp_minimalFrenchStemmer <- function(x) {
-    .Call(`_sentopics_cpp_minimalFrenchStemmer`, x)
-}
-
-cpp_minimalFrenchStemmer3 <- function(x) {
-    .Call(`_sentopics_cpp_minimalFrenchStemmer3`, x)
-}
-

@@ -969,8 +969,12 @@ makeVocabulary <- function(toks, dictionary, S) {
 
 
 
-
+### TODO: check
 getTexts <- function(x, topic, sentiment, n = 3, collapsed = TRUE) {
+  
+  # CMD check
+  prob <- .id <- NULL
+  
   ## avoid conflict with column names
   if (attr(x, "reversed")) {
     stopifnot(topic %in% create_labels(x, flat = FALSE)[["L1"]] & sentiment %in% create_labels(x, flat = FALSE)[["L2"]])

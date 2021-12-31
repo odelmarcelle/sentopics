@@ -52,10 +52,12 @@
 #'
 #' # for JST models, sentiment can be computed from the output of the model
 #' jst <- JST(ECB_speeches, lexicon = LoughranMcDonald)
+#' jst <- grow(jst, 100)
 #' sentopics_sentiment(jst, override = TRUE) # replace existing sentiment
 #'
 #' ## for rJST models one sentiment value is computed by topic
 #' rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
+#' rjst <- grow(rjst, 100)
 #' sentopics_sentiment(rjst, override = TRUE)
 sentopics_sentiment <- function(x,
                       method = "proportionalPol",
@@ -139,7 +141,7 @@ sentopics_sentiment <- function(x,
     res$.sentiment <- rowSums(as.matrix(res, rownames = ".id") * x$theta)
     data.table::setcolorder(res, c(".id", ".sentiment"))
     
-    docvars <- modifyList(docvars, res[, -".id"])
+    docvars <- utils::modifyList(docvars, res[, -".id"])
     data.table::setattr(x$tokens, "docvars", docvars)
     message("Sentiment computed and assigned internally")
   }
@@ -326,7 +328,7 @@ sentopics_labels <- function(x, flat = TRUE) {
 #'   and dates of a `sentopicmodel`. The time series computation supports
 #'   multiple sampling period and optionally allow computing a moving average.
 #'
-#' @return A time series of sentiment, stored as an [xts()] or
+#' @return A time series of sentiment, stored as an [xts::xts] or
 #'   data.frame.
 #' @export
 #' @seealso sentopics_sentiment sentopics_date
@@ -339,7 +341,7 @@ sentopics_labels <- function(x, flat = TRUE) {
 #' rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald) 
 #' sentiment_series(rjst)
 #' 
-#' sentiment_topics(rjst) <- NULL ## remove existing sentiment
+#' sentopics_sentiment(rjst) <- NULL ## remove existing sentiment
 #' rjst <- grow(rjst, 10) ## estimating the model is then needed
 #' sentiment_series(rjst)
 sentiment_series <- function(x,
@@ -457,7 +459,7 @@ sentiment_series <- function(x,
 #'   the document level using estimated topic proportions, then processed to
 #'   create a time series and its components.
 #'
-#' @return A time series of sentiment, stored as an [xts()] object or as a
+#' @return A time series of sentiment, stored as an [xts::xts] object or as a
 #'   data.frame.
 #' @export
 #'
@@ -480,9 +482,8 @@ sentiment_series <- function(x,
 #' plot_sentiment_breakdown(lda)
 #'
 #' # also available for rJST models (with topic-level sentiment)
-#' rjst <- rJST(ECB_speeches)
+#' rjst <- rJST(ECB_speeches, , lexicon = LoughranMcDonald)
 #' rjst <- grow(rjst, 100)
-#'
 #' sentopics_sentiment(rjst, override = TRUE)
 #' plot_sentiment_breakdown(rjst)
 sentiment_breakdown <- function(x,
@@ -495,7 +496,8 @@ sentiment_breakdown <- function(x,
                                 ...) {
   ## CMD check
   .id <- .date <- .sentiment <- .sentiment_scaled <- sentiment <-
-    value <- variable <- width <- Topic <- date_center <- NULL
+    value <- variable <- width <- Topic <- date_center <- ..cols <- 
+    theta <- s <- NULL
 
   if (!inherits(x, c("LDA", "rJST"))) stop("`sentiment_breakdown` is only implemented for LDA and rJST models.")
   
@@ -684,7 +686,7 @@ plot_sentiment_breakdown <- function(x,
 #' @param plot_ridgelines if `TRUE`, time series are plotted as ridgelines.
 #'   Requires `ggridges` package installed. If `FALSE`, the plot will use only
 #'   standards `ggplot2` functions.
-#' @param as.xts if `TRUE`, returns an [xts] object. Otherwise, returns a
+#' @param as.xts if `TRUE`, returns an [xts::xts] object. Otherwise, returns a
 #'   data.frame.
 #' @param ... other arguments passed on to [zoo::rollapply()] or [mean()] and
 #'   [sd()].
@@ -701,7 +703,7 @@ plot_sentiment_breakdown <- function(x,
 #'   the topic in document d and \eqn{theta_d} the topic proportion in a
 #'   document d.
 #' @seealso sentopics_sentiment sentopics_date
-#' @return an [xts()] or data.frame containing the time series of topical
+#' @return an [xts::xts] or data.frame containing the time series of topical
 #'   sentiments.
 #' @export
 #' @examples
@@ -710,9 +712,9 @@ plot_sentiment_breakdown <- function(x,
 #' sentiment_topics(lda)
 #'
 #' # plot shortcut
-#' plot_sentiment_topics(lda, period = month, rolling_window = 3)
+#' plot_sentiment_topics(lda, period = "month", rolling_window = 3)
 #' # with or without ridgelines
-#' plot_sentiment_topics(lda, period = month, plot_ridgelines = FALSE)
+#' plot_sentiment_topics(lda, period = "month", plot_ridgelines = FALSE)
 #'
 #' # also available for rJST models with internal sentiment computation
 #' rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
@@ -730,7 +732,7 @@ sentiment_topics <- function(x,
                              ...) {
   ## CMD check
   .id <- .date <- .sentiment <- .sentiment_scaled <- sentiment <-
-    value <- variable <- NULL
+    value <- variable <- ..cols <- theta <- s <- NULL
 
   if (!inherits(x, c("LDA", "rJST"))) stop("`sentiment_topics` is only implemented for LDA and rJST models.")
   
@@ -901,7 +903,7 @@ plot_sentiment_topics <- function(x,
 #' @description Aggregate the topical or sentiment proportions at the document
 #'   level into time series.
 #'
-#' @return A time series of proportions, stored as an [xts()] object or as a
+#' @return A time series of proportions, stored as an [xts::xts] object or as a
 #'   data.frame.
 #' @export
 #'
@@ -912,9 +914,9 @@ plot_sentiment_topics <- function(x,
 #' proportion_topics(lda)
 #'
 #' # plot shortcut
-#' plot_proportion_topics(lda, period = month, rolling_window = 3)
+#' plot_proportion_topics(lda, period = "month", rolling_window = 3)
 #' # with or without ridgelines
-#' plot_proportion_topics(lda, period = month, plot_ridgelines = FALSE)
+#' plot_proportion_topics(lda, period = "month", plot_ridgelines = FALSE)
 #'
 #' # also available for rJST and JST models
 #' jst <- JST(ECB_speeches, lexicon = LoughranMcDonald)

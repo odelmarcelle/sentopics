@@ -72,10 +72,12 @@ sentopics_sentiment(lda) <- docvars(ECB_speeches, ".sentiment")
 
 # for JST models, sentiment can be computed from the output of the model
 jst <- JST(ECB_speeches, lexicon = LoughranMcDonald)
+jst <- grow(jst, 100)
 sentopics_sentiment(jst, override = TRUE) # replace existing sentiment
 
 ## for rJST models one sentiment value is computed by topic
 rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
+rjst <- grow(rjst, 100)
 sentopics_sentiment(rjst, override = TRUE)
 }
 \seealso{

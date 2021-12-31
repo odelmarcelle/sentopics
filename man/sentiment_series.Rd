@@ -33,14 +33,14 @@ zero and a standard deviation of 1.}
 applied. Particularly useful to normalize only the beginning of the time
 series.}
 
-\item{as.xts}{if \code{TRUE}, returns an \link{xts} object. Otherwise, returns a
+\item{as.xts}{if \code{TRUE}, returns an \link[xts:xts]{xts::xts} object. Otherwise, returns a
 data.frame.}
 
 \item{...}{other arguments passed on to \code{\link[zoo:rollapply]{zoo::rollapply()}} or \code{\link[=mean]{mean()}} and
 \code{\link[=sd]{sd()}}.}
 }
 \value{
-A time series of sentiment, stored as an \code{\link[=xts]{xts()}} or
+A time series of sentiment, stored as an \link[xts:xts]{xts::xts} or
 data.frame.
 }
 \description{
@@ -57,7 +57,7 @@ series <- sentiment_series(lda, period = "month")
 rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald) 
 sentiment_series(rjst)
 
-sentiment_topics(rjst) <- NULL ## remove existing sentiment
+sentopics_sentiment(rjst) <- NULL ## remove existing sentiment
 rjst <- grow(rjst, 10) ## estimating the model is then needed
 sentiment_series(rjst)
 }

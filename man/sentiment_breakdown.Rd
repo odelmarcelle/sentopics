@@ -48,14 +48,14 @@ series.}
 attribute to the returned object. If \code{'silent'}, do not print the plot but
 still attaches it as an attribute.}
 
-\item{as.xts}{if \code{TRUE}, returns an \link{xts} object. Otherwise, returns a
+\item{as.xts}{if \code{TRUE}, returns an \link[xts:xts]{xts::xts} object. Otherwise, returns a
 data.frame.}
 
 \item{...}{other arguments passed on to \code{\link[zoo:rollapply]{zoo::rollapply()}} or \code{\link[=mean]{mean()}} and
 \code{\link[=sd]{sd()}}.}
 }
 \value{
-A time series of sentiment, stored as an \code{\link[=xts]{xts()}} object or as a
+A time series of sentiment, stored as an \link[xts:xts]{xts::xts} object or as a
 data.frame.
 }
 \description{
@@ -84,9 +84,8 @@ sentiment_breakdown(lda)
 plot_sentiment_breakdown(lda)
 
 # also available for rJST models (with topic-level sentiment)
-rjst <- rJST(ECB_speeches)
+rjst <- rJST(ECB_speeches, , lexicon = LoughranMcDonald)
 rjst <- grow(rjst, 100)
-
 sentopics_sentiment(rjst, override = TRUE)
 plot_sentiment_breakdown(rjst)
 }

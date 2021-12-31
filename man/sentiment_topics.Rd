@@ -54,14 +54,14 @@ still attaches it as an attribute.}
 Requires \code{ggridges} package installed. If \code{FALSE}, the plot will use only
 standards \code{ggplot2} functions.}
 
-\item{as.xts}{if \code{TRUE}, returns an \link{xts} object. Otherwise, returns a
+\item{as.xts}{if \code{TRUE}, returns an \link[xts:xts]{xts::xts} object. Otherwise, returns a
 data.frame.}
 
 \item{...}{other arguments passed on to \code{\link[zoo:rollapply]{zoo::rollapply()}} or \code{\link[=mean]{mean()}} and
 \code{\link[=sd]{sd()}}.}
 }
 \value{
-an \code{\link[=xts]{xts()}} or data.frame containing the time series of topical
+an \link[xts:xts]{xts::xts} or data.frame containing the time series of topical
 sentiments.
 }
 \description{
@@ -89,9 +89,9 @@ lda <- grow(lda, 100)
 sentiment_topics(lda)
 
 # plot shortcut
-plot_sentiment_topics(lda, period = month, rolling_window = 3)
+plot_sentiment_topics(lda, period = "month", rolling_window = 3)
 # with or without ridgelines
-plot_sentiment_topics(lda, period = month, plot_ridgelines = FALSE)
+plot_sentiment_topics(lda, period = "month", plot_ridgelines = FALSE)
 
 # also available for rJST models with internal sentiment computation
 rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)

@@ -93,6 +93,10 @@ test_that("sentiment_series works", {
   
   sentiment_series(lda, period = "day", rolling_window = 30, as.xts = FALSE)
   
+  
+  lda <- LDA(ECB_speeches[1:2])
+  expect_error(sentiment_series(lda))
+  expect_silent(sentiment_series(lda, period = "day"))
 })
 
 

@@ -1,11 +1,26 @@
 
 context("Tests for generated data")
 vocab <- generateVocab(nTopics = 5, nSentiments = 3, nWords = 5, nCommonWords = 2)
+vocab2 <- vocabFromList(unname(list(
+  topic1 = list(sent1 = c("tasty", "delicious"), sent2 = c("bad", "smelly")),
+  topic2 = list(sent1 = c("surprising", "amazing"), sent2 = c("boring", "annoying")),
+  topic3 = list(sent1 = "fearless", sent2 = "coward")
+)))
+vocab3 <- vocabFromList(unname(list(
+  topic1 = "super",
+  topic2 = "extra",
+  topic3 = "top"
+)))
 
 test_that("vocab generation works", {
   expect_equal(dim(vocab), c(5 * 3 * 5 + 2 * (5 + 3), 3, 5))
   expect_equal(sum(vocab), 5 * 3)
   expect_equal(sum(vocab < 0), 0)
+  
+  expect_equal(sum(vocab2), 3 * 2)
+  expect_equal(sum(vocab2 < 0), 0)
+  expect_equal(sum(vocab3), 3 * 1)
+  expect_equal(sum(vocab3 < 0), 0)
 })
 
 toks <- generateDocuments(vocab, nDocs = 20, L1prior = 5, L2prior = 5, nWords = 200, nClass = 2)

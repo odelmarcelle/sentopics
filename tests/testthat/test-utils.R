@@ -77,4 +77,62 @@ test_that("recompile & reset works", {
   expect_true(all(model2$phi["crisis", ,] > 0))
 })
 
+test_that("grow0 doesn't alter anything", {
+  toks <- ECB_speeches[1:2]
+  model <- LDA(toks)
+  expect_identical(model, grow(model, 0, displayProgress = FALSE))
+  model <- grow(model, 2, displayProgress = FALSE, computeLikelihood = FALSE)
+  expect_identical(model, grow(model, 0, displayProgress = FALSE))
+  model <- grow(model, 2, displayProgress = FALSE)
+  expect_identical(model, grow(model, 0, displayProgress = FALSE))
+})
+
+
+test_that("mergeTopics works", {
+  toks <- ECB_speeches[1:10]
+  model <- LDA(toks)
+  merged <- mergeTopics(model, as.list(1:5))
+  sentopics_labels(merged)
+  sentopics_labels(merged) <- NULL
+  expect_identical(merged, model)
+  
+  model <- grow(model, 2, displayProgress = FALSE)
+  merged <- mergeTopics(model, as.list(1:5))
+  sentopics_labels(merged)
+  sentopics_labels(merged) <- NULL
+  expect_identical(merged, model)
+  
+  merged <- mergeTopics(model, list(1:4, 5))
+  topWords(merged)
+  plot(merged)
+  sentiment_series(model, period = "day")
+  sentiment_breakdown(merged, period = "day")
+  sentiment_topics(merged, period = "day")
+  proportion_topics(merged, period = "day")
+  
+  toks <- ECB_speeches[1:10]
+  model <- rJST(toks, lexicon = LoughranMcDonald)
+  merged <- mergeTopics(model, as.list(1:5))
+  sentopics_labels(merged)
+  sentopics_labels(merged) <- NULL
+  expect_identical(merged, model)
+  
+  model <- grow(model, 2, displayProgress = FALSE)
+  merged <- mergeTopics(model, as.list(1:5))
+  sentopics_labels(merged)
+  sentopics_labels(merged) <- NULL
+  expect_identical(merged, model)
+  
+  sentopics_sentiment(model) <- NULL
+  sentopics_sentiment(model, override = TRUE)
+  merged <- mergeTopics(model, list(1:4, 5))
+  sentopics_sentiment(model)
+  topWords(merged)
+  plot(merged)
+  sentiment_series(merged, period = "day")
+  sentiment_breakdown(merged, period = "day")
+  sentiment_topics(merged, period = "day")
+  proportion_topics(merged, period = "day")
+})
+
 

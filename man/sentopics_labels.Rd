@@ -55,6 +55,8 @@ sentopics_labels(jst)
 sentopics_labels(jst, flat = FALSE)
 }
 \seealso{
+mergeTopics
+
 Other sentopics helpers: 
 \code{\link{sentopics_date}()},
 \code{\link{sentopics_sentiment}()}

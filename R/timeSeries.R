@@ -145,7 +145,9 @@ sentopics_sentiment <- function(x,
     data.table::setattr(x$tokens, "docvars", docvars)
     message("Sentiment computed and assigned internally")
   }
-
+  ## to recompute at the end of mergeTopics, need this attribute
+  data.table::setattr(x, "sentiment_not_external", TRUE)
+  
   if (include_docvars) { res <- cbind(res, docvars(x$tokens)) }
 
   res[]
@@ -164,7 +166,17 @@ sentopics_sentiment <- function(x,
   }
 
   if (!is.null(value)) x$tokens$`.sentiment` <- value
-  if (is.null(value)) x$tokens$`.sentiment` <- NULL
+  if (is.null(value)) {
+    x$tokens$`.sentiment` <- NULL
+    idx <- names(docvars)[names(docvars) %in% paste0(".s_", sentopics_labels(x, flat = FALSE)[["topic"]])]
+    if (length(idx) > 0) {
+      for (i in idx) {
+        eval(data.table::substitute2(x$tokens$y <- NULL, list(y = i)))
+      }
+    } 
+  }
+  attr(x, "sentiment_not_external") <- NULL
+  
   x
 }
 
@@ -229,6 +241,7 @@ sentopics_date <- function(x, include_docvars = FALSE) {
 #' @param flat if FALSE, return a list of dimension labels instead of a
 #'   character vector.
 #' @export
+#' @seealso mergeTopics
 #' @return a character vector of topic/sentiment labels.
 #' @examples
 #' # by default, sentopics_labels() generate standard topic names
@@ -272,6 +285,7 @@ sentopics_labels <- function(x, flat = TRUE) {
 
   if (is.null(value)) {
     attr(x, "labels") <- NULL
+    x <- grow(x, 0, displayProgress = FALSE)
     return(x)
   }
 
@@ -412,6 +426,7 @@ sentiment_series <- function(x,
   }
 
   if (scale) {
+    if (nrow(res) < 2) stop("At least two periods are required to scale de series. Please the date range of documents or use a shorter period.")
     ## Set default parameter for scaling
     dots <- list(...)
     if (is.null(dots$na.rm)) na.rm <- TRUE

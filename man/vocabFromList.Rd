@@ -17,11 +17,11 @@ an array usable in \code{generateDocuments}
 Generate vocabulary from list of words
 }
 \examples{
-sentopics:::vocabFromList(list(
-  list(c("tasty", "delicious"), c("bad", "smelly")),
-  list(c("surprising", "amazing"), c("boring", "annoying")),
-  list("fearless", "coward")
-))
+sentopics:::vocabFromList(unname(list(
+topic1 = list(sent1 = c("tasty", "delicious"), sent2 = c("bad", "smelly")),
+topic2 = list(sent1 = c("surprising", "amazing"), sent2 = c("boring", "annoying")),
+topic3 = list(sent1 = "fearless", sent2 = "coward")
+)))
 sentopics:::vocabFromList(lapply(1:3, function(i) c(paste0("topic",i,"w1"))))
 }
 \keyword{internal}

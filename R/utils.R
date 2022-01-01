@@ -54,9 +54,9 @@ rebuild_cppModel <- function(x, base) {
       base$L2prior,
       base$L1cycle,
       base$L2cycle,
-      ifelse(is.null(x$logLikelihood), 0, attr(x$logLikelihood, "components")$logLikelihoodW),
-      ifelse(is.null(x$logLikelihood), 0, attr(x$logLikelihood, "components")$logLikelihoodL1),
-      ifelse(is.null(x$logLikelihood), 0, attr(x$logLikelihood, "components")$logLikelihoodL2),
+      if (is.null(x$logLikelihood)) 0 else attr(x$logLikelihood, "components")$logLikelihoodW,
+      if (is.null(x$logLikelihood)) 0 else attr(x$logLikelihood, "components")$logLikelihoodL1,
+      if (is.null(x$logLikelihood)) 0 else attr(x$logLikelihood, "components")$logLikelihoodL2,
       # x$histAlpha,
       # x$histGamma,
       # x$lambdaFactor

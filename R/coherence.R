@@ -71,21 +71,21 @@ NPMI <- function(x, epsilon = 0){
 
   if (any(is.na(NPMIs))) {
     stop("Unexpected NA. Need debug")
-    # Manually correcting NaN created by log(0)
-    index <- which(is.na(NPMIs), arr.ind = TRUE)
-    for (i in 1:nrow(index)) {
-      if (x[index[i, "row"], index[i, "col"]] == 1) {         # if p(w1, w2) = 1
-        NPMIs[index[i, "row"], index[i, "col"]] <- 1
-      } else if (x[index[i, "row"], index[i, "row"]] == 0) {  # if p(w1) = 0
-        NPMIs[index[i, "row"], index[i, "col"]] <- 0
-      } else if (x[index[i, "col"], index[i, "col"]] == 0) {  # if p(w2) = 0
-        NPMIs[index[i, "row"], index[i, "col"]] <- 0
-      } else if (x[index[i, "row"], index[i, "col"]] == 0) {  # if p(w1, w2) = 0
-        NPMIs[index[i, "row"], index[i, "col"]] <- -1
-      } else {
-        stop("Unknown error in NPMI computation")
-      }
-    }
+    # # Manually correcting NaN created by log(0)
+    # index <- which(is.na(NPMIs), arr.ind = TRUE)
+    # for (i in 1:nrow(index)) {
+    #   if (x[index[i, "row"], index[i, "col"]] == 1) {         # if p(w1, w2) = 1
+    #     NPMIs[index[i, "row"], index[i, "col"]] <- 1
+    #   } else if (x[index[i, "row"], index[i, "row"]] == 0) {  # if p(w1) = 0
+    #     NPMIs[index[i, "row"], index[i, "col"]] <- 0
+    #   } else if (x[index[i, "col"], index[i, "col"]] == 0) {  # if p(w2) = 0
+    #     NPMIs[index[i, "row"], index[i, "col"]] <- 0
+    #   } else if (x[index[i, "row"], index[i, "col"]] == 0) {  # if p(w1, w2) = 0
+    #     NPMIs[index[i, "row"], index[i, "col"]] <- -1
+    #   } else {
+    #     stop("Unknown error in NPMI computation")
+    #   }
+    # }
   }
   NPMIs
 }

@@ -218,7 +218,7 @@ computeTheta <- function(x, base = core(x)) {
   }
 
   L1post <- t(L1post)
-  dimnames(L1post) <- list(doc_id = names(base$tokens), L1 = labels_sentopicmodel(x, base)[["L1"]] )
+  dimnames(L1post) <- list(.id = names(base$tokens), L1 = labels_sentopicmodel(x, base)[["L1"]] )
   # dimnames(theta)[[2]] <- paste0("topic", 1:x$T)
   # dimnames(theta)[[1]] <- names(base$intTokens)
 
@@ -230,7 +230,7 @@ computePi <- function(x, base = core(x)) {
 
   if (x$L2 == 1L) {
     L2post <- array(1, dim = c(1, x$L1, length(base$tokens)))
-    dimnames(L2post) <- list(L2 = labels_sentopicmodel(x, base)[["L2"]], L1 = labels_sentopicmodel(x, base)[["L1"]], doc_id = names(base$tokens))
+    dimnames(L2post) <- list(L2 = labels_sentopicmodel(x, base)[["L2"]], L1 = labels_sentopicmodel(x, base)[["L1"]], .id = names(base$tokens))
     return(L2post)
   }
 
@@ -256,7 +256,7 @@ computePi <- function(x, base = core(x)) {
   }
 
   L2post <- array(L2post, dim = c(L2, L1, length(base$tokens)))
-  dimnames(L2post) <- list(L2 = labels_sentopicmodel(x, base)[["L2"]], L1 = labels_sentopicmodel(x, base)[["L1"]], doc_id = names(base$tokens))
+  dimnames(L2post) <- list(L2 = labels_sentopicmodel(x, base)[["L2"]], L1 = labels_sentopicmodel(x, base)[["L1"]], .id = names(base$tokens))
   # dimnames(pi)[[2]] <- paste0("topic", 1:x$T)
   # dimnames(pi)[[1]] <- paste0("sent", 1:x$S)
   # dimnames(pi)[[3]] <- names(base$intTokens)

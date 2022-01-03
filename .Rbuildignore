@@ -6,3 +6,4 @@
 ^\.github$
 ^[a-zA-Z1-9_]*.RData$
 ^.*\.udpipe$
+^README\.Rmd$

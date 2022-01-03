@@ -8,7 +8,7 @@
 A \code{quanteda::tokens} object.
 }
 \source{
-\url{www.ecb.europa.eu}.
+\url{www.ecb.europa.eu/press/key/html/index.en.html}.
 }
 \usage{
 data("ECB_speeches")

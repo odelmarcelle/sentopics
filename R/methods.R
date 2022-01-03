@@ -707,4 +707,7 @@ docvars.sentopicmodel <- function(x, field = NULL) {
   quanteda::docvars(x$tokens)
 }
 
+#' @importFrom quanteda tokens
+#' @export
+quanteda::tokens
 

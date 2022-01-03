@@ -1,8 +1,28 @@
+#' Download and pre-process speeches from the European Central Bank
+#'
+#' @description This helper function automatically retrieve the full data set of
+#'   speeches made available by the ECB. In addition, it implements a number of
+#'   pre-processing steps that may be turned on or off as needed.
+#'
+#' @param filter_english if `TRUE`, attempts to select English speeches only
+#'   using [textcat::textcat()].
+#' @param clean_footnotes if `TRUE`, attempts to clean footnotes from speeches
+#'   texts using some regex patterns.
+#' @param compute_sentiment if `TRUE`, computes the sentiment of each speech
+#'   using [sentometrics::compute_sentiment()] with the the Loughran & McDonald
+#'   lexicon.
+#' @param tokenize_w_POS if `TRUE`, tokenize and apply Part-Of-Speech tagging
+#'   with [spacyr::spacy_parse()]. Nouns, adjectives and proper nouns are then
+#'   extracted from the parsed speechs to form a `tokens` object.
+#'
+#' @return Depending on the arguments, returns either a data.frame or a [quanteda::tokens] object containing speeches of the ECB.
+#' @export
 get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, compute_sentiment = TRUE, tokenize_w_POS = FALSE) {
   ## CMD check
   pos <- NULL
 
   mis <- c()
+  if (filter_english) mis <- c("textcat")
   if (clean_footnotes) mis <- c("stringr")
   if (compute_sentiment) mis <- c(mis, "sentometrics")
   if (tokenize_w_POS) mis <- c(mis, "spacyr")

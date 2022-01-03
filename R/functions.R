@@ -87,7 +87,6 @@ topWords <- function(x,
              # ggplot2::ggtitle(title) +
              ggplot2::theme(
                strip.text.x = ggplot2::element_text(
-                 size = 8,
                  margin = ggplot2::margin(.5,0,3,0)
                ))
            p

@@ -26,7 +26,7 @@ NULL
 #'
 #' @format A \code{quanteda::tokens} object.
 #'
-#' @source \url{www.ecb.europa.eu}.
+#' @source \url{www.ecb.europa.eu/press/key/html/index.en.html}.
 "ECB_speeches"
 
 #' Example lexicon

@@ -511,7 +511,7 @@ sentiment_breakdown <- function(x,
                                 ...) {
   ## CMD check
   .id <- .date <- .sentiment <- .sentiment_scaled <- sentiment <- value <-
-    variable <- width <- Topic <- date_center <- theta <- s <- NULL
+    variable <- width <- Topic <- date_center <- theta <- s <- ..cols <- NULL
 
   if (!inherits(x, c("LDA", "rJST"))) stop("`sentiment_breakdown` is only implemented for LDA and rJST models.")
   
@@ -746,7 +746,7 @@ sentiment_topics <- function(x,
                              ...) {
   ## CMD check
   .id <- .date <- .sentiment <- .sentiment_scaled <- sentiment <- value <-
-    variable <- theta <- s <- NULL
+    variable <- theta <- s <- ..cols <- NULL
 
   if (!inherits(x, c("LDA", "rJST"))) stop("`sentiment_topics` is only implemented for LDA and rJST models.")
   

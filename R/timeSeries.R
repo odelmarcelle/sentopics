@@ -70,7 +70,7 @@ sentopics_sentiment <- function(x,
   docvars <- attr(x$tokens, "docvars")
   
   if (!override & ".sentiment" %in% names(docvars)) {
-    if (!quiet) message("'.sentiment' docvars found. Returning these values. To re-compute sentiment, please set `override = TRUE`.")
+    if (!quiet & !inherits(x, "LDA")) message("'.sentiment' docvars found. Returning these values. To re-compute sentiment, please set `override = TRUE`.")
     if (include_docvars) {
       res <- data.table(.id = names(x$tokens), docvars(x$tokens))
       if (".sentiment_scaled" %in% names(docvars))

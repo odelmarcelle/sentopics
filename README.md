@@ -10,13 +10,13 @@
 coverage](https://codecov.io/gh/odelmarcelle/sentopics/branch/master/graph/badge.svg?token=V6M82L4ZCX)](https://codecov.io/gh/odelmarcelle/sentopics?branch=master)
 <!-- badges: end -->
 
-## How to Install
+## Installation
 
 `sentopics` currently requires the development version of data.table
 (1.14.3 or greater).
 
 ``` r
-if (!require(data.table, quietly = TRUE)) install.packages("data.table")
+if (!requireNamespace("data.table", quietly = TRUE)) install.packages("data.table")
 data.table::update.dev.pkg()
 devtools::install_github("odelmarcelle/sentopics") 
 ```

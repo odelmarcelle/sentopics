@@ -1,0 +1,84 @@
+---
+title: "Topical time series"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Topical time series}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This vignette describes how can time series be derived from a topic model using document's dates and optionally document's sentiment. Please refer to the "Basic usage" vignette for an introduction to topic model estimation.
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#",
+  fig.width = 7,
+  fig.height = 4,
+  fig.align = "center"
+)
+```
+
+# Internal dates and sentiment
+
+The example dataset shipped with the package already contains two *docvars*: `.date` and `.sentiment`. Using these exact names, these two will be considered as internal dates and internal sentiment by `sentopics` when creating a topic model. Those values may be accessed or modified through the helper functions `sentopics_date()` and `sentopics_sentiment()`.
+
+```{r message=FALSE}
+library(xts)
+library(data.table)
+library(sentopics)
+data("ECB_speeches")
+head(docvars(ECB_speeches))
+set.seed(123)
+lda <- LDA(ECB_speeches, K = 9, alpha = 1, beta = 0.001)
+head(sentopics_date(lda))
+head(sentopics_sentiment(lda))
+```
+
+For this example, the documents' sentiment were computed using the `sentometrics` package. For further details on this sentiment computation, please refer to the script used in `/data-raw/` on GitHub.
+
+Now that the `lda` object contains dates and sentiment, we already have enough information to compute a sentiment index using `sentiment_series()` which aggregates document per period. By default, it returns a `xts` object.
+
+```{r}
+xts_sent <- sentiment_series(lda, period = "month", rolling_window = 6)
+plot(xts_sent)
+```
+
+Estimating the topic model will allow enriching this sentiment series with topical content. The model should be estimated until it returns satisfactory topics. Labeling the topics facilitates the subsequent analysis.
+
+```{r}
+lda <- grow(lda, 1000)
+sentopics_labels(lda) <- list(
+  topic = c(
+    "Economic growth & Inflation", "Banking", "Payment services",
+    "European single market", "Monetary policy & Negative rate",
+    "Monetary policy & Price stability", "Others", "Banking supervision",
+    "Financial markets"
+  )
+)
+plot(lda)
+```
+
+The estimated topic model adds a layer of topical proportions to the existing documents. This appears clearly when using `melt()` on the model. Leveraging on the topic and sentiment information at the document level we can compute the share of sentiment that belong to a given topic.
+
+```{r}
+document_datas <- melt(lda, include_docvars = TRUE)
+head(document_datas)
+head(document_datas[, list(.date, topic, share_of_sentiment = prob * .sentiment), keyby = ".id"])
+```
+
+Using this share of sentiment and the documents' date, one may compute two additional outputs: a breakdown of the sentiment time series and a time series of the sentiment expressed by each topic. The difference between the two outputs rely on the aggregation between documents. The breakdown averages documents' share of sentiment with an equal weighting, whereas computing the sentiment expressed by a topic requires weighting documents by their attention to this given topic. These two aggregations are implemented through the `sentiment_breakdown()` and `sentiment_topics()` functions.
+
+```{r}
+head(na.omit(sentiment_breakdown(lda, period = "month", rolling_window = 6)))
+head(na.omit(sentiment_topics(lda, period = "month", rolling_window = 6)))
+```
+Furthermore, these functions have embedded plot options, that are directly accessible using the `plot_` prefix.
+
+```{r}
+plot_sentiment_breakdown(lda, period = "month", rolling_window = 6)
+```
+
+```{r}
+plot_sentiment_topics(lda, period = "month", rolling_window = 6)
+```

@@ -1,0 +1,109 @@
+---
+title: "Basic usage"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Basic usage}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This vignette describes the most basic usage of the `sentopics` package by estimating a LDA model and analysis it's output. Two other vignettes, describing time series and topic models with sentiment are also available.
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#",
+  fig.width = 7,
+  fig.height = 4,
+  fig.align = "center"
+)
+```
+
+# Data
+
+The package is shipped with a sample of speeches from the European Central bank since 2016. For clarity, the speeches have been pre-processed into a `tokens` object from the `quanteda` package. (See [quanteda's introduction](https://quanteda.io/articles/quickstart.html#tokenizing-texts-1) for details on these objects). The speeches also contains meta-data which can be accessed using `docvars()`.
+
+The speeches were obtained from [ECB's website](https://www.ecb.europa.eu/press/key/html/index.en.html). The package also provides an helper function to replicate the creation of the dataset: `get_ECB_speeches()`
+
+```{r}
+library(sentopics)
+data("ECB_speeches")
+print(ECB_speeches, 3)
+head(docvars(ECB_speeches))
+```
+# Topic modeling
+
+## Introduction
+
+`sentopics` implements three types of topic model. The simplest, Latent Dirichelt Allocation (LDA), assumes that textual documents are issued from a generative process involving $K$ topics.
+
+A given document $d$ is constituted of a list of words $d = (w_1, \dots, w_N)$, with $N$ being the document's length. Each word $w_i$ originates from a vocabulary consisting of $V$ distinct terms. Then, documents are generated from the following random process:
+
+1. For each topic $k \in K$, a distribution $\phi_k$ over the vocabulary is drawn. This distribution represent the probability of a word appearing given it belong to the topic and is drawn from a Dirichlet distribution with hyperparameter $\beta$. $$\phi \sim Dirichlet(\beta)$$
+2. For each document, a mixture of the $K$ topics,  $\theta_d$, assign the probability of a word in document $d$ being generated from topic $k$. This mixture is also drawn from a Dirichlet distribution with hyperparameter $\alpha$. $$\theta \sim Dirichlet(\alpha)$$
+3. For each word position $i$ of document $d$, the following sequence of draws is executed:
+    1. A latent topic assignment $z_i$ is drawn from the document mixture. $z_i \sim Multinomial(\theta)$
+    2. A word $w_i$ is drawn from the topic's vocabulary distribution. $w_i \sim Multinomial(\phi_{z_i})$
+  
+In `sentopics` the LDA model is estimated through Gibb's sampling, that iteratively sample the topic assignment $z_i$ of every word of the corpus until reaching a convergence. The topic assignments are sampled from the following distribution: $$ p(z_i = k|w,z^{-i}) \propto
+\frac{n_{k,v,.}^{-i} + \beta}{n_{k,.,.}^{-i} + V\beta}
+\frac{n_{k,.,d}^{-i} + \alpha}{n_{.,.,d}^{-i} + K\alpha},$$ where $n_{k,v,d}$ is the count of words at index $v$ of the vocabulary, assigned to topic $k$ and part of document $d$. The replacement of one of the indices $\{k,v,d\}$ by a dot indicates instead the count for all topics, all vocabulary indices or all documents. The superscript $-i$ indicates that the current word position $i$ is left out from the count variables.
+
+## Estimating LDA models with `sentopic`
+
+The estimation of a LDA model is easily replicated using the `LDA()` and `grow()` function. The first function prepares the `R` object and initialize the assignment of the latent topics. The second function estimates the model using Gibb's sampling for a given number of iterations. Note that `grow()` may be used to iterate the model multiple times without resetting the estimation.
+
+```{r}
+set.seed(123)
+lda <- LDA(ECB_speeches)
+lda
+lda <- grow(lda, iterations = 100)
+lda
+```
+Internally, the `lda` object is stored as a list and contains the model's parameters and outputs.
+```{r}
+str(lda, max.level = 1, give.attr = FALSE)
+```
+`tokens` is the initial tokens object used to create the model. `vocabulary` is a data.frame indexing the set of words. `K` is the number of topics. `alpha` is the hyperparameter of the document-topic mixtures. `beta` is the hyperparameter of the topic-word mixtures. `it` is the number of iterations of the model. `za` contains the topic assignments of each word of the corpus. `theta` are the estimated document-topic mixtures. `phi` are the estimated topic-word mixtures. `logLikelihood` is the log-likelihood of the model at each iteration.
+
+Estimated mixtures are easily accessible through the `$` operator. But the package also includes the `topWords()` function to extract the most probable words of each topic. `topWords()` includes three types of outputs: *long* `data.table`/`data-frame`, `matrix` or `ggplot` object (also accessible through the alias `plot_topWords()`).
+
+```{r}
+head(lda$theta)
+topWords(lda, output = "matrix")
+```
+
+In addition, document-level is facilitated through the use of the `melt()` method, that joins estimated topical proportions to document metadata present in the `tokens` input. This result in a *long* `data.table`/`data.frame` that can be used for plotting or easily reshaped to a wide format (for example using `data.table::dcast`).
+```{r}
+melt(lda, include_docvars = TRUE)
+```
+
+
+To ease the result analysis, we can rename the default topic labels using the `sentopics_labels()` function. As a result, all outputs of the model will now display the custom labels.
+
+```{r}
+sentopics_labels(lda) <- list(
+  topic = c("Inflation", "Payments", "European crisis", "Monetary policy", "Banking")
+)
+head(lda$theta)
+plot_topWords(lda) + ggplot2::theme_grey(base_size = 9)
+```
+
+
+Besides modifying topic labels, it is also possible to merge topics into a greater thematic. This is often useful when estimating a large number of topics (e.g, K > 15). The `mergeTopics()` does this job and re-label topics accordingly.
+
+```{r}
+merged <- mergeTopics(lda, list(
+  `Big big thematic` = c(1, 3:5),
+  Payments = 2
+))
+merged
+```
+Note that merging topics is only useful for presentation purpose. Using again `grow` on a model with merged topics will drastically change the results as the current state of the model does not results from a standard estimation with the merged set of parameters.
+
+Provided that the `plotly` package is installed, one can also directly use `plot()` on the estimated topic model to enjoy a dynamic view of topic proportions and their most probable words.
+
+```{r, collapse=FALSE}
+plot(lda)
+plot(merged)
+```

@@ -46,7 +46,7 @@ plot(xts_sent)
 
 Estimating the topic model will allow enriching this sentiment series with topical content. The model should be estimated until it returns satisfactory topics. Labeling the topics facilitates the subsequent analysis.
 
-```{r}
+```{r, screenshot.force = TRUE}
 lda <- grow(lda, 1000)
 sentopics_labels(lda) <- list(
   topic = c(

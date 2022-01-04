@@ -101,9 +101,16 @@ merged
 ```
 Note that merging topics is only useful for presentation purpose. Using again `grow` on a model with merged topics will drastically change the results as the current state of the model does not results from a standard estimation with the merged set of parameters.
 
-Provided that the `plotly` package is installed, one can also directly use `plot()` on the estimated topic model to enjoy a dynamic view of topic proportions and their most probable words.
+Provided that the `plotly` package is installed, one can also directly use `plot()` on the estimated topic model to enjoy a dynamic view of topic proportions and their most probable words (presented as a screenshot hereafter to limit this vignette's size).
 
-```{r, collapse=FALSE}
+```{r, screenshot.force = TRUE}
 plot(lda)
+```
+
+
+```{r, screenshot.force = TRUE}
 plot(merged)
 ```
+
+
+

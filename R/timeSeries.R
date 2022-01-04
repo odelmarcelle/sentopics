@@ -808,7 +808,7 @@ sentiment_topics <- function(x,
     ## deal with topical sentiment values (rJST)
     sCols <- names(proportions)[grepl("^s_", names(proportions))]
     thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
-    topical_sent <- proportions[, mapply(function(s_i, theta_i) mean(s_i * theta_i) / sum(theta_i),
+    topical_sent <- proportions[, mapply(function(s_i, theta_i) sum(s_i * theta_i) / sum(theta_i),
                                          theta_i = .SD[, theta], s_i = .SD[, s],
                                          SIMPLIFY = FALSE),
                                 by = list(date = floor_date(.date, period)),

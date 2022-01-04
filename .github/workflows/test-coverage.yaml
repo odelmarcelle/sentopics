@@ -52,6 +52,7 @@ jobs:
           install.packages(c("remotes"))
           remotes::install_deps(dependencies = TRUE, type = "binary")
           remotes::install_cran("covr")
+          webshot::install_phantomjs()
           install.packages(".", type = "source", repos = NULL)
         shell: Rscript {0}
 
@@ -61,6 +62,7 @@ jobs:
           install.packages(c("remotes"))
           remotes::install_deps(dependencies = TRUE)
           remotes::install_cran("covr")
+          webshot::install_phantomjs()
           install.packages(".", type = "source", repos = NULL)
         shell: Rscript {0}
 

@@ -37,7 +37,7 @@ print.JST <- function(x, ...) {
 
 #' @export
 print.multiChains <- function(x, ...) {
-  x <- c(x)
+  x <- lapply(x, identity)
   NextMethod()
 }
 
@@ -691,6 +691,16 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
   class(x) <- "multiChains"
 
   x
+}
+
+#' @export
+`as.list.multiChains` <- function(x, ...) {
+  res <- list()
+  for (i in seq_along(x)) {
+    res[[i]] <- data.table::copy(x[[i]])
+  }
+  names(res) <- names(x)
+  res
 }
 
 

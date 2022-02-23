@@ -9,6 +9,7 @@
   concatenator = NULL,
   tokens = NULL,
   ignore_list = NULL,
+  case_insensitive = FALSE,
   padding = TRUE,
   ...
 )

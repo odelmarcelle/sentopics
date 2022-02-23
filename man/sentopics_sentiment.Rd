@@ -7,7 +7,7 @@
 \usage{
 sentopics_sentiment(
   x,
-  method = "proportionalPol",
+  method = c("proportional", "proportionalPol"),
   override = FALSE,
   quiet = FALSE,
   include_docvars = FALSE

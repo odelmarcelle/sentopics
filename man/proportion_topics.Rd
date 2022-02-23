@@ -7,7 +7,7 @@
 \usage{
 proportion_topics(
   x,
-  period = c("year", "month", "day"),
+  period = c("year", "quarter", "month", "day"),
   rolling_window = 1,
   complete = TRUE,
   plot = c(FALSE, TRUE, "silent"),
@@ -18,7 +18,7 @@ proportion_topics(
 
 plot_proportion_topics(
   x,
-  period = c("year", "month", "day"),
+  period = c("year", "quarter", "month", "day"),
   rolling_window = 1,
   complete = TRUE,
   plot_ridgelines = TRUE,
@@ -41,7 +41,7 @@ spaced data points).}
 topic model hierarchy (topics for \link{rJST} and sentiment for \link{JST}). No
 effect on \link{LDA} models.}
 
-\item{plot}{if \code{TRUE}, prints a plot of the time series attaches it as an
+\item{plot}{if \code{TRUE}, prints a plot of the time series and attaches it as an
 attribute to the returned object. If \code{'silent'}, do not print the plot but
 still attaches it as an attribute.}
 

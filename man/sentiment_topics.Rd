@@ -7,7 +7,7 @@
 \usage{
 sentiment_topics(
   x,
-  period = c("year", "month", "day"),
+  period = c("year", "quarter", "month", "day"),
   rolling_window = 1,
   scale = TRUE,
   scaling_period = c("1900-01-01", "2099-12-31"),
@@ -19,7 +19,7 @@ sentiment_topics(
 
 plot_sentiment_topics(
   x,
-  period = c("year", "month", "day"),
+  period = c("year", "quarter", "month", "day"),
   rolling_window = 1,
   scale = TRUE,
   scaling_period = c("1900-01-01", "2099-12-31"),
@@ -46,7 +46,7 @@ zero and a standard deviation of 1.}
 applied. Particularly useful to normalize only the beginning of the time
 series.}
 
-\item{plot}{if \code{TRUE}, prints a plot of the time series attaches it as an
+\item{plot}{if \code{TRUE}, prints a plot of the time series and attaches it as an
 attribute to the returned object. If \code{'silent'}, do not print the plot but
 still attaches it as an attribute.}
 

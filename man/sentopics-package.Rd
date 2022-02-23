@@ -4,13 +4,33 @@
 \name{sentopics-package}
 \alias{sentopics}
 \alias{sentopics-package}
-\title{sentopics: tools for estimating and analyzing various classes of sentiment/topic models}
+\title{Tools for joining sentiment and topic analysis (sentopics)}
 \description{
-...
+\strong{sentopics} provides function to easily estimate a range of
+topic models and process their output. Particularly, it facilitates the
+integration of topic analysis with a time dimension through time-series
+generating functions. In addition, \strong{sentopics} interacts with sentiment
+analysis to compute the sentiment conveyed by topics. Finally, the package
+implements a number of visualization helping interpreting the results of
+topic models.
 }
 \note{
-Please cite the package in publications. Use \code{citation("sentopics")}.
+Please cite the package in publications. Use
+\code{citation("sentopics")}.
 }
+\section{Usage}{
+
+
+Please refer to the vignettes for a comprehensive introduction to the
+package functions.
+\itemize{
+\item \href{../doc/Basic_usage.html}{Basic usage}: Introduction to topic model estimation with \strong{sentopics}
+\item \href{../doc/Basic_usage.html}{Topical time series}: Integrate topic analysis with sentiment analysis along a time dimension
+}
+
+For further details, you may browse the package \href{../html/00Index.html}{documentation}
+}
+
 \references{
 ...
 }

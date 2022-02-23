@@ -9,13 +9,15 @@ topWords(
   x,
   nWords = 10,
   method = c("frequency", "probability", "term-score"),
-  output = c("data.frame", "plot", "matrix")
+  output = c("data.frame", "plot", "matrix"),
+  subset
 )
 
 plot_topWords(
   x,
   nWords = 10,
-  method = c("frequency", "probability", "term-score")
+  method = c("frequency", "probability", "term-score"),
+  subset
 )
 }
 \arguments{
@@ -43,6 +45,9 @@ model <- grow(model, 10)
 topWords(model)
 plot_topWords(model)
 topWords(model, output = "matrix")
+library(ggplot2)
+ggplot <- plot_topWords(model)
+ggplot \%+\% subset(ggplot$data, L1 \%in\% 1:2)
 }
 \author{
 Olivier Delmarcelle

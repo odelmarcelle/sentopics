@@ -30,7 +30,7 @@ routine and attempt to replicate their corresponding model.
 \examples{
 data(ECB_speeches)
 LDA(ECB_speeches)
-rJST(ECB_speeches, lex = LoughranMcDonald)
+rJST(ECB_speeches, lexicon = LoughranMcDonald)
 }
 \seealso{
 Other topic models: 

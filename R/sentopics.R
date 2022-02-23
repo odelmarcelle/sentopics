@@ -3,11 +3,29 @@
 #' @importFrom Rcpp evalCpp sourceCpp
 NULL
 
-#' @title sentopics: tools for estimating and analyzing various classes of sentiment/topic models
+#' @title Tools for joining sentiment and topic analysis (sentopics)
 #'
-#' @description ...
+#' @description **sentopics** provides function to easily estimate a range of
+#'   topic models and process their output. Particularly, it facilitates the
+#'   integration of topic analysis with a time dimension through time-series
+#'   generating functions. In addition, **sentopics** interacts with sentiment
+#'   analysis to compute the sentiment conveyed by topics. Finally, the package
+#'   implements a number of visualization helping interpreting the results of
+#'   topic models.
 #'
-#' @note Please cite the package in publications. Use \code{citation("sentopics")}.
+#' @section Usage:
+#'
+#'   Please refer to the vignettes for a comprehensive introduction to the
+#'   package functions.
+#'   
+#'   - [Basic usage](../doc/Basic_usage.html): Introduction to topic model estimation with **sentopics**
+#'   - [Topical time series](../doc/Basic_usage.html): Integrate topic analysis with sentiment analysis along a time dimension
+#'   
+#'   For further details, you may browse the package [documentation](../html/00Index.html)
+#'
+#'
+#' @note Please cite the package in publications. Use
+#'   \code{citation("sentopics")}.
 #'
 #' @references ...
 "_PACKAGE"

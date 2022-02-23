@@ -6,7 +6,7 @@
 \usage{
 sentiment_series(
   x,
-  period = c("year", "month", "day"),
+  period = c("year", "quarter", "month", "day"),
   rolling_window = 1,
   scale = TRUE,
   scaling_period = c("1900-01-01", "2099-12-31"),

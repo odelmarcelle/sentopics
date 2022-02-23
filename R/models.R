@@ -29,8 +29,9 @@ rJST.default <- function(x, lexicon = NULL, K = 5, S = 3,
   as.rJST(sentopicmodel(x, lexicon, K, S, alpha, gamma, beta, alphaCycle, gammaCycle))
 }
 #' @export
-rJST.LDA <- function(x, lexicon = NULL, S = 3, gamma = 5,
-                 alphaCycle = 0, gammaCycle = 0) {
+rJST.LDA <- function(x, lexicon = NULL, K = 5, S = 3,
+                     alpha = 1, gamma = 5, beta = 0.01,
+                     alphaCycle = 0, gammaCycle = 0) {
   
   if (x$it < 1) stop("Requires an estimated LDA model.")
   x <- as.sentopicmodel(x)

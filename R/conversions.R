@@ -49,6 +49,15 @@ as.sentopicmodel.LDA <- function(x) {
     c("L1", "L2", "L1prior", "L2prior", "L1post", "L2post", "L1cycle", "L2cycle", "logLikelihoodL1", "logLikelihoodL2"),
     c("K", "S", "alpha", "gamma", "theta", "pi", "alphaCycle", "gammaCycle", "logLikelihoodK", "logLikelihoodS")
   )
+  if (x$it > 0) {
+    if (length(dim(x$phi)) < 3) {
+      names <- dimnames(x$phi)
+      names[3] <- list(sent = levels(x$vocabulary$lexicon))
+      x$phi <- array(x$phi,
+                     dim = c(nrow(x$phi), 1, ncol(x$phi)),
+                     dimnames = names[c(1,3,2)])
+    }
+  }
   rename <- replace(rename, names(translate), translate)[rename]
   names(x) <- rename
   class(x) <- setdiff(class(x), "LDA")
@@ -123,6 +132,7 @@ as.LDA.sentopicmodel <- function(x) {
     # dimnames(x$theta) <- list(doc_id = names(x$tokens), topic = paste0("topic", 1:x$K))
     dimnames(x$L1post) <- list(doc_id = names(x$tokens), topic = create_labels(x, "LDA", flat = FALSE)[["L1"]])
     dimnames(x$phi) <- list(word = x$vocabulary$word, sent = levels(x$vocabulary$lexicon), topic = create_labels(x, "LDA", flat = FALSE)[["L1"]])
+    x$phi <- x$phi[ ,1, ]
   }
   rename <- replace(rename, names(translate), translate)[rename]
   names(x) <- rename

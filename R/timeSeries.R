@@ -60,13 +60,13 @@
 #' rjst <- grow(rjst, 100)
 #' sentopics_sentiment(rjst, override = TRUE)
 sentopics_sentiment <- function(x,
-                      method = "proportionalPol",
+                      method = c("proportional", "proportionalPol"),
                       override = FALSE,
                       quiet = FALSE,
                       include_docvars = FALSE) {
   ## CMD check
   .id <- positive <- negative <- topic <- NULL
-
+  
   docvars <- attr(x$tokens, "docvars")
   
   if (!override & ".sentiment" %in% names(docvars)) {
@@ -100,24 +100,33 @@ sentopics_sentiment <- function(x,
   method <- match.arg(method)
   melted <- melt(x, include_docvars = FALSE)
   ## store order to reverse dcast ordering
-  ord <- order(unique(melted$.id))
+  # ord <- order(unique(melted$.id))
 
   switch(method,
          proportionalPol = {
            fn <- function(dt) {
              dt[, list(.id, .sentiment = (positive - negative) / (positive + negative))]
            }
-         })
+         },
+         proportional = {
+           fn <- function(dt) {
+             dt[, list(.id, .sentiment = (positive - negative))]
+           }
+         }
+         )
 
   if ( attr(x, "Sdim") == "L1" ) { ## then it is JST
 
     ## discard topics, only need L1_prob
-    res <- dcast(melted, .id ~ sent, value.var = "L1_prob", fun.aggregate = mean)
+    # res <- dcast(melted, .id ~ sent, value.var = "L1_prob", fun.aggregate = mean)
+    res <- dcast(melted[, .(L1_prob = mean(L1_prob)), by = c("sent", ".id")],
+          .id ~ sent, value.var = "L1_prob")
     res <- fn(res)
     
     ## recover initial ordering
     setkey(res, NULL)
-    res <- res[order(ord)]
+    # res <- res[order(ord)]
+    res <- res[match(unique(melted$.id), .id)]
     stopifnot(identical(res$.id, names(x$tokens)))
     
     docvars$`.sentiment` <- res$`.sentiment`
@@ -135,7 +144,8 @@ sentopics_sentiment <- function(x,
     
     ## recover initial ordering
     setkey(res, NULL)
-    res <- res[order(ord)]
+    # res <- res[order(ord)]
+    res <- res[match(unique(melted$.id), .id)]
     stopifnot(identical(res$.id, names(x$tokens)))
     
     res$.sentiment <- rowSums(as.matrix(res, rownames = ".id") * x$theta)
@@ -159,7 +169,8 @@ sentopics_sentiment <- function(x,
 #' @export
 `sentopics_sentiment<-` <- function(x, value) {
   if (!inherits(x, "sentopicmodel")) stop("Replacement of internal sentiment is only possible for topic models of package `sentopics`")
-
+  if (anyNA(value)) stop("NA sentiment not allowed.")
+  
   docvars <- attr(x$tokens, "docvars")
   if (".sentiment" %in% names(docvars) & !is.null(value)) {
     message("Replacing existing '.sentiment' docvars")
@@ -217,7 +228,8 @@ sentopics_date <- function(x, include_docvars = FALSE) {
 #' @export
 `sentopics_date<-` <- function(x, value) {
   if (!inherits(x, "sentopicmodel")) stop("Replacement of internal date is only possible for topic models of package `sentopics`")
-
+  if (anyNA(value)) stop("NA date not allowed.")
+  
   docvars <- attr(x$tokens, "docvars")
   if (".date" %in% names(docvars) & !is.null(value)) {
     message("Replacing existing '.date' docvars")
@@ -359,7 +371,7 @@ sentopics_labels <- function(x, flat = TRUE) {
 #' rjst <- grow(rjst, 10) ## estimating the model is then needed
 #' sentiment_series(rjst)
 sentiment_series <- function(x,
-                             period = c("year", "month", "day"),
+                             period = c("year", "quarter", "month", "day"),
                              rolling_window = 1,
                              scale =  TRUE,
                              scaling_period = c("1900-01-01", "2099-12-31"),
@@ -502,7 +514,7 @@ sentiment_series <- function(x,
 #' sentopics_sentiment(rjst, override = TRUE)
 #' plot_sentiment_breakdown(rjst)
 sentiment_breakdown <- function(x,
-                                period = c("year", "month", "day"),
+                                period = c("year", "quarter", "month", "day"),
                                 rolling_window = 1,
                                 scale =  TRUE,
                                 scaling_period = c("1900-01-01", "2099-12-31"),
@@ -530,8 +542,10 @@ sentiment_breakdown <- function(x,
                             paste0(mis, collapse = ", "),".\n",
                             "Install command: install.packages(",
                             paste0("'", mis, "'", collapse = ", "),")" )
-
-  proportions <- dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
+  
+  # proportions <- dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
+  proportions <- dcast(melt(x)[, .(prob = sum(prob)), by = c("topic", ".id")],
+                       .id ~ topic, value.var = "prob")
 
   if (scale) {
     invisible(sentiment_series(x, period = period, rolling_window = rolling_window, scale = scale, scaling_period = scaling_period, ...))
@@ -566,7 +580,7 @@ sentiment_breakdown <- function(x,
 
   if (length(tmp_sent) <= 2) {
     ## then there is only one sentiment column
-    if (inherits(x, "rJST")) warning("Sentiment for the rJST model comes from an external source. This means that the sentiment layer of the model is ignored. Was it really your intent? Perhaps should you run `sentopics_sentiment(x, override = TRUE)` on the model before calling this function, or instead remove the sentiment layer by using an LDA.")
+    if (inherits(x, "rJST")) warning("Sentiment for the rJST model comes from an external source. This means that the sentiment layer of the model is ignored. Was it really your intent? Perhaps should you run `sentopics_sentiment(x, override = TRUE)` on the model before calling this function, or instead remove the sentiment layer by using an LDA model.")
     breakdown <- proportions[, c(list(sentiment = mean(sentiment)),
                                  lapply(.SD, function(x) mean(x * sentiment) )), .SDcols = -c(".id", ".date", "sentiment"),
                              by = list(date = floor_date(.date, period))]
@@ -642,6 +656,7 @@ sentiment_breakdown <- function(x,
       ggplot2::scale_fill_manual(values = make_colors(x, "L1")) +
       ggplot2::ylab("Sentiment") +
       ggplot2::xlab("Date") +
+      ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE)) +
       # scale_x_date(name = "Date", date_breaks = "1 month", date_labels = "%B") +
       # theme_classic(base_size = 12) +
       # theme(legend.position = "bottom") +
@@ -662,7 +677,7 @@ sentiment_breakdown <- function(x,
 #' @rdname sentiment_breakdown
 #' @export
 plot_sentiment_breakdown <- function(x,
-                                     period = c("year", "month", "day"),
+                                     period = c("year", "quarter", "month", "day"),
                                      rolling_window = 1,
                                      scale =  TRUE,
                                      scaling_period = c("1900-01-01", "2099-12-31"),
@@ -694,7 +709,7 @@ plot_sentiment_breakdown <- function(x,
 #' @param scaling_period the date range over which the scaling should be
 #'   applied. Particularly useful to normalize only the beginning of the time
 #'   series.
-#' @param plot if `TRUE`, prints a plot of the time series attaches it as an
+#' @param plot if `TRUE`, prints a plot of the time series and attaches it as an
 #'   attribute to the returned object. If `'silent'`, do not print the plot but
 #'   still attaches it as an attribute.
 #' @param plot_ridgelines if `TRUE`, time series are plotted as ridgelines.
@@ -736,7 +751,7 @@ plot_sentiment_breakdown <- function(x,
 #' sentopics_sentiment(rjst, override = TRUE)
 #' sentiment_topics(rjst)
 sentiment_topics <- function(x,
-                             period = c("year", "month", "day"),
+                             period = c("year", "quarter", "month", "day"),
                              rolling_window = 1,
                              scale =  TRUE,
                              scaling_period = c("1900-01-01", "2099-12-31"),
@@ -767,7 +782,9 @@ sentiment_topics <- function(x,
                             "Install command: install.packages(",
                             paste0("'", mis, "'", collapse = ", "),")" )
 
-  proportions <- dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
+  # proportions <- dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
+  proportions <- dcast(melt(x)[, .(prob = sum(prob)), by = c("topic", ".id")],
+                       .id ~ topic, value.var = "prob")
 
   if (scale) {
     invisible(sentiment_series(x, period = period, rolling_window = rolling_window, scale = scale, scaling_period = scaling_period, ...))
@@ -892,7 +909,7 @@ sentiment_topics <- function(x,
 #' @rdname sentiment_topics
 #' @export
 plot_sentiment_topics <- function(x,
-                                  period = c("year", "month", "day"),
+                                  period = c("year", "quarter", "month", "day"),
                                   rolling_window = 1,
                                   scale =  TRUE,
                                   scaling_period = c("1900-01-01", "2099-12-31"),
@@ -940,7 +957,7 @@ plot_sentiment_topics <- function(x,
 #' # or not
 #' proportion_topics(jst, complete = FALSE)
 proportion_topics <- function(x,
-                              period = c("year", "month", "day"),
+                              period = c("year", "quarter", "month", "day"),
                               rolling_window = 1,
                               complete = TRUE,
                               plot = c(FALSE,  TRUE, "silent"),
@@ -976,8 +993,16 @@ proportion_topics <- function(x,
   } else {
     proportions <- switch(class(x)[1],
                           LDA = {dcast(melt(x), .id ~ topic, value.var = "prob")},
-                          rJST = {dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)},
-                          JST = {dcast(melt(x), .id ~ sent, value.var = "prob", fun.aggregate = sum)},
+                          rJST = {
+                            # dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
+                            dcast(melt(x)[, .(prob = sum(prob)), by = c("topic", ".id")],
+                                  .id ~ topic, value.var = "prob")
+                          },
+                          JST = {
+                            # dcast(melt(x), .id ~ sent, value.var = "prob", fun.aggregate = sum)
+                            dcast(melt(x)[, .(prob = sum(prob)), by = c("sent", ".id")],
+                                  .id ~ sent, value.var = "prob")
+                          },
                           stop("Undefined input"))
   }
   
@@ -1096,7 +1121,7 @@ proportion_topics <- function(x,
 #' @rdname proportion_topics
 #' @export
 plot_proportion_topics <- function(x,
-                                   period = c("year", "month", "day"),
+                                   period = c("year", "quarter", "month", "day"),
                                    rolling_window = 1,
                                    complete = TRUE,
                                    plot_ridgelines = TRUE,

@@ -73,7 +73,7 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #' @examples
 #' data(ECB_speeches)
 #' LDA(ECB_speeches)
-#' rJST(ECB_speeches, lex = LoughranMcDonald)
+#' rJST(ECB_speeches, lexicon = LoughranMcDonald)
 sentopicmodel <- function(x, lexicon = NULL, L1 = 5, L2 = 3,
                  L1prior = 1, L2prior = 5, beta = 0.01,
                  L1cycle = 0, L2cycle = 0,
@@ -107,14 +107,11 @@ sentopicmodel <- function(x, lexicon = NULL, L1 = 5, L2 = 3,
   dim(L1prior) <- c(L1, 1)
   dim(L2prior) <- c(L1 * L2, 1)
 
-  # lapply(lengths(clean), integer)
-
   model <- list(vocabulary = vocabulary, tokens = x, za = lapply(lengths(clean), integer), L1 = L1, L2 = L2,
                 initLDA = initLDA, smooth = smooth, L1cycle = L1cycle, L2cycle = L2cycle)
 
   cpp_model <- methods::new(cpp_sentopicmodel, reversed)
 
-  # c(intTokens) is nice to clean attributes from the object
   cpp_model$init(
     clean, model$za, nrow(vocabulary), L1, L2, as.integer(vocabulary$lexicon) - 1,
     L1prior, beta, L2prior, L1cycle, L2cycle, initLDA, smooth

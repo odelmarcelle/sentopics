@@ -311,9 +311,6 @@ arma::imat cpp_rebuild_l1d(std::vector<std::unique_ptr<arma::uvec>>& za, arma::u
 void model::iterate(uword iterations, bool displayProgress, bool computeLikelihood) {
   RNGScope rngScope;
 
-  uword old_it;
-  old_it = it;
-
   // add "iterations" elements to the likelihood storage vectors
   logLikelihoodW.resize(it + iterations);
   logLikelihoodL1.resize(it + iterations);

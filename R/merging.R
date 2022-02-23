@@ -47,12 +47,14 @@
 mergeTopics <- function(x, merging_list){
   
   if (!inherits(x, c("LDA", "rJST"))) stop("`mergeTopics` is only implemented for LDA and rJST models.")
-  
+  ## TODO: check that merging list is numeric or character
   if (length(merging_list) < 2) stop("The aggregation list should include at least two new topics.")
   if (is.null(names(merging_list)) | any(is.na(names(merging_list))) ) names(merging_list) <- paste0("theme", 1:length(merging_list))
   flag <- all(
     length(unlist(merging_list)) == x$K,
     length(unique(unlist(merging_list))) == x$K
+    # all(unlist(merging_list) %in% seq_len(nrow(textmodel_lda$phi))),
+    # all(unlist(merging_list) %in% seq_len(ncol(textmodel_lda$theta)))
     # all(unlist(merging_list) %in% dimnames(x$phi)),
     # all(unlist(merging_list) %in% colnames(x$theta))
   )
@@ -60,9 +62,9 @@ mergeTopics <- function(x, merging_list){
     dups <- unname(unlist(merging_list)[duplicated(unlist(merging_list))])
     miss <- setdiff(1:x$K, unique(unlist(merging_list)))
 
-    if (length(dups) > 0) dup_mess <- paste0(" The following indice(s) are duplicated: ", dups) else dup_mess <- ""
-    if (length(miss) > 0) miss_mess <- paste0(" The following indice(s) are missing: ", miss) else miss_mess <- ""
-    error_message <- paste0("Error in reading the aggregation list. Be sure to include all existing topics and to avoid duplicates.", dup_mess, miss_mess)
+    if (length(dups) > 0) dup_mess <- paste0("\n    The following indice(s) are duplicated: ", paste0(dups, collapse = ", ")) else dup_mess <- ""
+    if (length(miss) > 0) miss_mess <- paste0("\n    The following indice(s) are missing: ", paste0(miss, collapse = ", ")) else miss_mess <- ""
+    error_message <- paste0("The aggregation list is not valid. Make sure to include all existing topics and to avoid duplicates.", dup_mess, miss_mess)
     stop(error_message)
   }
   
@@ -103,7 +105,7 @@ mergeTopics <- function(x, merging_list){
   }
 
   if (x$it > 0) x$theta <- matrix(1/newK, length(x$tokens), newK)
-  if (x$it > 0) x$phi <- array(1/nrow(x$vocabulary), dim = c(dim(x$phi)[1:2], newK))
+  if (x$it > 0) x$phi <- array(1/nrow(x$vocabulary), dim = c(nrow(x$vocabulary), S, newK))
   if (x$it > 0 & !is.null(x$pi)) x$pi <- array(1/S, dim = c(S, newK, length(x$tokens)))
   
 

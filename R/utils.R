@@ -595,12 +595,20 @@ missingSuggets <- function(packages) {
 # sapply(col, spreadColor, 3)
 
 
-floor_date <- function(x, period = c("day", "month", "year")) {
+floor_date <- function(x, period = c("day", "month", "quarter", "year")) {
   period <- match.arg(period)
   if (period == "day") return(x)
   x <- as.POSIXlt(x)
   switch(period,
+         week48 = {
+           d <- as.integer(ceiling(date$mday / 7))
+           x$mday <- ifelse(d == 5L, 4L, d) * 7L
+         },
          month = x$mday <- rep_len(1, length(x)),
+         quarter = {
+           x$mday <- rep_len(1, length(x))
+           x$mon <- x$mon %/% 3 * 3
+         },
          year = {
            x$mday <- rep_len(1, length(x))
            x$mon <- rep_len(0, length(x))
@@ -964,19 +972,27 @@ getTexts <- function(x, topic, sentiment, n = 3, collapsed = TRUE) {
 }
 
 
+#' @export
 reset <- function(x) {
+  
+  ## make copy or assignment are reset by reference
+  x$za <- data.table::copy(x$za)
 
+  class <- class(x)[1]
+  x <- as.sentopicmodel(x)
   x$it <- 0
   x$logLikelihood <- NULL
   x$phi <- x$L2post <- x$L1post <- NULL
 
   cpp_model <- rebuild_cppModel(x, core(x))
-  cpp_model$initAssignments(1)
+  cpp_model$initAssignments()
   # x <- utils::modifyList(x, extract_cppModel(cpp_model, core(x)))
   tmp <- sentopics:::extract_cppModel(cpp_model, core(x))
   x[names(tmp)] <- tmp
 
-  reorder_sentopicmodel(x)
+  
+  fun <- get(paste0("as.", class))
+  fun(reorder_sentopicmodel(x))
 }
 
 computeFcm <- function(x, window = 10) {

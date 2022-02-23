@@ -90,8 +90,9 @@ check_integrity <- function(x, detailed = FALSE, fast = TRUE) {
 
   if (attr(x, "reversed")) {
     lexFlag <- all(
-      all(x$beta[, is.na(x$vocabulary$lexicon)] != 0),
-      all(colSums(x$beta[, !is.na(x$vocabulary$lexicon)]) == stats::median(x$beta[x$beta > 0])*x$L1)
+      all(x$beta[, is.na(x$vocabulary$lexicon)] != 0)
+      ### Cannot rely on media value as merging models produces multiple values in beta
+      # all(colSums(x$beta[, !is.na(x$vocabulary$lexicon)]) == stats::median(x$beta[x$beta > 0])*x$L1)
     )
   } else { ## TODO: improve this. Do some aperm on x$beta depending on the lexicon dimension?
     ######### Basically reversing in JST/reversedJST lexicon still refer to the same dimension. it's not reversed

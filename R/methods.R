@@ -68,7 +68,7 @@ summary.sentopicmodel <- function(object, ...) {
 # plot --------------------------------------------------------------------
 
 #' @export
-plot.sentopicmodel <- function(x, layers = 3, nWords = 15, topicsOnly = FALSE, ...) {
+plot.sentopicmodel <- function(x, nWords = 15, layers = 3, topicsOnly = FALSE, ...) {
 
   mis <- missingSuggets(c("plotly", "RColorBrewer"))
   if (length(mis) > 0) stop("Suggested packages are missing for the plot.sentopicmodel function.\n",
@@ -84,7 +84,7 @@ plot.sentopicmodel <- function(x, layers = 3, nWords = 15, topicsOnly = FALSE, .
   mixtureStats <- melt(x)
   L1_name <- colnames(mixtureStats)[2]
   L2_name <- colnames(mixtureStats)[1]
-  if (topicsOnly) method <- "topics" else method <- "probability"
+  # if (topicsOnly) method <- "topics" else method <- "probability"
 
   if (layers > 0) {
     l1 <- mixtureStats[, list(value = sum(prob) / length(x$tokens)), by = L1_name]
@@ -108,7 +108,7 @@ plot.sentopicmodel <- function(x, layers = 3, nWords = 15, topicsOnly = FALSE, .
     l2$id <- paste0(l2$parent, paste0("l2_", as.numeric(l2[[L2_name]])))
     l2$real <- l2$value
     ## Not working. Neet update
-    if (topicsOnly) l2 <- l2[, list(value = sum(value)), by = list(L1)][, id := paste0("l1_", L1, "l2_1")]
+    # if (topicsOnly) l2 <- l2[, list(value = sum(value)), by = list(L1)][, id := paste0("l1_", L1, "l2_1")]
     for (i in l1[[L1_name]]) {
       cols <- spreadColor(l1[l1[[L1_name]] == i, color], x$L2)
       l2[l2[[L1_name]] == i, color := cols]

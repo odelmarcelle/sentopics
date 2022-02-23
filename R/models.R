@@ -20,10 +20,76 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 rJST <- function(x, lexicon = NULL, K = 5, S = 3,
                  alpha = 1, gamma = 5, beta = 0.01,
                  alphaCycle = 0, gammaCycle = 0) {
-
+  UseMethod("rJST")
+}
+#' @export
+rJST.default <- function(x, lexicon = NULL, K = 5, S = 3,
+                 alpha = 1, gamma = 5, beta = 0.01,
+                 alphaCycle = 0, gammaCycle = 0) {
   as.rJST(sentopicmodel(x, lexicon, K, S, alpha, gamma, beta, alphaCycle, gammaCycle))
 }
+#' @export
+rJST.LDA <- function(x, lexicon = NULL, S = 3, gamma = 5,
+                 alphaCycle = 0, gammaCycle = 0) {
+  
+  if (x$it < 1) stop("Requires an estimated LDA model.")
+  x <- as.sentopicmodel(x)
+  x$L2 <- as.numeric(S)
+  
+  if (length(gamma) == 1L) gamma <- matrix(gamma, x$L1 * x$L2, 1)
+  if (length(gamma) == x$L2) gamma <- matrix(rep(gamma, times = x$L1), x$L1 * x$L2, 1)
+  
+  if (length(gamma) != x$L1 * x$L2)
+    stop("Incorrect prior dimension. Please check input gamma.")
+  
+  dim(gamma) <- c(x$L1 * x$L2, 1)
+  x$L2prior <- gamma
+  
+  vocabulary <- makeVocabulary(x$tokens, lexicon, S)
+  x$tokens <- vocabulary$toks
+  x$vocabulary <- vocabulary$vocabulary
+  
+  reAssignZa <- as.integer(seq(x$L1) * S - 1)
+  # x$za <- lapply(x$za, function(x) reAssignZa[x])
+  
+  
+  clean <- cleanPadding(x$tokens)
+  for (i in seq_along(x$za)) {
+    for (j in seq_along(x$za[[i]])) {
+      clean[[i]][j]
+      x$za[[i]][j]
+      set <- as.integer((x$za[[i]][j] - 1) * S + (1:S))
+      if (is.na(x$vocabulary$lexicon[clean[[i]][j]])) {
+        x$za[[i]][j] <- set[sample.int(S, 1L)]
+      } else {
+        x$za[[i]][j] <- set[as.integer(x$vocabulary$lexicon[clean[[i]][j]])]
+      }
 
+    }
+  }
+
+  
+  
+  beta <- matrix(0, x$L1 * x$L2, ncol(x$beta))
+  for (i in 1:(x$L1 * x$L2)) {
+    beta[i, ] <- x$beta[(i - 1) %/% x$L2 + 1, ]
+  }
+  for (i in 1:nrow(x$vocabulary)) {
+    if (!is.na(x$vocabulary$lexicon[i])) {
+      zero <- setdiff(1:x$L2, as.integer(x$vocabulary$lexicon[i]))
+      zeros <- sapply(zero, function(j) j + (1:x$L1 - 1) * x$L2, USE.NAMES = FALSE) |> c()
+      beta[zeros, i] <- 0
+    }
+  }
+  x$beta <- beta
+  if (x$it > 0) x$phi <- array(1/nrow(x$vocabulary), dim = c(nrow(x$vocabulary), x$L2, x$L1))
+  if (x$it > 0 & !is.null(x$L2post)) x$L2post <- array(1/x$L2, dim = c(x$L2, x$L1, length(x$tokens)))
+  
+  stopifnot(check_integrity(x))
+  x <- grow(x, 0, displayProgress = FALSE)
+  
+  as.rJST(x)
+}
 
 #' @inherit rJST
 #' @export

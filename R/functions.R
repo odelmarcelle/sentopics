@@ -29,7 +29,8 @@
 topWords <- function(x,
                      nWords = 10,
                      method = c("frequency", "probability", "term-score"),
-                     output = c("data.frame", "plot", "matrix")) {
+                     output = c("data.frame", "plot", "matrix"),
+                     subset) {
 
   ## CMD check
   word <- value <- overall <- NULL
@@ -40,11 +41,31 @@ topWords <- function(x,
   output <- match.arg(output)
   x <- reorder_sentopicmodel(x)
   top <- topWords_dt(x, nWords, method)
-
+  if (!missing(subset)) {
+    if (attr(x, "reversed")) env <- list(topic = quote(L1),
+                                         sentiment = quote(L2))
+    else env <- list(sentiment = quote(L1),
+                     topic = quote(L2))
+    
+    # e <- substitute(subset)
+    # e <- substitute(e, env)
+    subset <- do.call(substitute, list(
+      substitute(subset),
+      env))
+    top <- subset(top, eval(subset))
+    # if (sys.parent() == 0L) env2 <- sys.frame(sys.nframe())
+    # else env2 <- sys.frame(sys.parent())
+    # subset <- do.call(substitute, list(
+    #   substitute(subset, env2),
+    #   env))
+    # top <- subset(top, eval(subset))
+  }
+  
   switch(output,
          "matrix" = {
            res <- matrix(top$word, nrow = nWords)
-           colnames(res) <- create_labels(x, class)
+           tmp <- top$L2 + (x$L2) * (top$L1 - 1)
+           colnames(res) <- create_labels(x, class)[unique(tmp)]
            res
          },
          "plot" = {
@@ -54,10 +75,11 @@ topWords <- function(x,
                                      paste0(mis, collapse = ", "),".\n",
                                      "Install command: install.packages(",
                                      paste0("'", mis, "'", collapse = ", "),")" )
-           tmp <- paste0(top$L1, "_", top$L2)
+           # tmp <- paste0(top$L1, "_", top$L2)
+           tmp <- top$L2 + (x$L2) * (top$L1 - 1)
            top$label <- factor(
              tmp,
-             levels = unique(tmp),
+             levels = seq_len(x$L1 * x$L2),
              labels = create_labels(x, class)
            )
            p <- ggplot2::ggplot(
@@ -95,7 +117,7 @@ topWords <- function(x,
            params <- sentopicmodel_params(x)
            labs <- create_labels(x, class, flat = FALSE)
            for (i in names(labs)) {
-             top[[i]] <- factor(top[[i]], labels = labs[[i]])
+             top[[i]] <- factor(top[[i]], levels = seq_along(labs[[i]]), labels = labs[[i]])
            }
            if (class %in% c("rJST", "LDA")) colnames(top) <-
                sub("L1", "topic", sub("L2", "sentiment", colnames(top), fixed = TRUE), fixed = TRUE)
@@ -155,10 +177,19 @@ topWords_dt <- function(x, nWords = 10, method = c("frequency", "probability", "
 
 #' @rdname topWords
 #' @export
+#' @examples 
+#' plot_topWords(model, subset = topic %in% 1:2)
 plot_topWords <- function(x,
                           nWords = 10,
-                          method = c("frequency", "probability", "term-score")) {
-  topWords(x, nWords, method, output = "plot")
+                          method = c("frequency", "probability", "term-score"),
+                          subset) {
+  # e <- eval(substitute(subset))
+  eval(substitute(
+    topWords(x, nWords, method, output = "plot", e),
+    list(e = substitute(subset))
+  ))
+  
+  # topWords(x, nWords, method, output = "plot", substitute(subset))
 }
 
 

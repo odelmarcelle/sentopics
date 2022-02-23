@@ -264,21 +264,26 @@ quanteda::as.tokens
 #'
 #' @return a quanteda [quanteda::tokens] object.
 #' @export
-as.tokens.dfm <- function(x, concatenator = NULL, tokens = NULL, ignore_list = NULL, padding = TRUE, ...) {
+as.tokens.dfm <- function(x, concatenator = NULL, tokens = NULL, ignore_list = NULL, case_insensitive = FALSE, padding = TRUE, ...) {
   if (!is.null(tokens)) {
-    if (!is.null(ignore_list)) keep <- quanteda::types(tokens) %in% c(dimnames(x)$features, ignore_list) else
-      keep <- quanteda::types(tokens) %in% dimnames(x)$features
-    quanteda::as.tokens(
+    if (!is.null(ignore_list)) keep <- c(dimnames(x)$features, ignore_list) else
+      keep <- dimnames(x)$features
+    ntypes <- length(dimnames(x)$features)
+    res <- quanteda::as.tokens(
       quanteda::tokens_select(tokens,
-                              quanteda::types(tokens)[keep],
+                              keep,
                               selection = "keep",
-                              case_insensitive = FALSE,
+                              case_insensitive = case_insensitive,
                               padding = padding
       )
     )
+    if (length(quanteda::types(res)) + 1 < ntypes) warning("The returned tokens object has less types than the number of column in the dfm input. This could indicate that:\n\t1. The input dfm was lowercase, unlike the provided tokens object.\n\t2. The dfm does not originate from the tokens object.\nTo solve the first problem, consider using the argument `case_insensitive = TRUE` or using the function `quanteda::tokens_tolower()`")
+    res
   } else {
     # quanteda::as.tokens(apply(quanteda::dfm_remove(x, ""), 1, function(x) rep(names(x), times = x)))
-
+    
+    if (min(x) < 0) stop("Dfm input should not contain negative values")
+    
     #faster
     tmp <- quanteda::convert(quanteda::t(x), to = "tripletlist")
     word <- rep(tmp$document, times = tmp$frequency)

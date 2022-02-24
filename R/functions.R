@@ -12,6 +12,11 @@
 #' @param method specify if a re-ranking function should be applied before
 #'   returning the top words
 #' @param output determines the output of the function
+#' @param subset allows to subset using a logical expression, as in [subset()].
+#'   Particularly useful to limit the number of observation on plot outputs. The
+#'   logical expression uses topic and sentiment *indices* rather than their
+#'   label. It is possible to subset on both topic and sentiment but adding a
+#'   `&` operator between two expressions.
 #'
 #' @return the top words of the topic model. Depending on the output chosen, can
 #'   result in either a long-style data.frame, a `ggplot2` object or a matrix.
@@ -19,10 +24,9 @@
 #' @import data.table
 #' @export
 #' @examples
-#' model <- LDA(ECB_speeches)
+#' model <- LDA(ECB_press_conferences_tokens)
 #' model <- grow(model, 10)
 #' topWords(model)
-#' plot_topWords(model)
 #' topWords(model, output = "matrix")
 
 ### TODO : check term-score...
@@ -178,7 +182,13 @@ topWords_dt <- function(x, nWords = 10, method = c("frequency", "probability", "
 #' @rdname topWords
 #' @export
 #' @examples 
+#' plot_topWords(model)
 #' plot_topWords(model, subset = topic %in% 1:2)
+#' 
+#' jst <- JST(ECB_press_conferences_tokens)
+#' jst <- grow(jst, 10)
+#' plot_topWords(jst)
+#' plot_topWords(jst, subset = topic %in% 1:2 & sentiment == 3)
 plot_topWords <- function(x,
                           nWords = 10,
                           method = c("frequency", "probability", "term-score"),
@@ -287,7 +297,7 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 #'
 #' @return a matrix of distance between the elements of `w`
 #' @examples
-#' model <- LDA(ECB_speeches)
+#' model <- LDA(ECB_press_conferences_tokens)
 #' model <- grow(model, 10, nChains = 5)
 #' chainsDistances(model)
 #'
@@ -330,9 +340,9 @@ chainsDistances <- function(x, method = c("euclidean", "hellinger", "cosine", "m
 #'   of a chain
 #'
 #' @examples
-#' model <- LDA(ECB_speeches[1:10])
+#' model <- LDA(ECB_press_conferences_tokens[1:10])
 #' model <- grow(model, 10, nChains = 5)
-#' chainsScores(model)
+#' chainsScores(model, window = 5)
 #' chainsScores(model, window = "boolean")
 #'
 #' @seealso [chainsDistances()] [coherence()]

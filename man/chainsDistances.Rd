@@ -31,7 +31,7 @@ the \code{method} argument determines how are computed distance. In
 general, you would want to use \emph{invariantEuclidean} distance. TODO
 }
 \examples{
-model <- LDA(ECB_speeches)
+model <- LDA(ECB_press_conferences_tokens)
 model <- grow(model, 10, nChains = 5)
 chainsDistances(model)
 

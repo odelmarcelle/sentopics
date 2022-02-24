@@ -33,7 +33,7 @@ This can slightly decrease the computing time.}
 \item{seed}{for reproducibility, a seed can be provided}
 }
 \value{
-a \code{sentopicmodel} of relevant model class if \code{nChains} is unspecified or equal to 1. A \code{multiChains} object
+a \code{sentopicmodel} of the relevant model class if \code{nChains} is unspecified or equal to 1. A \code{multiChains} object
 if \code{nChains} is greater than 1.
 }
 \description{
@@ -41,11 +41,11 @@ This function is used to estimate a topic model created by \code{\link[=LDA]{LDA
 In essence, this function iterates a Gibbs sampler MCMC.
 }
 \examples{
-model <- rJST(ECB_speeches)
+model <- rJST(ECB_press_conferences_tokens)
 grow(model, 10)
 }
 \seealso{
-\code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} \code{\link[=sentopicmodel]{sentopicmodel()}}
+\code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} \code{\link[=sentopicmodel]{sentopicmodel()}} \code{\link[=reset]{reset()}}
 }
 \author{
 Olivier Delmarcelle

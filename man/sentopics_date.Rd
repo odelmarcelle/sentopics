@@ -30,14 +30,14 @@ the \link{tokens} object used to create the model.
 }
 \examples{
 # example dataset already contains ".date" docvar
-docvars(ECB_speeches)
+docvars(ECB_press_conferences_tokens)
 # dates are automatically stored in the sentopicmodel object
-lda <- LDA(ECB_speeches)
+lda <- LDA(ECB_press_conferences_tokens)
 sentopics_date(lda)
 
 # dates can be removed or modified by the assignment operator
 sentopics_date(lda) <- NULL
-sentopics_date(lda) <- docvars(ECB_speeches, ".date")
+sentopics_date(lda) <- docvars(ECB_press_conferences_tokens, ".date")
 }
 \seealso{
 Other sentopics helpers: 

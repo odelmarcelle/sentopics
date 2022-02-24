@@ -173,7 +173,7 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, topicsOnly = FALSE, .
 #' @seealso [chainsDistances()] [cmdscale()]
 #'
 #' @examples
-#' model <- LDA(ECB_speeches)
+#' model <- LDA(ECB_press_conferences_tokens)
 #' model <- grow(model, 10, nChains = 5)
 #' plot(model)
 #'
@@ -197,6 +197,7 @@ plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosin
 }
 
 # grow --------------------------------------------------------------------
+
 #' Estimate a topic model
 #'
 #' @author Olivier Delmarcelle
@@ -215,13 +216,13 @@ plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosin
 #'   This can slightly decrease the computing time.
 #' @param seed for reproducibility, a seed can be provided
 #'
-#' @return a `sentopicmodel` of relevant model class if `nChains` is unspecified or equal to 1. A `multiChains` object
+#' @return a `sentopicmodel` of the relevant model class if `nChains` is unspecified or equal to 1. A `multiChains` object
 #'   if `nChains` is greater than 1.
 #'
-#' @seealso [LDA()], [JST()], [rJST()] [sentopicmodel()]
+#' @seealso [LDA()], [JST()], [rJST()] [sentopicmodel()] [reset()]
 #' @export
 #' @examples
-#' model <- rJST(ECB_speeches)
+#' model <- rJST(ECB_press_conferences_tokens)
 #' grow(model, 10)
 grow <- function(x, iterations = 100, nChains = 1, nCores = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL) {
   UseMethod("grow")
@@ -550,6 +551,49 @@ grow.multiChains <- function(x, iterations = 100, nChains = NULL, nCores = 1, di
 
   chains
 }
+
+#' Re-initialize a topic model
+#'
+#' @author Olivier Delmarcelle
+#'
+#' @description This function is used re-initialize  a topic model, as if it was
+#'   created from [LDA()], [JST()] or another model. The re-initialized model
+#'   retains its original parameter specification.
+#'
+#' @param x a `sentopicmodel` that has been estimated with the [grow()]
+#'   function.
+#'
+#' @return a `sentopicmodel` of the relevant model class, with the iteration count
+#'   reset to zero and re-initialized assignment of latent variables.
+#'
+#' @seealso [grow()]
+#' @export
+#' @examples
+#' model <- LDA(ECB_press_conferences_tokens)
+#' model <- grow(model, 10)
+#' reset(model)
+reset <- function(x) {
+  
+  ## make copy or assignment are reset by reference
+  x$za <- data.table::copy(x$za)
+  
+  class <- class(x)[1]
+  x <- as.sentopicmodel(x)
+  x$it <- 0
+  x$logLikelihood <- NULL
+  x$phi <- x$L2post <- x$L1post <- NULL
+  
+  cpp_model <- rebuild_cppModel(x, core(x))
+  cpp_model$initAssignments()
+  # x <- utils::modifyList(x, extract_cppModel(cpp_model, core(x)))
+  tmp <- sentopics:::extract_cppModel(cpp_model, core(x))
+  x[names(tmp)] <- tmp
+  
+  
+  fun <- get(paste0("as.", class))
+  fun(reorder_sentopicmodel(x))
+}
+
 
 # melt --------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 
 context("Tests for coherence metrics")
-toks <- ECB_speeches[1:20]
+toks <- ECB_press_conferences_tokens[quanteda::ntoken(ECB_press_conferences_tokens) >= 110]
 dfm <- quanteda::dfm(toks, tolower = FALSE)
 dfm <- quanteda::dfm_trim(dfm, min_termfreq = 2)
 dfm <- quanteda::dfm_remove(dfm, quanteda::stopwords("en"))

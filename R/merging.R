@@ -24,7 +24,7 @@
 #' @export
 #' @seealso sentopics_labels
 #' @examples
-#' lda <- LDA(ECB_speeches, K = 5)
+#' lda <- LDA(ECB_press_conferences_tokens, K = 5)
 #' lda <- grow(lda, 100)
 #' merging_list <- list(
 #'   c(1,5),
@@ -41,7 +41,7 @@
 #' sentopics_labels(merged)
 #' 
 #' # implemented for rJST
-#' rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
+#' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' rjst <- grow(rjst, 100)
 #' mergeTopics(rjst, merging_list2)
 mergeTopics <- function(x, merging_list){

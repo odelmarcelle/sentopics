@@ -1,14 +1,14 @@
 
 
-toks <- ECB_speeches
+toks <- ECB_press_conferences_tokens
 
 test_that("prior population works", {
   jst <- JST(toks)
 
   expect_message(sent <- sentopics_sentiment(jst), "'.sentiment' docvars found.")
 
-  expect_identical(sentopics_sentiment(jst), data.table(.id = names(toks), .sentiment = ECB_speeches$.sentiment))
-  expect_identical(sentopics_date(jst), data.table(.id = names(toks), .date = as.Date(ECB_speeches$.date)))
+  expect_identical(sentopics_sentiment(jst), data.table(.id = names(toks), .sentiment = ECB_press_conferences_tokens$.sentiment))
+  expect_identical(sentopics_date(jst), data.table(.id = names(toks), .date = as.Date(ECB_press_conferences_tokens$.date)))
 })
 
 jst <- JST(toks, lexicon = LoughranMcDonald) |> grow(1, displayProgress = FALSE)
@@ -32,9 +32,9 @@ test_that("sentiment works", {
 
   expect_message(sent <- sentopics_sentiment(jst, override = TRUE), "Sentiment computed and assigned")
 
-  sentopics_sentiment(jst) <- ECB_speeches$.sentiment
+  sentopics_sentiment(jst) <- ECB_press_conferences_tokens$.sentiment
 
-  expect_identical(sentopics_sentiment(jst), data.table(.id = names(toks), .sentiment = ECB_speeches$.sentiment))
+  expect_identical(sentopics_sentiment(jst), data.table(.id = names(toks), .sentiment = ECB_press_conferences_tokens$.sentiment))
   
  
   
@@ -55,14 +55,14 @@ test_that("sentiment works", {
 test_that("date works", {
   expect_error(sentopics_date(jst), "No dates stored")
 
-  sentopics_date(jst) <- ECB_speeches$.date
-  expect_message(sentopics_date(jst) <- ECB_speeches$.date)
+  sentopics_date(jst) <- ECB_press_conferences_tokens$.date
+  expect_message(sentopics_date(jst) <- ECB_press_conferences_tokens$.date)
 
-  expect_identical(sentopics_date(jst), data.table(.id = names(toks), .date = as.Date(ECB_speeches$.date)))
+  expect_identical(sentopics_date(jst), data.table(.id = names(toks), .date = as.Date(ECB_press_conferences_tokens$.date)))
 })
 
-sentopics_sentiment(jst) <- ECB_speeches$.sentiment
-sentopics_date(jst) <- ECB_speeches$.date
+sentopics_sentiment(jst) <- ECB_press_conferences_tokens$.sentiment
+sentopics_date(jst) <- ECB_press_conferences_tokens$.date
 
 test_that("sentiment_series works", {
   
@@ -73,14 +73,14 @@ test_that("sentiment_series works", {
   expect_false(isTRUE(all.equal(s1_1, s2, check.attributes = FALSE)))
   
   
-  rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald) |> grow(1, displayProgress = FALSE)
+  rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald) |> grow(1, displayProgress = FALSE)
   sentopics_labels(jst) <- list(topic = paste0("superTopic", 1:jst$K))
   s1_2 <- sentiment_series(rjst)
   sentopics_sentiment(rjst, override = TRUE)
   s2 <- sentiment_series(rjst)
   expect_false(isTRUE(all.equal(s1_2, s2, check.attributes = FALSE)))
   
-  lda <- LDA(ECB_speeches) |> grow(1, displayProgress = FALSE)
+  lda <- LDA(ECB_press_conferences_tokens) |> grow(1, displayProgress = FALSE)
   s1_3 <- sentiment_series(lda)
   
   expect_identical(s1_1, s1_2)
@@ -94,7 +94,7 @@ test_that("sentiment_series works", {
   sentiment_series(lda, period = "day", rolling_window = 30, as.xts = FALSE)
   
   
-  lda <- LDA(ECB_speeches[1:2])
+  lda <- LDA(ECB_press_conferences_tokens[1:50])
   expect_error(sentiment_series(lda))
   expect_silent(sentiment_series(lda, period = "day"))
 })
@@ -102,7 +102,7 @@ test_that("sentiment_series works", {
 
 test_that("series functions works for LDA", {
 
-  lda <- LDA(ECB_speeches)
+  lda <- LDA(ECB_press_conferences_tokens)
   expect_silent(res <- sentiment_series(lda))
   expect_equal(mean(res), 0) 
   expect_equal(sd(res), 1) 
@@ -124,7 +124,7 @@ test_that("series functions works for LDA", {
 
 test_that("series functions works for rJST", {
   
-  rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
+  rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
   rjst <- grow(rjst, 10, displayProgress = FALSE)
 
   expect_warning(sentiment_breakdown(rjst))
@@ -170,7 +170,7 @@ test_that("series functions works for rJST", {
 
 test_that("series functions works for JST", {
   
-  jst <- JST(ECB_speeches, lexicon = LoughranMcDonald)
+  jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
   jst <- grow(jst, 10, displayProgress = FALSE)
   
   expect_error(sentiment_breakdown(jst))

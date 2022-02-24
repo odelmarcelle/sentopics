@@ -2,18 +2,18 @@
 context("Test utils")
 
 test_that("virtualDocuments works", {
-  toks <- ECB_speeches[1:10]
+  toks <- ECB_press_conferences_tokens[1:10]
   expect_warning(virtualDocuments(vD <- toks, window = 1000), "Some documents")
   expect_equal(names(toks), unique(gsub("\\..*", "", names(vD))))
-  expect_silent(vD <- virtualDocuments(toks, window = 100))
+  expect_silent(vD <- virtualDocuments(toks, window = 5))
   expect_equal(names(toks), unique(gsub("\\..*", "", names(vD))))
-  expect_true(all(lengths(vD) == 100))
+  expect_true(all(lengths(vD) == 5))
   expect_silent(vD <- virtualDocuments(toks, window = "boolean"))
   expect_identical(c(unclass(toks)), c(unclass(toks)))
 })
 
 test_that("as.tokens.dfm works", {
-  toks <- ECB_speeches[1:10]
+  toks <- ECB_press_conferences_tokens[1:10]
   dfm <- quanteda::dfm(toks, tolower = FALSE)
   expect_silent(LDA <- LDA(dfm))
   expect_silent(JST <- JST(dfm))
@@ -24,7 +24,7 @@ test_that("as.tokens.dfm works", {
 
 
 test_that("melt works", {
-  toks <- ECB_speeches[1:10]
+  toks <- ECB_press_conferences_tokens[1:10]
   model <- sentopicmodel(toks)
   expect_error(melt.sentopicmodel(model), "Nothing to melt")
   model <- grow(model, 10, displayProgress = FALSE)
@@ -32,7 +32,7 @@ test_that("melt works", {
 })
 
 test_that("sunburst works", {
-  toks <- ECB_speeches[1:10]
+  toks <- ECB_press_conferences_tokens[1:10]
   model <- sentopicmodel(toks)
   model <- grow(model, 10, displayProgress = FALSE)
   expect_silent(p <- plot(model))
@@ -43,7 +43,7 @@ test_that("sunburst works", {
 
 
 test_that("R likelihood works", {
-  toks <- ECB_speeches[1:10]
+  toks <- ECB_press_conferences_tokens[1:10]
   model <- sentopicmodel(toks)
   model <- grow(model, 10, displayProgress = FALSE)
   logLik <- c(tail(model$logLikelihood, 1L), sapply(attr(model$logLikelihood, "components"), tail, 1L))
@@ -58,7 +58,7 @@ test_that("R likelihood works", {
 
 
 test_that("recompile & reset works", {
-  toks <- ECB_speeches[1:2]
+  toks <- ECB_press_conferences_tokens[1:100]
   model <- JST(toks, lex = LoughranMcDonald)
   model$vocabulary[!is.na(lexicon)]
   model$vocabulary[word == "crisis"]
@@ -78,7 +78,7 @@ test_that("recompile & reset works", {
 })
 
 test_that("grow0 doesn't alter anything", {
-  toks <- ECB_speeches[1:2]
+  toks <- ECB_press_conferences_tokens[1:2]
   model <- LDA(toks)
   expect_identical(model, grow(model, 0, displayProgress = FALSE))
   model <- grow(model, 2, displayProgress = FALSE, computeLikelihood = FALSE)
@@ -89,7 +89,7 @@ test_that("grow0 doesn't alter anything", {
 
 
 test_that("mergeTopics works", {
-  toks <- ECB_speeches[1:10]
+  toks <- ECB_press_conferences_tokens[1:50]
   model <- LDA(toks)
   merged <- mergeTopics(model, as.list(1:5))
   sentopics_labels(merged)
@@ -110,7 +110,7 @@ test_that("mergeTopics works", {
   sentiment_topics(merged, period = "day")
   proportion_topics(merged, period = "day")
   
-  toks <- ECB_speeches[1:10]
+  toks <- ECB_press_conferences_tokens[1:50]
   model <- rJST(toks, lexicon = LoughranMcDonald)
   merged <- mergeTopics(model, as.list(1:5))
   sentopics_labels(merged)

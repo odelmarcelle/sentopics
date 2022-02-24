@@ -26,7 +26,7 @@ and \code{\link[stats:cmdscale]{stats::cmdscale()}} for the implementation of th
 scaling.
 }
 \examples{
-model <- LDA(ECB_speeches)
+model <- LDA(ECB_press_conferences_tokens)
 model <- grow(model, 10, nChains = 5)
 plot(model)
 

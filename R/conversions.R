@@ -260,10 +260,22 @@ quanteda::as.tokens
 #'   previously existed. The use of padding is encouraged to improve the
 #'   behavior of the coherence metrics (see [coherence()]) that rely on word
 #'   positions.
+#' @param case_insensitive only used when the `tokens` argument is provided.
+#'   Default to `FALSE`. This function removes words in the initial `tokens`
+#'   based on the remaining features in the `dfm` object. This check is
+#'   case-sensitive by default, and can be relaxed by setting this argument to
+#'   `TRUE`.
 #' @param ... unused
 #'
 #' @return a quanteda [quanteda::tokens] object.
 #' @export
+#' @examples
+#' library(quanteda)
+#' dfm <- dfm(ECB_press_conferences_tokens, tolower = FALSE)
+#' dfm <- dfm_trim(dfm, min_termfreq = 200)
+#' as.tokens(dfm)
+#' as.tokens(dfm, tokens = ECB_press_conferences_tokens)
+#' as.tokens(dfm, tokens = ECB_press_conferences_tokens, padding = FALSE)
 as.tokens.dfm <- function(x, concatenator = NULL, tokens = NULL, ignore_list = NULL, case_insensitive = FALSE, padding = TRUE, ...) {
   if (!is.null(tokens)) {
     if (!is.null(ignore_list)) keep <- c(dimnames(x)$features, ignore_list) else

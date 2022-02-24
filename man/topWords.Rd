@@ -30,6 +30,12 @@ plot_topWords(
 returning the top words}
 
 \item{output}{determines the output of the function}
+
+\item{subset}{allows to subset using a logical expression, as in \code{\link[=subset]{subset()}}.
+Particularly useful to limit the number of observation on plot outputs. The
+logical expression uses topic and sentiment \emph{indices} rather than their
+label. It is possible to subset on both topic and sentiment but adding a
+\code{&} operator between two expressions.}
 }
 \value{
 the top words of the topic model. Depending on the output chosen, can
@@ -40,14 +46,17 @@ Extract the top words in each topic/sentiment from a
 \code{sentopicmodel}.
 }
 \examples{
-model <- LDA(ECB_speeches)
+model <- LDA(ECB_press_conferences_tokens)
 model <- grow(model, 10)
 topWords(model)
-plot_topWords(model)
 topWords(model, output = "matrix")
-library(ggplot2)
-ggplot <- plot_topWords(model)
-ggplot \%+\% subset(ggplot$data, L1 \%in\% 1:2)
+plot_topWords(model)
+plot_topWords(model, subset = topic \%in\% 1:2)
+
+jst <- JST(ECB_press_conferences_tokens)
+jst <- grow(jst, 10)
+plot_topWords(jst)
+plot_topWords(jst, subset = topic \%in\% 1:2 & sentiment == 3)
 }
 \author{
 Olivier Delmarcelle

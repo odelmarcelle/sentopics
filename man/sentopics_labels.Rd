@@ -30,7 +30,7 @@ labels will appear in most functions dealing with the output of the
 }
 \examples{
 # by default, sentopics_labels() generate standard topic names
-lda <- LDA(ECB_speeches)
+lda <- LDA(ECB_press_conferences_tokens)
 sentopics_labels(lda)
 
 # to change labels, a named list must be provided
@@ -44,7 +44,7 @@ sentopics_labels(lda) <- NULL
 sentopics_labels(lda)
 
 # also works for JST/rJST models
-jst <- JST(ECB_speeches)
+jst <- JST(ECB_press_conferences_tokens)
 sentopics_labels(jst) <- list(
   topic = paste0("superTopic", 1:jst$K),
   sentiment = c("negative", "neutral", "positive")

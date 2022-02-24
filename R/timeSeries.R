@@ -41,22 +41,22 @@
 #' @export
 #' @examples
 #' # example dataset already contains ".sentiment" docvar
-#' docvars(ECB_speeches)
+#' docvars(ECB_press_conferences_tokens)
 #' # sentiment is automatically stored in the sentopicmodel object
-#' lda <- LDA(ECB_speeches)
+#' lda <- LDA(ECB_press_conferences_tokens)
 #' sentopics_sentiment(lda)
 #'
 #' # sentiment can be removed or modified by the assignment operator
 #' sentopics_sentiment(lda) <- NULL
-#' sentopics_sentiment(lda) <- docvars(ECB_speeches, ".sentiment")
+#' sentopics_sentiment(lda) <- docvars(ECB_press_conferences_tokens, ".sentiment")
 #'
 #' # for JST models, sentiment can be computed from the output of the model
-#' jst <- JST(ECB_speeches, lexicon = LoughranMcDonald)
+#' jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' jst <- grow(jst, 100)
 #' sentopics_sentiment(jst, override = TRUE) # replace existing sentiment
 #'
 #' ## for rJST models one sentiment value is computed by topic
-#' rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
+#' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' rjst <- grow(rjst, 100)
 #' sentopics_sentiment(rjst, override = TRUE)
 sentopics_sentiment <- function(x,
@@ -204,14 +204,14 @@ sentopics_sentiment <- function(x,
 #' @return a data.frame with the stored date per document.
 #' @examples
 #' # example dataset already contains ".date" docvar
-#' docvars(ECB_speeches)
+#' docvars(ECB_press_conferences_tokens)
 #' # dates are automatically stored in the sentopicmodel object
-#' lda <- LDA(ECB_speeches)
+#' lda <- LDA(ECB_press_conferences_tokens)
 #' sentopics_date(lda)
 #'
 #' # dates can be removed or modified by the assignment operator
 #' sentopics_date(lda) <- NULL
-#' sentopics_date(lda) <- docvars(ECB_speeches, ".date")
+#' sentopics_date(lda) <- docvars(ECB_press_conferences_tokens, ".date")
 sentopics_date <- function(x, include_docvars = FALSE) {
   docvars <- quanteda::docvars(x$tokens)
   if (!".date" %in% names(docvars)) stop("No dates stored internally. Please add dates to the documents by either\n\t1: ensuring the presence of a '.date' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_date(x) <- value` to register a vector of Dates in the topic model object.")
@@ -257,7 +257,7 @@ sentopics_date <- function(x, include_docvars = FALSE) {
 #' @return a character vector of topic/sentiment labels.
 #' @examples
 #' # by default, sentopics_labels() generate standard topic names
-#' lda <- LDA(ECB_speeches)
+#' lda <- LDA(ECB_press_conferences_tokens)
 #' sentopics_labels(lda)
 #'
 #' # to change labels, a named list must be provided
@@ -271,7 +271,7 @@ sentopics_date <- function(x, include_docvars = FALSE) {
 #' sentopics_labels(lda)
 #'
 #' # also works for JST/rJST models
-#' jst <- JST(ECB_speeches)
+#' jst <- JST(ECB_press_conferences_tokens)
 #' sentopics_labels(jst) <- list(
 #'   topic = paste0("superTopic", 1:jst$K),
 #'   sentiment = c("negative", "neutral", "positive")
@@ -359,12 +359,12 @@ sentopics_labels <- function(x, flat = TRUE) {
 #' @export
 #' @seealso sentopics_sentiment sentopics_date
 #' @examples
-#' lda <- LDA(ECB_speeches)
+#' lda <- LDA(ECB_press_conferences_tokens)
 #' series <- sentiment_series(lda, period = "month")
 #'
 #' # JST and rJST models can use computed sentiment from the sentiment layer,
 #' # but the model must be estimated first.
-#' rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald) 
+#' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald) 
 #' sentiment_series(rjst)
 #' 
 #' sentopics_sentiment(rjst) <- NULL ## remove existing sentiment
@@ -501,7 +501,7 @@ sentiment_series <- function(x,
 #'   averaged to compute the breakdown of the sentiment time series.
 #' @seealso sentopics_sentiment sentopics_date
 #' @examples
-#' lda <- LDA(ECB_speeches)
+#' lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- grow(lda, 100)
 #' sentiment_breakdown(lda)
 #'
@@ -509,7 +509,7 @@ sentiment_series <- function(x,
 #' plot_sentiment_breakdown(lda)
 #'
 #' # also available for rJST models (with topic-level sentiment)
-#' rjst <- rJST(ECB_speeches, , lexicon = LoughranMcDonald)
+#' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' rjst <- grow(rjst, 100)
 #' sentopics_sentiment(rjst, override = TRUE)
 #' plot_sentiment_breakdown(rjst)
@@ -660,7 +660,7 @@ sentiment_breakdown <- function(x,
       # scale_x_date(name = "Date", date_breaks = "1 month", date_labels = "%B") +
       # theme_classic(base_size = 12) +
       # theme(legend.position = "bottom") +
-      ggplot2::ggtitle("Breakdown of sentiment")
+      ggplot2::ggtitle("Sentiment breakdown")
     if (isTRUE(plot)) print(p_breakdown)
     breakdown <- breakdown[date %in% idx]
   }
@@ -736,7 +736,7 @@ plot_sentiment_breakdown <- function(x,
 #'   sentiments.
 #' @export
 #' @examples
-#' lda <- LDA(ECB_speeches)
+#' lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- grow(lda, 100)
 #' sentiment_topics(lda)
 #'
@@ -746,7 +746,7 @@ plot_sentiment_breakdown <- function(x,
 #' plot_sentiment_topics(lda, period = "month", plot_ridgelines = FALSE)
 #'
 #' # also available for rJST models with internal sentiment computation
-#' rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
+#' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' rjst <- grow(rjst, 100)
 #' sentopics_sentiment(rjst, override = TRUE)
 #' sentiment_topics(rjst)
@@ -940,7 +940,7 @@ plot_sentiment_topics <- function(x,
 #'
 #' @seealso sentopics_sentiment sentopics_date
 #' @examples
-#' lda <- LDA(ECB_speeches)
+#' lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- grow(lda, 100)
 #' proportion_topics(lda)
 #'
@@ -950,7 +950,7 @@ plot_sentiment_topics <- function(x,
 #' plot_proportion_topics(lda, period = "month", plot_ridgelines = FALSE)
 #'
 #' # also available for rJST and JST models
-#' jst <- JST(ECB_speeches, lexicon = LoughranMcDonald)
+#' jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' jst <- grow(jst, 100)
 #' # including both layers
 #' proportion_topics(jst)

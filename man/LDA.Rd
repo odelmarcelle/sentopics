@@ -28,9 +28,9 @@ The set of functions \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code
 routine and attempt to replicate their corresponding model.
 }
 \examples{
-data(ECB_speeches)
-LDA(ECB_speeches)
-rJST(ECB_speeches, lexicon = LoughranMcDonald)
+data(ECB_press_conferences_tokens)
+LDA(ECB_press_conferences_tokens)
+rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 }
 \seealso{
 Other topic models: 

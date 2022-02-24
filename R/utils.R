@@ -100,7 +100,7 @@ check_integrity <- function(x, detailed = FALSE, fast = TRUE) {
       S <- levels(x$vocabulary$lexicon)
       lexFlag <- all(
         all(x$beta[, is.na(x$vocabulary$lexicon)] != 0),
-        isTRUE(all.equal(unique(colSums(x$beta[, !is.na(x$vocabulary$lexicon)])),
+        isTRUE(all.equal(unique(colSums(x$beta[, !is.na(x$vocabulary$lexicon), drop = FALSE])),
                          unique(x$beta[x$beta > 0])*x$L2)),
         ### this checks that no lexicon word is assigned to another L1 than designated
         sapply(seq_along(S), function(i) {
@@ -972,29 +972,6 @@ getTexts <- function(x, topic, sentiment, n = 3, collapsed = TRUE) {
   else toks
 }
 
-
-#' @export
-reset <- function(x) {
-  
-  ## make copy or assignment are reset by reference
-  x$za <- data.table::copy(x$za)
-
-  class <- class(x)[1]
-  x <- as.sentopicmodel(x)
-  x$it <- 0
-  x$logLikelihood <- NULL
-  x$phi <- x$L2post <- x$L1post <- NULL
-
-  cpp_model <- rebuild_cppModel(x, core(x))
-  cpp_model$initAssignments()
-  # x <- utils::modifyList(x, extract_cppModel(cpp_model, core(x)))
-  tmp <- sentopics:::extract_cppModel(cpp_model, core(x))
-  x[names(tmp)] <- tmp
-
-  
-  fun <- get(paste0("as.", class))
-  fun(reorder_sentopicmodel(x))
-}
 
 computeFcm <- function(x, window = 10) {
   collocationsV <- quanteda::dfm(sentopics:::virtualDocuments(x, window), tolower = FALSE)

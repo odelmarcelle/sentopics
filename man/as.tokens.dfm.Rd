@@ -27,6 +27,12 @@ respected in the coerced object.}
 from the initial tokens object. Useful to avoid removing some lexicon word
 following the usage of \code{\link[quanteda:dfm_trim]{quanteda::dfm_trim()}}.}
 
+\item{case_insensitive}{only used when the \code{tokens} argument is provided.
+Default to \code{FALSE}. This function removes words in the initial \code{tokens}
+based on the remaining features in the \code{dfm} object. This check is
+case-sensitive by default, and can be relaxed by setting this argument to
+\code{TRUE}.}
+
 \item{padding}{if \code{TRUE}, leaves an empty string where the removed tokens
 previously existed. The use of padding is encouraged to improve the
 behavior of the coherence metrics (see \code{\link[=coherence]{coherence()}}) that rely on word
@@ -39,4 +45,12 @@ a quanteda \link[quanteda:tokens]{quanteda::tokens} object.
 }
 \description{
 Convert back a dfm to a tokens object
+}
+\examples{
+library(quanteda)
+dfm <- dfm(ECB_press_conferences_tokens, tolower = FALSE)
+dfm <- dfm_trim(dfm, min_termfreq = 200)
+as.tokens(dfm)
+as.tokens(dfm, tokens = ECB_press_conferences_tokens)
+as.tokens(dfm, tokens = ECB_press_conferences_tokens, padding = FALSE)
 }

@@ -138,9 +138,9 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #'
 #' @export
 #' @examples
-#' data(ECB_speeches)
-#' LDA(ECB_speeches)
-#' rJST(ECB_speeches, lexicon = LoughranMcDonald)
+#' data(ECB_press_conferences_tokens)
+#' LDA(ECB_press_conferences_tokens)
+#' rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 sentopicmodel <- function(x, lexicon = NULL, L1 = 5, L2 = 3,
                  L1prior = 1, L2prior = 5, beta = 0.01,
                  L1cycle = 0, L2cycle = 0,

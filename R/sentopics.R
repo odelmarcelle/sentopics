@@ -30,24 +30,41 @@ NULL
 #' @references ...
 "_PACKAGE"
 
+#' Example dataset
+#'
+#' @docType data
+#'
+#' @description ...
+#'
+#' @usage data("ECB_press_conferences")
+#'
+#' @examples
+#' data("ECB_press_conferences")
+#' head(ECB_press_conferences)
+#'
+#' @format A \code{quanteda::corpus} object.
+#'
+#' @source \url{www.ecb.europa.eu/press/key/html/index.en.html}.
+"ECB_press_conferences"
+
 #' Example tokenized speeches
 #'
 #' @docType data
 #'
 #' @description ...
 #'
-#' @usage data("ECB_speeches")
+#' @usage data("ECB_press_conferences_tokens")
 #'
 #' @examples
-#' data("ECB_speeches")
-#' head(ECB_speeches)
+#' data("ECB_press_conferences_tokens")
+#' head(ECB_press_conferences_tokens)
 #'
 #' @format A \code{quanteda::tokens} object.
 #'
 #' @source \url{www.ecb.europa.eu/press/key/html/index.en.html}.
-"ECB_speeches"
+"ECB_press_conferences_tokens"
 
-#' Example lexicon
+#' Loughran-McDonald lexicon
 #'
 #' @docType data
 #'
@@ -64,20 +81,36 @@ NULL
 #' @source \url{https://sraf.nd.edu/textual-analysis/resources/}
 "LoughranMcDonald"
 
-
-#' Example lexicon2
+#' Picault-Renault lexicon
 #'
 #' @docType data
 #'
 #' @description ...
 #'
-#' @usage data("LSDfr")
+#' @usage data("PicaultRenault")
 #'
 #' @examples
-#' data("LSDfr")
-#' summary(LSDfr)
+#' data("PicaultRenault")
+#' summary(PicaultRenault)
 #'
-#' @format A quanteda \code{dictionary}.
+#' @format A \code{data.table}.
 #'
-#' @source \url{https://www.poltext.org/fr/donnees-et-analyses/lexicoder}
-"LSDfr"
+#' @source \url{http://www.cbcomindex.com/lexicon.php}
+"PicaultRenault"
+
+#' Regression dataset
+#'
+#' @docType data
+#'
+#' @description ...
+#'
+#' @usage data("PicaultRenault_data")
+#'
+#' @examples
+#' data("PicaultRenault_data")
+#' summary(PicaultRenault_data)
+#'
+#' @format A \code{xts}.
+#'
+#' @source \url{https://sraf.nd.edu/textual-analysis/resources/}
+"PicaultRenault_data"

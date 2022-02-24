@@ -30,9 +30,9 @@ of a chain
 Compute scores of topic models (chains)
 }
 \examples{
-model <- LDA(ECB_speeches[1:10])
+model <- LDA(ECB_press_conferences_tokens[1:10])
 model <- grow(model, 10, nChains = 5)
-chainsScores(model)
+chainsScores(model, window = 5)
 chainsScores(model, window = "boolean")
 
 }

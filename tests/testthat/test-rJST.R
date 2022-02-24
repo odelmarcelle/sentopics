@@ -1,6 +1,6 @@
 
 context("testing rJST")
-toks <- ECB_speeches[1:10]
+toks <- ECB_press_conferences_tokens[1:10]
 
 rJST <- rJST(toks, lexicon = LoughranMcDonald)
 

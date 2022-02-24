@@ -1,6 +1,6 @@
 
 context("Basic tests")
-toks <- ECB_speeches[1:20]
+toks <- ECB_press_conferences_tokens[1:20]
 sentopicmodel <- sentopicmodel(toks, lex = LoughranMcDonald)
 
 

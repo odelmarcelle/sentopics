@@ -240,6 +240,17 @@ get_ECB_press_conferences <- function(data.table = TRUE) {
   res
 }
 
+
+
+#' Compute scores using the Picault-Renault lexicon
+#'
+#' @description ...
+#'
+#' @param x ...
+#' @param min_ngram ...
+#' @param by_doc ...
+#' @param return_dfm ...
+#'
 #' @export
 compute_PicaultRenaut_scores <- function(x, min_ngram = 2, by_doc = TRUE, return_dfm = FALSE) {
   PicaultRenault <- PicaultRenault[PicaultRenault$ngram >= min_ngram, ]

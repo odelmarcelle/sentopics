@@ -61,22 +61,22 @@ proportions.
 }
 \examples{
 # example dataset already contains ".sentiment" docvar
-docvars(ECB_speeches)
+docvars(ECB_press_conferences_tokens)
 # sentiment is automatically stored in the sentopicmodel object
-lda <- LDA(ECB_speeches)
+lda <- LDA(ECB_press_conferences_tokens)
 sentopics_sentiment(lda)
 
 # sentiment can be removed or modified by the assignment operator
 sentopics_sentiment(lda) <- NULL
-sentopics_sentiment(lda) <- docvars(ECB_speeches, ".sentiment")
+sentopics_sentiment(lda) <- docvars(ECB_press_conferences_tokens, ".sentiment")
 
 # for JST models, sentiment can be computed from the output of the model
-jst <- JST(ECB_speeches, lexicon = LoughranMcDonald)
+jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 jst <- grow(jst, 100)
 sentopics_sentiment(jst, override = TRUE) # replace existing sentiment
 
 ## for rJST models one sentiment value is computed by topic
-rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
+rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 rjst <- grow(rjst, 100)
 sentopics_sentiment(rjst, override = TRUE)
 }

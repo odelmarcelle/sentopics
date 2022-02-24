@@ -64,7 +64,7 @@ Aggregate the topical or sentiment proportions at the document
 level into time series.
 }
 \examples{
-lda <- LDA(ECB_speeches)
+lda <- LDA(ECB_press_conferences_tokens)
 lda <- grow(lda, 100)
 proportion_topics(lda)
 
@@ -74,7 +74,7 @@ plot_proportion_topics(lda, period = "month", rolling_window = 3)
 plot_proportion_topics(lda, period = "month", plot_ridgelines = FALSE)
 
 # also available for rJST and JST models
-jst <- JST(ECB_speeches, lexicon = LoughranMcDonald)
+jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 jst <- grow(jst, 100)
 # including both layers
 proportion_topics(jst)

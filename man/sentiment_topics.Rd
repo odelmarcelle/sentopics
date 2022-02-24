@@ -84,7 +84,7 @@ the topic in document d and \eqn{theta_d} the topic proportion in a
 document d.
 }
 \examples{
-lda <- LDA(ECB_speeches)
+lda <- LDA(ECB_press_conferences_tokens)
 lda <- grow(lda, 100)
 sentiment_topics(lda)
 
@@ -94,7 +94,7 @@ plot_sentiment_topics(lda, period = "month", rolling_window = 3)
 plot_sentiment_topics(lda, period = "month", plot_ridgelines = FALSE)
 
 # also available for rJST models with internal sentiment computation
-rjst <- rJST(ECB_speeches, lexicon = LoughranMcDonald)
+rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 rjst <- grow(rjst, 100)
 sentopics_sentiment(rjst, override = TRUE)
 sentiment_topics(rjst)

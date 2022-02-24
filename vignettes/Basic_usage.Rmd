@@ -21,15 +21,15 @@ knitr::opts_chunk$set(
 
 # Data
 
-The package is shipped with a sample of speeches from the European Central bank since 2016. For clarity, the speeches have been pre-processed into a `tokens` object from the `quanteda` package. (See [quanteda's introduction](https://quanteda.io/articles/quickstart.html#tokenizing-texts-1) for details on these objects). The speeches also contains meta-data which can be accessed using `docvars()`.
+The package is shipped with a sample of press conferences from the European Central bank. For ease of use, the press conferences have been pre-processed into a `tokens` object from the `quanteda` package. (See [quanteda's introduction](https://quanteda.io/articles/quickstart.html#tokenizing-texts-1) for details on these objects). The press conferences also contains meta-data which can be accessed using `docvars()`.
 
-The speeches were obtained from [ECB's website](https://www.ecb.europa.eu/press/key/html/index.en.html). The package also provides an helper function to replicate the creation of the dataset: `get_ECB_speeches()`
+The press conferences were obtained from [ECB's website](https://www.ecb.europa.eu/press/key/html/index.en.html). The package also provides an helper function to replicate the creation of the dataset: `get_ECB_press_conferences()`
 
 ```{r}
 library(sentopics)
-data("ECB_speeches")
-print(ECB_speeches, 3)
-head(docvars(ECB_speeches))
+data("ECB_press_conferences_tokens")
+print(ECB_press_conferences_tokens, 3)
+head(docvars(ECB_press_conferences_tokens))
 ```
 # Topic modeling
 
@@ -55,12 +55,14 @@ The estimation of a LDA model is easily replicated using the `LDA()` and `grow()
 
 ```{r}
 set.seed(123)
-lda <- LDA(ECB_speeches)
+lda <- LDA(ECB_press_conferences_tokens)
 lda
 lda <- grow(lda, iterations = 100)
 lda
 ```
+
 Internally, the `lda` object is stored as a list and contains the model's parameters and outputs.
+
 ```{r}
 str(lda, max.level = 1, give.attr = FALSE)
 ```
@@ -83,7 +85,7 @@ To ease the result analysis, we can rename the default topic labels using the `s
 
 ```{r}
 sentopics_labels(lda) <- list(
-  topic = c("Inflation", "Payments", "European crisis", "Monetary policy", "Banking")
+  topic = c("Inflation", "Fiscal policy", "Governing council", "Financial sector", "Uncertainty")
 )
 head(lda$theta)
 plot_topWords(lda) + ggplot2::theme_grey(base_size = 9)
@@ -95,7 +97,7 @@ Besides modifying topic labels, it is also possible to merge topics into a great
 ```{r}
 merged <- mergeTopics(lda, list(
   `Big big thematic` = c(1, 3:5),
-  Payments = 2
+  `Fical policy` = 2
 ))
 merged
 ```

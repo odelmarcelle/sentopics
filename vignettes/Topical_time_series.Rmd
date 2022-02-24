@@ -27,10 +27,10 @@ The example dataset shipped with the package already contains two *docvars*: `.d
 library(xts)
 library(data.table)
 library(sentopics)
-data("ECB_speeches")
-head(docvars(ECB_speeches))
+data("ECB_press_conferences_tokens")
+head(docvars(ECB_press_conferences_tokens))
 set.seed(123)
-lda <- LDA(ECB_speeches, K = 9, alpha = 1, beta = 0.001)
+lda <- LDA(ECB_press_conferences_tokens, K = 9, alpha = 1, beta = 0.001)
 head(sentopics_date(lda))
 head(sentopics_sentiment(lda))
 ```
@@ -73,6 +73,7 @@ Using this share of sentiment and the documents' date, one may compute two addit
 head(na.omit(sentiment_breakdown(lda, period = "month", rolling_window = 6)))
 head(na.omit(sentiment_topics(lda, period = "month", rolling_window = 6)))
 ```
+
 Furthermore, these functions have embedded plot options, that are directly accessible using the `plot_` prefix.
 
 ```{r}

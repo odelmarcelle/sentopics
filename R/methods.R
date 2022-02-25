@@ -1,12 +1,7 @@
 
 # print -------------------------------------------------------------------
 
-
-### TODO: are print methods OK? see tools::.print.via.format
-#' @export
-print.sentopicmodel <- function(x, ...) {
-  cat("A sentopicmodel topic model with", x$L1, "topics and", x$L2, "sentiments. Currently grown by",
-      x$it, "Gibbs sampling iterations.\n")
+sentopics_print_extend <- function(extended = FALSE) {
   methods = c("grow", "topics", "topWords", "plot")
   explain <- c("Iterates the model using Gibbs sampling",
                "Return the most important topic of each document",
@@ -14,25 +9,49 @@ print.sentopicmodel <- function(x, ...) {
                "A sunburst chart representing the estimated mixtures")
   cat("------------------Useful methods------------------\n")
   cat(sprintf("%-10s:%s", methods, explain), sep = "\n")
+  if (!extended) cat("This helpful message is displayed once per session, unless calling `print(x, extended = TRUE)`\n")
+}
+
+### TODO: are print methods OK? see tools::.print.via.format
+#' @export
+print.sentopicmodel <- function(x, extended = FALSE, ...) {
+  cat("A sentopicmodel topic model with", x$L1, "topics and", x$L2, "sentiments. Currently grown by",
+      x$it, "Gibbs sampling iterations.\n")
+  if (getOption("sentopics_print_extended", TRUE) | extended) {
+    sentopics_print_extend(extended)
+    options(sentopics_print_extended = FALSE)
+  }
   ##TODO: add models paremeters? ex: # cat("Model parameters: alpha = ")
 }
 
 #' @export
-print.rJST <- function(x, ...) {
+print.rJST <- function(x, extended = FALSE, ...) {
   cat("A reversed-JST model with", x$K, "topics and", x$S, "sentiments. Currently grown by",
       x$it, "Gibbs sampling iterations.\n")
+  if (getOption("sentopics_print_extended", TRUE) | extended) {
+    sentopics_print_extend(extended)
+    options(sentopics_print_extended = FALSE)
+  }
 }
 
 #' @export
-print.LDA <- function(x, ...) {
+print.LDA <- function(x, extended = FALSE, ...) {
   cat("A LDA model with", x$K, "topics. Currently grown by",
       x$it, "Gibbs sampling iterations.\n")
+  if (getOption("sentopics_print_extended", TRUE) | extended) {
+    sentopics_print_extend(extended)
+    options(sentopics_print_extended = FALSE)
+  }
 }
 
 #' @export
-print.JST <- function(x, ...) {
+print.JST <- function(x, extended = FALSE, ...) {
   cat("A JST model with", x$S, "sentiments and", x$K, "topics. Currently grown by",
       x$it, "Gibbs sampling iterations.\n")
+  if (getOption("sentopics_print_extended", TRUE) | extended) {
+    sentopics_print_extend(extended)
+    options(sentopics_print_extended = FALSE)
+  }
 }
 
 #' @export
@@ -42,7 +61,7 @@ print.multiChains <- function(x, ...) {
 }
 
 #' @export
-print.topWords <- function(x, generativeVocabulary = NULL, ...) {
+print.topWords <- function(x, ...) {
   if (!is.null(attr(x, "method"))) colnames(x)[colnames(x) == "value"] <- attr(x, "method")
   NextMethod()
 }

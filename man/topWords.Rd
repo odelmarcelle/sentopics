@@ -3,21 +3,23 @@
 \name{topWords}
 \alias{topWords}
 \alias{plot_topWords}
-\title{TITLE}
+\title{Extract the most representative words from topics}
 \usage{
 topWords(
   x,
   nWords = 10,
-  method = c("frequency", "probability", "term-score"),
+  method = c("frequency", "probability", "term-score", "FREX"),
   output = c("data.frame", "plot", "matrix"),
-  subset
+  subset,
+  w = 0.5
 )
 
 plot_topWords(
   x,
   nWords = 10,
-  method = c("frequency", "probability", "term-score"),
-  subset
+  method = c("frequency", "probability", "term-score", "FREX"),
+  subset,
+  w = 0.5
 )
 }
 \arguments{
@@ -36,6 +38,9 @@ Particularly useful to limit the number of observation on plot outputs. The
 logical expression uses topic and sentiment \emph{indices} rather than their
 label. It is possible to subset on both topic and sentiment but adding a
 \code{&} operator between two expressions.}
+
+\item{w}{only used when \code{method = "FREX"}. Determines the weight assigned to
+the frequency score at the expense of the exclusivity score.}
 }
 \value{
 the top words of the topic model. Depending on the output chosen, can

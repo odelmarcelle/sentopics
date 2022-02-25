@@ -22,6 +22,8 @@ test_that("accessors works", {
 
   expect_s3_class(tmp <- generated_sentopicmodel[1], "multiChains")
   expect_true(check_integrity(tmp[[1]]))
+  expect_s3_class(head(generated_sentopicmodel), "multiChains")
+  expect_s3_class(tail(generated_sentopicmodel), "multiChains")
 })
 
 if (Sys.getenv("R_COVR") != "true") {

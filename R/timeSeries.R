@@ -1180,7 +1180,7 @@ plot_proportion_topics <- function(x,
                                    complete = TRUE,
                                    plot_ridgelines = TRUE,
                                    ...) {
-  period <- match.arg("period")
+  period <- match.arg(period)
   if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) plot_ridgelines <- FALSE
   res <- proportion_topics(x, period, rolling_window, complete, plot_ridgelines,
                              plot = "silent", as.xts = FALSE, ...)

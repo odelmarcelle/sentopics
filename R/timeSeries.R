@@ -714,7 +714,9 @@ plot_sentiment_breakdown <- function(x,
 #'   still attaches it as an attribute.
 #' @param plot_ridgelines if `TRUE`, time series are plotted as ridgelines.
 #'   Requires `ggridges` package installed. If `FALSE`, the plot will use only
-#'   standards `ggplot2` functions.
+#'   standards `ggplot2` functions. If the argument is missing and the package
+#'   `ggridges` is not installed, this will quietly switch to a `ggplot2`
+#'   output.
 #' @param as.xts if `TRUE`, returns an [xts::xts] object. Otherwise, returns a
 #'   data.frame.
 #' @param ... other arguments passed on to [zoo::rollapply()] or [mean()] and
@@ -774,6 +776,7 @@ sentiment_topics <- function(x,
   if (rolling_window > 1) mis <- c("zoo")
   if (as.xts) mis <- c(mis, "xts")
   if (!isFALSE(plot)) mis <- c(mis, "ggplot2")
+  if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) plot_ridgelines <- FALSE
   if (plot_ridgelines & !isFALSE(plot)) mis <- c(mis, "ggridges")
   mis <- missingSuggets(mis)
   if (length(mis) > 0) stop("Suggested packages are missing for the sentiment_topics function.\n",
@@ -868,7 +871,8 @@ sentiment_topics <- function(x,
     plot_data <- topical_sent[, lapply(.SD, nafill, type = "locf")]
     plot_data <- stats::na.omit(melt(plot_data, id.vars = "date"))
 
-    if (plot_ridgelines & length(missingSuggets("ggridges")) == 0) {
+    # if (plot_ridgelines & length(missingSuggets("ggridges")) == 0) {
+    if (plot_ridgelines) {
       plot_data <- plot_data[, list(date, value = value / max(abs(value)), variable)]
 
       p_topical_sent <-
@@ -877,22 +881,26 @@ sentiment_topics <- function(x,
         ggplot2::scale_fill_manual(values = make_colors(x, "L1")) +
         # ggplot2::scale_x_date(expand = c(0,0)) +
         ggplot2::guides(fill = "none") +
-        ggplot2::ylab("Topical sentiment")
+        ggplot2::ylab("Topical sentiment") +
+        ggplot2::xlab("Date")
     } else {
 
-      if (plot_ridgelines) message("Package `ggridges` is missing. Defaulting to standard ggplot.")
+      # if (plot_ridgelines) message("Package `ggridges` is missing. Defaulting to standard ggplot.")
 
       p_topical_sent <-
         ggplot2::ggplot(plot_data, ggplot2::aes(date, value, color = variable)) +
         ggplot2::geom_line(size = 1.5) +
-        ggplot2::guides(color = ggplot2::guide_legend(reverse = TRUE, title = "Topic")) +
+        # ggplot2::guides(color = ggplot2::guide_legend(reverse = TRUE, title = "Topic")) +
+        ggplot2::guides(color = "none") +
         ggplot2::scale_color_manual(values = make_colors(x, "L1")) +
         # ggplot2::scale_y_continuous(expand = c(0,0), labels = function(breaks) sprintf("%.f%%", breaks * 100) ) +
         ggplot2::scale_x_date(expand = c(0,0)) +
         ggplot2::theme_bw() +
         # ggplot2::geom_line(ggplot2::aes(date, cum_value, group = variable),
         #                    inherit.aes = FALSE) +
-        ggplot2::ylab("Topical sentiment")
+        ggplot2::ylab("Topical sentiment") +
+        ggplot2::xlab("Date") +
+        ggplot2::facet_wrap(. ~variable)
     }
 
     if (isTRUE(plot)) print(p_topical_sent)
@@ -915,6 +923,7 @@ plot_sentiment_topics <- function(x,
                                   scaling_period = c("1900-01-01", "2099-12-31"),
                                   plot_ridgelines = TRUE,
                                   ...) {
+  if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) plot_ridgelines <- FALSE
   res <- sentiment_topics(x, period, rolling_window, scale, scaling_period,
                           plot_ridgelines, plot = "silent", as.xts = FALSE, ...)
   attr(res, "plot")
@@ -976,6 +985,7 @@ proportion_topics <- function(x,
   if (rolling_window > 1) mis <- c("zoo")
   if (as.xts) mis <- c(mis, "xts")
   if (!isFALSE(plot)) mis <- c(mis, "ggplot2")
+  if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) plot_ridgelines <- FALSE
   if (plot_ridgelines & !isFALSE(plot)) mis <- c(mis, "ggridges")
   mis <- missingSuggets(mis)
   if (length(mis) > 0) stop("Suggested packages are missing for the proportion_topics function.\n",
@@ -1061,7 +1071,8 @@ proportion_topics <- function(x,
 
     if (inherits(x, "LDA") | !complete) colorScope <- "L1" else colorScope <- c("L1", "L2")
 
-    if (plot_ridgelines & length(missingSuggets("ggridges")) == 0) {
+    # if (plot_ridgelines & length(missingSuggets("ggridges")) == 0) {
+    if (plot_ridgelines) {
       plot_data <- plot_data[, list(date, value = value / max(abs(`value`)), `variable`)]
 
       p_proportions <-
@@ -1070,37 +1081,43 @@ proportion_topics <- function(x,
         # ggplot2::scale_x_date(expand = c(0,0)) +
         ggplot2::scale_fill_manual(values = make_colors(x, colorScope)) +
         ggplot2::guides(fill = "none") +
-        ggplot2::ylab(ifelse(inherits(x, "JST"), "Sentiment proportion", "Topical proportion"))
+        ggplot2::ylab(ifelse(inherits(x, "JST"), "Sentiment proportion", "Topical proportion")) +
+        ggplot2::xlab("Date")
 
     } else {
 
-      if (plot_ridgelines) message("Package `ggridges` is missing. Defaulting to standard ggplot.")
+      # if (plot_ridgelines) message("Package `ggridges` is missing. Defaulting to standard ggplot.")
 
       # plot_data[, cum_value := cumsum(value), by = "date"]
       p_proportions <-
         ggplot2::ggplot(plot_data, ggplot2::aes(date, value, fill = variable)) +
         ggplot2::geom_area(position = ggplot2::position_stack(reverse = TRUE)) +
-        ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE,
-                                                     title = ifelse(inherits(x, "JST"), "Sentiment", "Topic"))) +
+        # ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE,
+        #                                              title = ifelse(inherits(x, "JST"), "Sentiment", "Topic"))) +
+        ggplot2::guides(fill = "none") +
         ggplot2::scale_fill_manual(values = make_colors(x, colorScope)) +
-        ggplot2::scale_y_continuous(expand = c(0,0), labels = function(breaks) sprintf("%.f%%", breaks * 100) ) +
+        ggplot2::scale_y_continuous(expand = c(0,0), labels = function(breaks) sprintf("%.f%%", breaks * 100),
+                                    limits = c(0, NA)) +
         ggplot2::scale_x_date(expand = c(0,0)) +
-        ggplot2::theme_bw() +
-        ggplot2::ylab(ifelse(inherits(x, "JST"), "Sentiment proportion", "Topical proportion"))
+        ggplot2::ylab(ifelse(inherits(x, "JST"), "Sentiment proportion", "Topical proportion")) +
+        ggplot2::xlab("Date") +
+        ggplot2::facet_wrap(. ~variable)
 
       # for non-LDA models, draw line only at intersection between upper layer
       # labels
-      if (inherits(x, "LDA") | !complete) {
+      ## With the update and the built-in facet wrap, the distinction no longer
+      ## make sense
+      # if (inherits(x, "LDA") | !complete) {
         p_proportions <- p_proportions +
           ggplot2::geom_line(position = ggplot2::position_stack(reverse = TRUE))
-      } else {
-        tmp <- create_labels(x, flat = FALSE)
-        tmp <- sapply(tmp$L1, paste0, "_", tmp$L2[length(tmp$L2)], USE.NAMES = FALSE)
-        plot_data_alt <- plot_data[, list(variable, value = cumsum(value)), by = "date"]
-        plot_data_alt <- plot_data_alt[variable %in% tmp]
-        p_proportions <- p_proportions +
-          ggplot2::geom_line(data = plot_data_alt)
-      }
+      # } else {
+      #   tmp <- create_labels(x, flat = FALSE)
+      #   tmp <- sapply(tmp$L1, paste0, "_", tmp$L2[length(tmp$L2)], USE.NAMES = FALSE)
+      #   plot_data_alt <- plot_data[, list(variable, value = cumsum(value)), by = "date"]
+      #   plot_data_alt <- plot_data_alt[variable %in% tmp]
+      #   p_proportions <- p_proportions +
+      #     ggplot2::geom_line(data = plot_data_alt)
+      # }
 
       
       
@@ -1126,6 +1143,7 @@ plot_proportion_topics <- function(x,
                                    complete = TRUE,
                                    plot_ridgelines = TRUE,
                                    ...) {
+  if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) plot_ridgelines <- FALSE
   res <- proportion_topics(x, period, rolling_window, complete, plot_ridgelines,
                              plot = "silent", as.xts = FALSE, ...)
   attr(res, "plot")

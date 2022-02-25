@@ -514,7 +514,7 @@ sentiment_series <- function(x,
 #' sentopics_sentiment(rjst, override = TRUE)
 #' plot_sentiment_breakdown(rjst)
 sentiment_breakdown <- function(x,
-                                period = c("year", "quarter", "month", "day"),
+                                period = c("year", "quarter", "month", "day", "identity"),
                                 rolling_window = 1,
                                 scale =  TRUE,
                                 scaling_period = c("1900-01-01", "2099-12-31"),
@@ -547,7 +547,7 @@ sentiment_breakdown <- function(x,
   proportions <- dcast(melt(x)[, .(prob = sum(prob)), by = c("topic", ".id")],
                        .id ~ topic, value.var = "prob")
 
-  if (scale) {
+  if (scale & period != "identity") {
     invisible(sentiment_series(x, period = period, rolling_window = rolling_window, scale = scale, scaling_period = scaling_period, ...))
     # tmp_sent <- sentopics_sentiment(x, quiet = TRUE)[, list(.id, sentiment = .sentiment_scaled)]
     tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
@@ -577,6 +577,19 @@ sentiment_breakdown <- function(x,
     by = ".id", sort = FALSE
   )
   
+  ## early return
+  if (period == "identity") {
+    sCols <- names(proportions)[grepl("^s_", names(proportions))]
+    if (length(sCols) == 0) sCols <- "sentiment"
+    thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
+    breakdown <- proportions[, c(
+      list(date = .date, sentiment = sentiment),
+      mapply(function(s_i, theta_i) s_i * theta_i,
+             theta_i = .SD[, theta], s_i = .SD[, s],
+             SIMPLIFY = FALSE)),
+      env = I(list( s = sCols, theta = thetaCols))]
+    return(breakdown)
+  }
 
   if (length(tmp_sent) <= 2) {
     ## then there is only one sentiment column
@@ -682,6 +695,7 @@ plot_sentiment_breakdown <- function(x,
                                      scale =  TRUE,
                                      scaling_period = c("1900-01-01", "2099-12-31"),
                                      ...) {
+  period <- match.arg(period)
   res <- sentiment_breakdown(x, period, rolling_window, scale, scaling_period,
                              plot = "silent", as.xts = FALSE, ...)
   attr(res, "plot")
@@ -699,7 +713,9 @@ plot_sentiment_breakdown <- function(x,
 #' @param x a [LDA()] or [rJST()] model populated with internal dates and/or
 #'   internal sentiment.
 #' @param period the sampling period within which the sentiment of documents
-#'   will be averaged.
+#'   will be averaged. `period = "identity"` is a special case that will return
+#'   document-level variables before the aggregation happens. Useful to rapidly
+#'   compute topical sentiment at the document level.
 #' @param rolling_window if greater than 1, determines the rolling window to
 #'   compute a moving average of sentiment. The rolling window is based on the
 #'   period unit and rely on actual dates (i.e, is not affected by unequally
@@ -753,7 +769,7 @@ plot_sentiment_breakdown <- function(x,
 #' sentopics_sentiment(rjst, override = TRUE)
 #' sentiment_topics(rjst)
 sentiment_topics <- function(x,
-                             period = c("year", "quarter", "month", "day"),
+                             period = c("year", "quarter", "month", "day", "identity"),
                              rolling_window = 1,
                              scale =  TRUE,
                              scaling_period = c("1900-01-01", "2099-12-31"),
@@ -789,7 +805,7 @@ sentiment_topics <- function(x,
   proportions <- dcast(melt(x)[, .(prob = sum(prob)), by = c("topic", ".id")],
                        .id ~ topic, value.var = "prob")
 
-  if (scale) {
+  if (scale & period != "identity") {
     invisible(sentiment_series(x, period = period, rolling_window = rolling_window, scale = scale, scaling_period = scaling_period, ...))
     # tmp_sent <- sentopics_sentiment(x, quiet = TRUE)[, list(.id, sentiment = .sentiment_scaled)]
     tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
@@ -817,7 +833,21 @@ sentiment_topics <- function(x,
     proportions,
     by = ".id", sort = FALSE
   )
-
+  
+  ## early return
+  if (period == "identity") {
+    sCols <- names(proportions)[grepl("^s_", names(proportions))]
+    if (length(sCols) == 0) sCols <- "sentiment"
+    thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
+    topical_sent <- proportions[, c(
+      list(date = .date),
+      mapply(function(s_i, theta_i) s_i * theta_i,
+             theta_i = .SD[, theta], s_i = .SD[, s],
+             SIMPLIFY = FALSE)),
+      env = I(list( s = sCols, theta = thetaCols))]
+    return(topical_sent)
+  }
+  
   if (length(tmp_sent) <= 2) {
     ## then there is only one sentiment column
     if (inherits(x, "rJST")) warning("Sentiment for the rJST model comes from an external source. This means that the sentiment layer of the model is ignored. Was it really your intent? Perhaps should you run `sentopics_sentiment(x, override = TRUE)` on the model before calling this function, or instead remove the sentiment layer by using an LDA.")
@@ -923,6 +953,7 @@ plot_sentiment_topics <- function(x,
                                   scaling_period = c("1900-01-01", "2099-12-31"),
                                   plot_ridgelines = TRUE,
                                   ...) {
+  period <- match.arg(period)
   if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) plot_ridgelines <- FALSE
   res <- sentiment_topics(x, period, rolling_window, scale, scaling_period,
                           plot_ridgelines, plot = "silent", as.xts = FALSE, ...)
@@ -966,7 +997,7 @@ plot_sentiment_topics <- function(x,
 #' # or not
 #' proportion_topics(jst, complete = FALSE)
 proportion_topics <- function(x,
-                              period = c("year", "quarter", "month", "day"),
+                              period = c("year", "quarter", "month", "day", "identity"),
                               rolling_window = 1,
                               complete = TRUE,
                               plot = c(FALSE,  TRUE, "silent"),
@@ -1023,7 +1054,13 @@ proportion_topics <- function(x,
     proportions,
     by = ".id", sort = FALSE
   )
-
+  
+  ## early return
+  if (period == "identity") {
+    data.table::setnames(proportions, ".date", "date")
+    return(proportions)
+  }
+  
   proportions <- proportions[, c(lapply(.SD, mean)),
                               .SDcols = -c(".id", ".date"),
                               by = list(date = floor_date(`.date`, period))]
@@ -1143,6 +1180,7 @@ plot_proportion_topics <- function(x,
                                    complete = TRUE,
                                    plot_ridgelines = TRUE,
                                    ...) {
+  period <- match.arg("period")
   if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) plot_ridgelines <- FALSE
   res <- proportion_topics(x, period, rolling_window, complete, plot_ridgelines,
                              plot = "silent", as.xts = FALSE, ...)

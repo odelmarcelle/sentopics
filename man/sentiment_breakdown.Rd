@@ -7,7 +7,7 @@
 \usage{
 sentiment_breakdown(
   x,
-  period = c("year", "quarter", "month", "day"),
+  period = c("year", "quarter", "month", "day", "identity"),
   rolling_window = 1,
   scale = TRUE,
   scaling_period = c("1900-01-01", "2099-12-31"),
@@ -30,7 +30,9 @@ plot_sentiment_breakdown(
 internal sentiment.}
 
 \item{period}{the sampling period within which the sentiment of documents
-will be averaged.}
+will be averaged. \code{period = "identity"} is a special case that will return
+document-level variables before the aggregation happens. Useful to rapidly
+compute topical sentiment at the document level.}
 
 \item{rolling_window}{if greater than 1, determines the rolling window to
 compute a moving average of sentiment. The rolling window is based on the

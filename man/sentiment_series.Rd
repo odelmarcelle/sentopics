@@ -19,7 +19,9 @@ sentiment_series(
 and/or internal sentiment.}
 
 \item{period}{the sampling period within which the sentiment of documents
-will be averaged.}
+will be averaged. \code{period = "identity"} is a special case that will return
+document-level variables before the aggregation happens. Useful to rapidly
+compute topical sentiment at the document level.}
 
 \item{rolling_window}{if greater than 1, determines the rolling window to
 compute a moving average of sentiment. The rolling window is based on the

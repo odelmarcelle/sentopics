@@ -7,7 +7,7 @@
 \usage{
 proportion_topics(
   x,
-  period = c("year", "quarter", "month", "day"),
+  period = c("year", "quarter", "month", "day", "identity"),
   rolling_window = 1,
   complete = TRUE,
   plot = c(FALSE, TRUE, "silent"),
@@ -30,7 +30,9 @@ plot_proportion_topics(
 and/or internal sentiment.}
 
 \item{period}{the sampling period within which the sentiment of documents
-will be averaged.}
+will be averaged. \code{period = "identity"} is a special case that will return
+document-level variables before the aggregation happens. Useful to rapidly
+compute topical sentiment at the document level.}
 
 \item{rolling_window}{if greater than 1, determines the rolling window to
 compute a moving average of sentiment. The rolling window is based on the
@@ -47,7 +49,9 @@ still attaches it as an attribute.}
 
 \item{plot_ridgelines}{if \code{TRUE}, time series are plotted as ridgelines.
 Requires \code{ggridges} package installed. If \code{FALSE}, the plot will use only
-standards \code{ggplot2} functions.}
+standards \code{ggplot2} functions. If the argument is missing and the package
+\code{ggridges} is not installed, this will quietly switch to a \code{ggplot2}
+output.}
 
 \item{as.xts}{if \code{TRUE}, returns an \link[xts:xts]{xts::xts} object. Otherwise, returns a
 data.frame.}

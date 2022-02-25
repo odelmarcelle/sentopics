@@ -53,6 +53,8 @@ LDA(ECB_press_conferences_tokens)
 rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 }
 \seealso{
+Growing a model: \code{\link[=grow]{grow()}}, extracting top words: \code{\link[=topWords]{topWords()}}
+
 Other topic models: 
 \code{\link{JST}()},
 \code{\link{LDA}()},

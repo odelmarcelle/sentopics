@@ -2,6 +2,7 @@
 #' @inherit rJST
 #' @export
 #' @family topic models
+#' @seealso Growing a model: [grow()], extracting top words: [topWords()]
 LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
   as.LDA(sentopicmodel(x, lexicon = NULL, L1 = K, L2 = 1, L1prior = alpha, L2prior = 0, beta = beta))
 }
@@ -16,6 +17,7 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #' @param gammaCycle integer specifying the cycle size between two updates of the hyperparameter alpha
 #'
 #' @export
+#' @seealso Growing a model: [grow()], extracting top words: [topWords()]
 #' @family topic models
 rJST <- function(x, lexicon = NULL, K = 5, S = 3,
                  alpha = 1, gamma = 5, beta = 0.01,
@@ -94,6 +96,7 @@ rJST.LDA <- function(x, lexicon = NULL, K = 5, S = 3,
 
 #' @inherit rJST
 #' @export
+#' @seealso Growing a model: [grow()], extracting top words: [topWords()]
 #' @family topic models
 JST <- function(x, lexicon = NULL, S = 3, K = 5,
                  gamma = 1, alpha = 5, beta = 0.01,
@@ -131,7 +134,7 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #'   The estimated distributions of the model are accessible using the dollar-sign operator.
 #'   The [topWords()] function easily extract the most probables words of each topic/sentiment.
 #'
-#' @seealso [grow()], [topWords()]
+#' @seealso Growing a model: [grow()], extracting top words: [topWords()]
 #' @family topic models
 #'
 #' @keywords internal

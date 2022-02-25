@@ -1,5 +1,5 @@
 
-#' TITLE
+#' Extract the most representative words from topics
 #'
 #' @author Olivier Delmarcelle
 #'
@@ -17,6 +17,8 @@
 #'   logical expression uses topic and sentiment *indices* rather than their
 #'   label. It is possible to subset on both topic and sentiment but adding a
 #'   `&` operator between two expressions.
+#' @param w only used when `method = "FREX"`. Determines the weight assigned to
+#'   the frequency score at the expense of the exclusivity score.
 #'
 #' @return the top words of the topic model. Depending on the output chosen, can
 #'   result in either a long-style data.frame, a `ggplot2` object or a matrix.
@@ -28,13 +30,12 @@
 #' model <- grow(model, 10)
 #' topWords(model)
 #' topWords(model, output = "matrix")
-
-### TODO : check term-score...
 topWords <- function(x,
                      nWords = 10,
-                     method = c("frequency", "probability", "term-score"),
+                     method = c("frequency", "probability", "term-score", "FREX"),
                      output = c("data.frame", "plot", "matrix"),
-                     subset) {
+                     subset,
+                     w = .5) {
 
   ## CMD check
   word <- value <- overall <- NULL
@@ -44,25 +45,16 @@ topWords <- function(x,
   method <- match.arg(method)
   output <- match.arg(output)
   x <- reorder_sentopicmodel(x)
-  top <- topWords_dt(x, nWords, method)
+  top <- topWords_dt(x, nWords, method, w)
   if (!missing(subset)) {
     if (attr(x, "reversed")) env <- list(topic = quote(L1),
                                          sentiment = quote(L2))
     else env <- list(sentiment = quote(L1),
                      topic = quote(L2))
-    
-    # e <- substitute(subset)
-    # e <- substitute(e, env)
     subset <- do.call(substitute, list(
       substitute(subset),
       env))
     top <- subset(top, eval(subset))
-    # if (sys.parent() == 0L) env2 <- sys.frame(sys.nframe())
-    # else env2 <- sys.frame(sys.parent())
-    # subset <- do.call(substitute, list(
-    #   substitute(subset, env2),
-    #   env))
-    # top <- subset(top, eval(subset))
   }
   
   switch(output,
@@ -79,7 +71,6 @@ topWords <- function(x,
                                      paste0(mis, collapse = ", "),".\n",
                                      "Install command: install.packages(",
                                      paste0("'", mis, "'", collapse = ", "),")" )
-           # tmp <- paste0(top$L1, "_", top$L2)
            tmp <- top$L2 + (x$L2) * (top$L1 - 1)
            top$label <- factor(
              tmp,
@@ -100,17 +91,14 @@ topWords <- function(x,
                  fill = "grey", alpha = .8
                )} +
              ggplot2::geom_col(show.legend = FALSE) +
-             # ggplot2::facet_wrap(ggplot2::vars(L1, L2), strip.position = "top", scales = "free", ncol = 3
              ggplot2::facet_wrap(
                . ~ label,
                strip.position = "top",
                scales = "free"
-               # ,labeller = labeller( L2 = setNames(rep("",3), 1:3))
              ) +
              ggplot2::coord_flip() +
              tidytext::scale_x_reordered() +
              ggplot2::labs(x = "word", y = attr(top, "method")) +
-             # ggplot2::ggtitle(title) +
              ggplot2::theme(
                strip.text.x = ggplot2::element_text(
                  margin = ggplot2::margin(.5,0,3,0)
@@ -124,16 +112,19 @@ topWords <- function(x,
              top[[i]] <- factor(top[[i]], levels = seq_along(labs[[i]]), labels = labs[[i]])
            }
            if (class %in% c("rJST", "LDA")) colnames(top) <-
-               sub("L1", "topic", sub("L2", "sentiment", colnames(top), fixed = TRUE), fixed = TRUE)
+             sub("L1", "topic", sub("L2", "sentiment", colnames(top), fixed = TRUE), fixed = TRUE)
            if (class == "JST") colnames(top) <-
-               sub("L1", "sentiment", sub("L2", "topic", colnames(top), fixed = TRUE), fixed = TRUE)
+             sub("L1", "sentiment", sub("L2", "topic", colnames(top), fixed = TRUE), fixed = TRUE)
            if (class == "LDA") top$sentiment <- NULL
            top
          }
   )
 }
 
-topWords_dt <- function(x, nWords = 10, method = c("frequency", "probability", "term-score")) {
+topWords_dt <- function(x,
+                        nWords = 10,
+                        method = c("frequency", "probability", "term-score", "FREX"),
+                        w = .5) {
 
   ## CMD check
   word <- value <- prob <- tprob <- sprob <- NULL
@@ -147,10 +138,9 @@ topWords_dt <- function(x, nWords = 10, method = c("frequency", "probability", "
   epsilon <- 10^-100
 
   method <- match.arg(method)
-
+  
   nClusters <- max(phiStats$L1) * max(phiStats$L2)
   switch(method,
-         ### TODO: add frequency and overall count..
          "frequency" = {
            freq <- rebuild_zw(x, array = TRUE)
            freq <- aperm(freq, c(3, 1, 2))
@@ -161,17 +151,44 @@ topWords_dt <- function(x, nWords = 10, method = c("frequency", "probability", "
            freq$word <- phiStats$word
            phiStats <- freq
          },
-          "term-score" = {phiStats <-
-            phiStats[, list(L1, L2, value = value * log(value / Reduce("*", value)^(1/nClusters))), by = word]},
-          "topics" = {
-            ## TODO: to update?
-            #### disregard sentiments and compute probability mass for each L1
-            tmp <- melt(x)[, list(prob = mean(prob), tprob = mean(tprob)), by = list(L1, L2)]
-            tmp[, sprob := prob/tprob]
-            phiStats <- phiStats[tmp, on = c("L1", "L2")][, value := value*sprob]
-            phiStats <- phiStats[, list(value = sum(value)), by = list(word, L1)]
-            phiStats[, L2 := 1L]
-          }
+         "term-score" = {phiStats <-
+           phiStats[, list(L1, L2, value = value * log(value / prod(value)^(1/nClusters))), by = word]},
+         "FREX" = {
+           
+           if (w < 0 | w > 1) stop("The argument 'w' should be constrained between 0 and 1.")
+
+           # test <- t(x$phi[,,])
+           # ((apply(test,1,data.table::frank)/ncol(test)))[457, , drop = FALSE]
+           # ((apply(test,1,data.table::frank)/ncol(test)))[1163, , drop = FALSE]
+           # phiStats[, list(word, value = data.table::frank(value) / .N), by = c("L1", "L2")][word == "euro_area"][1:5]
+           # 
+           # colSums(t(t(test)/colSums(test)))
+           # (a <- t(t(test)/colSums(test))) |> head(c(5,20))
+           # (apply(a,1,data.table::frank)/ncol(test))[1163, ]
+           # (apply(a,1,data.table::frank)/ncol(test)) |> head(c(5,20))
+           # 
+           # a[, 1163]
+           # phiStats[, exclusivity := value / sum(value), by = word]
+           # phiStats[word == "euro_area"][1:5]
+           # phiStats[, list(word, value = data.table::frank(exclusivity) / .N), by = c("L1", "L2")][word == "euro_area"][1:5]
+           # 
+           
+           phiStats[, exclusivity := value / sum(value), by = word]
+           phiStats <-
+             phiStats[, list(word, value =
+                               w * data.table::frank(value) / .N +
+                               (1 - w) * data.table::frank(exclusivity) / .N),
+                      by = c("L1", "L2")]
+         },
+         "topics" = {
+           ## TODO: to update?
+           #### disregard sentiments and compute probability mass for each L1
+           tmp <- melt(x)[, list(prob = mean(prob), tprob = mean(tprob)), by = list(L1, L2)]
+           tmp[, sprob := prob/tprob]
+           phiStats <- phiStats[tmp, on = c("L1", "L2")][, value := value*sprob]
+           phiStats <- phiStats[, list(value = sum(value)), by = list(word, L1)]
+           phiStats[, L2 := 1L]
+         }
   )
   topWords <- phiStats[order(-value), utils::head(.SD, nWords), by = list(L1, L2)][order(L1, L2)]
   class(topWords) <- c("topWords", class(phiStats))
@@ -191,15 +208,13 @@ topWords_dt <- function(x, nWords = 10, method = c("frequency", "probability", "
 #' plot_topWords(jst, subset = topic %in% 1:2 & sentiment == 3)
 plot_topWords <- function(x,
                           nWords = 10,
-                          method = c("frequency", "probability", "term-score"),
-                          subset) {
-  # e <- eval(substitute(subset))
+                          method = c("frequency", "probability", "term-score", "FREX"),
+                          subset,
+                          w = .5) {
   eval(substitute(
-    topWords(x, nWords, method, output = "plot", e),
+    topWords(x, nWords, method, output = "plot", e, w),
     list(e = substitute(subset))
   ))
-  
-  # topWords(x, nWords, method, output = "plot", substitute(subset))
 }
 
 

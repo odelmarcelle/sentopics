@@ -5,20 +5,36 @@
 \alias{PicaultRenault}
 \title{Picault-Renault lexicon}
 \format{
-A \code{data.table}.
+A \link{data.table} object.
 }
 \source{
 \url{http://www.cbcomindex.com/lexicon.php}
 }
 \usage{
-data("PicaultRenault")
+PicaultRenault
 }
 \description{
-...
+The Picault-Renault lexicon, specialized in the analysis of
+central bank communcation. The lexicon identifies a large number of n-grams
+and gives their probability to belong to six categories:
+\itemize{
+\item Monetary Policy - accomodative
+\item Monetary Policy - neutral
+\item Monetary Policy - restrictive
+\item Economic Condition - negative
+\item Economic Condition - neutral
+\item Economic Condidtion - positive
+}
 }
 \examples{
-data("PicaultRenault")
-summary(PicaultRenault)
+head(PicaultRenault)
 
+}
+\references{
+Picault, M. & Renault, T. (2017). \href{https://doi.org/10.1016/j.jimonfin.2017.09.005}{Words are not all created equal: A new measure of ECB communication}. \emph{Journal of
+International Money and Finance}, 79, 136--156.
+}
+\seealso{
+\code{\link[=compute_PicaultRenault_scores]{compute_PicaultRenault_scores()}}
 }
 \keyword{datasets}

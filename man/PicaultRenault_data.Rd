@@ -3,22 +3,38 @@
 \docType{data}
 \name{PicaultRenault_data}
 \alias{PicaultRenault_data}
-\title{Regression dataset}
+\title{Regression dataset based on Picault & Renault (2017)}
 \format{
-A \code{xts}.
+An \link[xts:xts]{xts::xts} object.
 }
 \source{
-\url{https://sraf.nd.edu/textual-analysis/resources/}
+The data was manually prepared by the author of this package.
 }
 \usage{
-data("PicaultRenault_data")
+PicaultRenault_data
 }
 \description{
-...
+A regression dataset built to partially replicate the result of
+Picault & Renault. This dataset contains, for each press conference
+published after 2000:
+\itemize{
+\item The Main Refinancing Rate (MRR) of the ECB set following the press
+conference
+\item The change in the MRR following the press conference
+\item The change in the MMR observed at the previous press conference
+\item The Bloomberg consensus on the announced MRR
+\item The Suprise brought by the announcement, computed as the Bloomberg
+consensus minus the MRR following the conference
+\item The EURO STOXX 50 return on the day of the press conference
+\item The EURO STOXX 50 return on the day preceding the announcement
+}
 }
 \examples{
-data("PicaultRenault_data")
-summary(PicaultRenault_data)
+head(PicaultRenault_data)
 
+}
+\references{
+Picault, M. & Renault, T. (2017). \href{https://doi.org/10.1016/j.jimonfin.2017.09.005}{Words are not all created equal: A new measure of ECB communication}. \emph{Journal of
+International Money and Finance}, 79, 136--156.
 }
 \keyword{datasets}

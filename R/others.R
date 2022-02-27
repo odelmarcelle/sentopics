@@ -16,7 +16,6 @@
 #'   extracted from the parsed speechs to form a `tokens` object.
 #'
 #' @return Depending on the arguments, returns either a data.frame or a [quanteda::tokens] object containing speeches of the ECB.
-#' @export
 get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, compute_sentiment = TRUE, tokenize_w_POS = FALSE) {
   ## CMD check
   pos <- NULL
@@ -114,10 +113,21 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
 }
 
 
-
-get_ECB_press_conferences <- function(data.table = TRUE) {
+#' Download press conferences from the European Central Bank
+#'
+#' @description This helper function automatically retrieve the full data set of
+#'   press conferences made available by the ECB. Tt implements a number of
+#'   pre-processing steps used to remove the Q&A section from the text.
+#'
+#' @param years the years for which press conferences should be retrieved
+#' @param data.table if TRUE, returns a [data.table]. Otherwise, return a list
+#'   in which each element is a press conference.
+#'
+#' @return Depending on the arguments, returns either a data.frame or a
+#'   [quanteda::tokens] object containing speeches of the ECB.
+get_ECB_press_conferences <- function(years = 1998:2021, data.table = TRUE) {
   
-  res <- lapply(setNames(nm = 1998:2021), function(year) {
+  res <- lapply(stats::setNames(nm = years), function(year) {
     
     ## Get index page
     utils::download.file(
@@ -135,7 +145,7 @@ get_ECB_press_conferences <- function(data.table = TRUE) {
     ) |> unique()
     print(year)
     LIST <- lapply(
-      setNames(LIST,
+      stats::setNames(LIST,
                regmatches(LIST, regexpr(r"([0-9]{6})", LIST, perl = TRUE)) |> as.Date(format = "%y%m%d")),
       function(url) {
       utils::download.file(
@@ -244,15 +254,39 @@ get_ECB_press_conferences <- function(data.table = TRUE) {
 
 #' Compute scores using the Picault-Renault lexicon
 #'
-#' @description ...
+#' @description Computes Monetary Policy and Economic Condition scores using the
+#'   Picault-Renault lexicon for central bank communcation.
 #'
-#' @param x ...
-#' @param min_ngram ...
-#' @param by_doc ...
-#' @param return_dfm ...
+#' @param x a [quanteda::corpus] object.
+#' @param min_ngram the minimum length of n-grams considered in the computation
+#' @param return_dfm if `TRUE`, returns the scaled word-per-document score under
+#'   two [dfm], on for the Monetary Policy and one for the Economic Condition
+#'   categories. If `FALSE`, returns the sum of all word scores per document.
+#'
+#' @details the computation is done on a per-document basis, such as each
+#'   document is scored with a value between -1 and 1. This is relevant to the
+#'   computation of the denominator of the score.
+#'
+#'   It is possible to compute the score for paragraphs and sentences for a
+#'   [quanteda::corpus] segmented using [quanteda::corpus_reshape]. Segmenting a
+#'   corpus using **quanteda**'s helpers retain track to which document each
+#'   paragraph/sentence belong. However, in that case, it is possible that
+#'   paragraphs or sentences are scored outside the -1 - 1 interval.
 #'
 #' @export
-compute_PicaultRenaut_scores <- function(x, min_ngram = 2, by_doc = TRUE, return_dfm = FALSE) {
+#' @seealso [PicaultRenault]
+#' @references Picault, M. & Renault, T. (2017). [Words are not all created
+#'   equal: A new measure of ECB
+#'   communication](https://doi.org/10.1016/j.jimonfin.2017.09.005). *Journal of
+#'   International Money and Finance*, 79, 136--156.
+#' @examples
+#' # on documents
+#' docs <- quanteda::corpus_reshape(ECB_press_conferences, "documents")
+#' compute_PicaultRenault_scores(docs)
+#'
+#' # on paragraphs
+#' compute_PicaultRenault_scores(ECB_press_conferences)
+compute_PicaultRenault_scores <- function(x, min_ngram = 2, return_dfm = FALSE) {
   PicaultRenault <- PicaultRenault[PicaultRenault$ngram >= min_ngram, ]
   x <- quanteda::tokens(x, remove_numbers = TRUE, remove_punct = TRUE,
                         remove_symbols = TRUE) |>
@@ -269,7 +303,7 @@ compute_PicaultRenaut_scores <- function(x, min_ngram = 2, by_doc = TRUE, return
   
   weight <- PicaultRenault[match(colnames(dfm), PicaultRenault$keyword),
                            -c("keyword", "ngram", "total_class")]
-  weight <- lapply(weight, setNames, nm = colnames(dfm))
+  weight <- lapply(weight, stats::setNames, nm = colnames(dfm))
   
   weighted_dfms <- lapply(weight, function(w)
     quanteda::dfm_weight(dfm, weight = w))

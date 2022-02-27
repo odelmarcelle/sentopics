@@ -2,7 +2,7 @@
 % Please edit documentation in R/models.R
 \name{JST}
 \alias{JST}
-\title{Create a sentopic model}
+\title{Create a Joint Sentiment/Topic model}
 \usage{
 JST(
   x,
@@ -31,26 +31,44 @@ JST(
 
 \item{beta}{the hyperparameter of vocabulary distribution}
 
-\item{gammaCycle}{integer specifying the cycle size between two updates of the hyperparameter alpha}
+\item{gammaCycle}{integer specifying the cycle size between two updates of
+the hyperparameter alpha}
 
-\item{alphaCycle}{integer specifying the cycle size between two updates of the hyperparameter alpha}
+\item{alphaCycle}{integer specifying the cycle size between two updates of
+the hyperparameter alpha}
 }
 \value{
-An initialized \code{sentopicmodel} object inheriting the relevant model class.
-This object corresponds to a Gibbs sampler estimation with zero iterations.
+An S3 list containing the model parameter and the estimated mixture.
+This object corresponds to a Gibbs sampler estimator with zero iterations.
 The MCMC can be iterated using the \code{\link[=grow]{grow()}} function.
+\itemize{
+\item \code{tokens} is the tokens object used to create the model
+\item \code{vocabulary} contains the set of words of the corpus
+\item \code{it} tracks the number of Gibbs sampling iterations
+\item \code{za} is the list of topic assignment, aligned to the \code{tokens} object with
+padding removed
+\item \code{logLikelihood} returns the measured log-likelihood at each iteration,
+with a breakdown of the likelihood into hierarchical components as
+attribute
+}
 
-The estimated distributions of the model are accessible using the dollar-sign operator.
-The \code{\link[=topWords]{topWords()}} function easily extract the most probables words of each topic/sentiment.
+The \code{\link[=topWords]{topWords()}} function easily extract the most probables words of each
+topic/sentiment.
 }
 \description{
-The set of functions \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} and \code{\link[=sentopicmodel]{sentopicmodel()}} are all wrappers to an unified C++
-routine and attempt to replicate their corresponding model.
+This function initialize a Joint Sentiment/Topic model.
 }
 \examples{
-data(ECB_press_conferences_tokens)
 LDA(ECB_press_conferences_tokens)
 rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
+}
+\references{
+Lin, C. and He, Y. (2009). \href{https://doi.org/10.1145/1645953.1646003}{Joint sentiment/topic model for sentiment analysis}. In \emph{Proceedings
+of the 18th ACM conference on Information and knowledge management},
+375--384.
+
+Lin, C., He, Y., Everson, R. and Ruger, S. (2012). \href{https://doi.org/10.1109/TKDE.2011.48}{Weakly Supervised Joint Sentiment-Topic Detection from Text}.
+\emph{IEEE Transactions on Knowledge and Data Engineering}, 24(6), 1134–-1145.
 }
 \seealso{
 Growing a model: \code{\link[=grow]{grow()}}, extracting top words: \code{\link[=topWords]{topWords()}}

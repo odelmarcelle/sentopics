@@ -3,22 +3,27 @@
 \docType{data}
 \name{ECB_press_conferences}
 \alias{ECB_press_conferences}
-\title{Example dataset}
+\title{Corpus of press conferences from the European Central Bank}
 \format{
-A \code{quanteda::corpus} object.
+A \link[quanteda:corpus]{quanteda::corpus} object.
 }
 \source{
 \url{www.ecb.europa.eu/press/key/html/index.en.html}.
 }
 \usage{
-data("ECB_press_conferences")
+ECB_press_conferences
 }
 \description{
-...
+A corpus of 260 ECB press conference, split into 4224
+paragraphs. The corpus contains a number of \emph{docvars} indicating the date
+of the press conference and a measured sentiment based on the
+Loughran-McDonald lexicon.
 }
 \examples{
-data("ECB_press_conferences")
-head(ECB_press_conferences)
+docvars(ECB_press_conferences)
 
+}
+\seealso{
+\link{ECB_press_conferences_tokens}
 }
 \keyword{datasets}

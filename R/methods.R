@@ -12,7 +12,19 @@ sentopics_print_extend <- function(extended = FALSE) {
   if (!extended) cat("This helpful message is displayed once per session, unless calling `print(x, extended = TRUE)`\n")
 }
 
-### TODO: are print methods OK? see tools::.print.via.format
+#' Print method for sentopics models
+#'
+#' @description Print methods for **sentopics** models. Once per session (or
+#'   forced by using `extended = TRUE`), it lists the most important function
+#'   related to **sentopics** models.
+#'
+#' @rdname print.sentopicmodel
+#'
+#' @param x the model to be printed
+#' @param extended if `TRUE`, extends the print to include some helpful related
+#'   functions. Automatically displayed once per session.
+#' @param ... not used
+#'
 #' @export
 print.sentopicmodel <- function(x, extended = FALSE, ...) {
   cat("A sentopicmodel topic model with", x$L1, "topics and", x$L2, "sentiments. Currently grown by",
@@ -24,6 +36,7 @@ print.sentopicmodel <- function(x, extended = FALSE, ...) {
   ##TODO: add models paremeters? ex: # cat("Model parameters: alpha = ")
 }
 
+#' @rdname print.sentopicmodel
 #' @export
 print.rJST <- function(x, extended = FALSE, ...) {
   cat("A reversed-JST model with", x$K, "topics and", x$S, "sentiments. Currently grown by",
@@ -34,6 +47,7 @@ print.rJST <- function(x, extended = FALSE, ...) {
   }
 }
 
+#' @rdname print.sentopicmodel
 #' @export
 print.LDA <- function(x, extended = FALSE, ...) {
   cat("A LDA model with", x$K, "topics. Currently grown by",
@@ -44,6 +58,7 @@ print.LDA <- function(x, extended = FALSE, ...) {
   }
 }
 
+#' @rdname print.sentopicmodel
 #' @export
 print.JST <- function(x, extended = FALSE, ...) {
   cat("A JST model with", x$S, "sentiments and", x$K, "topics. Currently grown by",
@@ -66,28 +81,34 @@ print.topWords <- function(x, ...) {
   NextMethod()
 }
 
-# summary -----------------------------------------------------------------
-
-#' @export
-summary.sentopicmodel <- function(object, ...) {
-  if (object$it > 0) {
-    plot(object$logLikelihood, main = "Model convergence", ylab = "logLikelihood", xlab = "iterations")
-
-    list(
-      vocabulary = object$vocabulary,
-      topicMixtures = data.table::as.data.table(object$theta, sorted = FALSE, keep.rownames = "id"),
-      sentimentMixtures = data.table::as.data.table(object$pi, sorted = FALSE),
-      wordMixtures = data.table::as.data.table(object$phi, sorted = FALSE)
-    )
-  } else {
-    list(vocabulary = object$vocabulary)
-  }
-}
-
 # plot --------------------------------------------------------------------
 
+#' Plot a topic model using Plotly
+#'
+#' @description Summarize and plot a **sentopics** model using a sunburst chart
+#'   from the [plotly::plotly] library.
+#'
+#' @param x a model created from the [LDA()], [JST()] or [rJST()] function and
+#'   estimated with [grow()]
+#' @param nWords the number of words per topic/sentiment to display in the outer
+#'   layer of the plot
+#' @param layers specifies the number of layers for the sunburst chart. This
+#'   will restrict the output to the `layers` uppermost levels of the chart. For
+#'   example, setting `layers = 1` will only display the top level of the
+#'   hierarchy (topics for an LDA model).
+#' @param ... not used
+#'
 #' @export
-plot.sentopicmodel <- function(x, nWords = 15, layers = 3, topicsOnly = FALSE, ...) {
+#' @seealso [topWords()]
+#' @examples 
+#' lda <- LDA(ECB_press_conferences_tokens)
+#' lda <- grow(lda, 100)
+#' plot(lda, nWords = 5)
+#' 
+#' # only displays the topic proportions
+#' plot(lda, layers = 1)
+## TODO: add other methods than probability?
+plot.sentopicmodel <- function(x, nWords = 15, layers = 3, ...) {
 
   mis <- missingSuggets(c("plotly", "RColorBrewer"))
   if (length(mis) > 0) stop("Suggested packages are missing for the plot.sentopicmodel function.\n",
@@ -134,7 +155,7 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, topicsOnly = FALSE, .
       l2[l2[[L1_name]] == i, real := (real / l1[l1[[L1_name]] == i, real])]
     }
   }
-  if (layers > 2) {
+  if (layers > 2 | (layers > 1 & class == "LDA")) {
     l3 <- topWords_dt(x, nWords, "probability")
     l3$name <- l3$word
     l3$parent <- paste0("l1_", l3$L1, "l2_", l3$L2)
@@ -188,13 +209,13 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, topicsOnly = FALSE, .
 #'
 #' @inheritParams chainsDistances
 #'
-#' @param ... not used here
+#' @param ... not used
 #' @seealso [chainsDistances()] [cmdscale()]
 #'
 #' @examples
-#' model <- LDA(ECB_press_conferences_tokens)
-#' model <- grow(model, 10, nChains = 5)
-#' plot(model)
+#' models <- LDA(ECB_press_conferences_tokens)
+#' models <- grow(models, 10, nChains = 5)
+#' plot(models)
 #'
 #' @export
 plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosine", "minMax", "stupidEuclidean", "invariantEuclidean")) {
@@ -221,24 +242,29 @@ plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosin
 #'
 #' @author Olivier Delmarcelle
 #'
-#' @description This function is used to estimate a topic model created by [LDA()], [JST()], [rJST()] or [sentopicmodel()].
-#'   In essence, this function iterates a Gibbs sampler MCMC.
+#' @description This function is used to estimate a topic model created by
+#'   [LDA()], [JST()] or [rJST()]. In essence, this function
+#'   iterates a Gibbs sampler MCMC.
 #'
-#' @param x a `sentopicmodel` created from the [LDA()], [JST()], [rJST()] or [sentopicmodel()] function
+#' @param x a model created with the [LDA()], [JST()] or [rJST()] function
 #' @param iterations the number of iterations by which the model should be grown
-#' @param nChains if set above 1, the model will be grown into multiple chains from various starting positions.
-#'   Latent variables will be re-initialized if `x` has not been grown before.
-#' @param nCores if `nChains` is greater than 1, this allows to compute the the multiple chains in a parallel setting
-#' @param displayProgress if `TRUE`, a progress bar will be displayed indicating the progress of the computation.
-#'   Disabled when `nChains` is greater than 1.
-#' @param computeLikelihood boolean. If set to FALSE, does not compute the likelihood at each iteration.
-#'   This can slightly decrease the computing time.
+#' @param nChains if set above 1, the model will be grown into multiple chains
+#'   from various starting positions. Latent variables will be re-initialized if
+#'   `x` has not been grown before.
+#' @param nCores if `nChains` is greater than 1, this allows to compute the the
+#'   multiple chains in a parallel setting
+#' @param displayProgress if `TRUE`, a progress bar will be displayed indicating
+#'   the progress of the computation. Disabled when `nChains` is greater than 1.
+#' @param computeLikelihood boolean. If set to FALSE, does not compute the
+#'   likelihood at each iteration. This can slightly decrease the computing
+#'   time.
 #' @param seed for reproducibility, a seed can be provided
 #'
-#' @return a `sentopicmodel` of the relevant model class if `nChains` is unspecified or equal to 1. A `multiChains` object
-#'   if `nChains` is greater than 1.
+#' @return a `sentopicmodel` of the relevant model class if `nChains` is
+#'   unspecified or equal to 1. A `multiChains` object if `nChains` is greater
+#'   than 1.
 #'
-#' @seealso [LDA()], [JST()], [rJST()] [sentopicmodel()] [reset()]
+#' @seealso [LDA()], [JST()], [rJST()], [reset()]
 #' @export
 #' @examples
 #' model <- rJST(ECB_press_conferences_tokens)
@@ -317,16 +343,21 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1, nCores = 1, dis
     core(x) <- NULL
 
     ### maybe not the most proper way to do this but...
-    options("doFuture.foreach.export" = ".export")
+    oopts <- options("doFuture.foreach.export" = ".export")
 
     ## multiple chain setup is built based on parallel computation, if no back-end it will behave sequentially
     doFuture::registerDoFuture()
     if (nCores > 1) {
       cl <- parallel::makeCluster(nCores)
-      future::plan("cluster", workers = cl)
+      oplan <- future::plan("cluster", workers = cl)
+      on.exit({
+        future::plan(oplan)
+        parallel::stopCluster(cl)
+        options(oopts)
+      })
       # if (!is.null(seed)) doRNG::registerDoRNG(seed * (x$it + 1), FALSE)
     } else {
-      future::plan("sequential")
+      # future::plan("sequential")
       # if (!is.null(seed)) doRNG::registerDoRNG(seed * (x$it + 1), FALSE)
     }
 
@@ -448,10 +479,6 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1, nCores = 1, dis
         # sentopics:::extract_cppModel(cpp_model, names(base$tokens))
       })
     # })
-    if (nCores > 1) {
-      future::plan("sequential")
-      parallel::stopCluster(cl)
-    }
     class(chains) <- "multiChains"
     attr(chains, "nChains") <- nChains
     # base$beta <- switchBeta(base$beta, x$T, x$S)
@@ -492,17 +519,22 @@ grow.multiChains <- function(x, iterations = 100, nChains = NULL, nCores = 1, di
   #
   #
   ### maybe not the most proper way to do this but...
-  options("doFuture.foreach.export" = ".export")
+  oopts <- options("doFuture.foreach.export" = ".export")
 
 
   names <- names(x)[1:nChains]
   doFuture::registerDoFuture()
   if (nCores > 1) {
     cl <- parallel::makeCluster(nCores)
-    future::plan("cluster", workers = cl)
+    oplan <- future::plan("cluster", workers = cl)
+    on.exit({
+      future::plan(oplan)
+      parallel::stopCluster(cl)
+      options(oopts)
+    })
     # if (!is.null(seed)) doRNG::registerDoRNG(seed * (x[[1]]$it + 1), FALSE)
   } else {
-    future::plan("sequential")
+    # future::plan("sequential")
     # if (!is.null(seed)) doRNG::registerDoRNG(seed * (x[[1]]$it + 1), FALSE)
   }
   ## determine how often is the progress bar refreshed ## note that a refresh rate too high can negatively affect performance
@@ -557,10 +589,6 @@ grow.multiChains <- function(x, iterations = 100, nChains = NULL, nCores = 1, di
        x
      })
   # })
-  if (nCores > 1) {
-    future::plan("sequential")
-    parallel::stopCluster(cl)
-  }
   class(chains) <- "multiChains"
   attr(chains, "nChains") <- nChains
   # base$beta <- switchBeta(base$beta, x[[1]]$T, x[[1]]$S) ## back to 3D
@@ -579,8 +607,8 @@ grow.multiChains <- function(x, iterations = 100, nChains = NULL, nCores = 1, di
 #'   created from [LDA()], [JST()] or another model. The re-initialized model
 #'   retains its original parameter specification.
 #'
-#' @param x a `sentopicmodel` that has been estimated with the [grow()]
-#'   function.
+#' @param x a model created from the [LDA()], [JST()] or [rJST()] function and
+#'   estimated with [grow()]
 #'
 #' @return a `sentopicmodel` of the relevant model class, with the iteration count
 #'   reset to zero and re-initialized assignment of latent variables.
@@ -625,15 +653,35 @@ data.table::melt
 #'
 #' @author Olivier Delmarcelle
 #'
-#' @description ...
+#' @description This function extracts the estimated document mixtures from a
+#'   topic model and returns them in a long [data.table] format.
 #'
-#' @param data ...
-#' @param ... ...
-#' @param include_docvars ...
+#' @param data a model created from the [LDA()], [JST()] or [rJST()] function
+#'   and estimated with [grow()]
+#' @param ... not used
+#' @param include_docvars if `TRUE`, the melted result will also include the
+#'   *docvars* stored in the [tokens] object provided at model initialization
 #'
-#' @return ...
+#' @seealso [topWords()] for extracting representative words,
+#'   [data.table::melt()] and [data.table::dcast()]
+#'
+#' @return A [data.table] in the long format, where each line is the estimated
+#'   proportion of a single topic/sentiment for a document. For JST and rJST
+#'   models, the probability is also decomposed into 'L1' and 'L2' layers,
+#'   representing the probability at each layer of the topic-sentiment
+#'   hierarchy.
 #'
 #' @export
+#' @examples
+#' # only returns topic proportion for LDA models
+#' lda <- LDA(ECB_press_conferences_tokens)
+#' lda <- grow(lda, 10)
+#' melt(lda)
+#'
+#' # includes sentiment for JST and rJST models
+#' jst <- JST(ECB_press_conferences_tokens)
+#' jst <- grow(jst, 10)
+#' melt(jst)
 melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
   if (data$it <= 0) stop("Nothing to melt. Iterate the model with grow() first.")
   class <- class(data)[1]

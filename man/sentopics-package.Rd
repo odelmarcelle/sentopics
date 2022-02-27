@@ -28,12 +28,9 @@ package functions.
 \item \href{../doc/Basic_usage.html}{Topical time series}: Integrate topic analysis with sentiment analysis along a time dimension
 }
 
-For further details, you may browse the package \href{../html/00Index.html}{documentation}
+For further details, you may browse the package \href{../html/00Index.html}{documentation}.
 }
 
-\references{
-...
-}
 \seealso{
 Useful links:
 \itemize{

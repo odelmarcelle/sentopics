@@ -15,7 +15,7 @@
 \item{x}{a valid \code{multiChains} object, obtained through the estimation of a
 topic model using \code{\link[=grow]{grow()}} and the argument \code{nChains} greater than \code{1}.}
 
-\item{...}{not used here}
+\item{...}{not used}
 
 \item{method}{the method used to measure the distance between chains.}
 }
@@ -26,9 +26,9 @@ and \code{\link[stats:cmdscale]{stats::cmdscale()}} for the implementation of th
 scaling.
 }
 \examples{
-model <- LDA(ECB_press_conferences_tokens)
-model <- grow(model, 10, nChains = 5)
-plot(model)
+models <- LDA(ECB_press_conferences_tokens)
+models <- grow(models, 10, nChains = 5)
+plot(models)
 
 }
 \seealso{

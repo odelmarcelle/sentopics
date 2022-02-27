@@ -5,20 +5,30 @@
 \alias{LoughranMcDonald}
 \title{Loughran-McDonald lexicon}
 \format{
-A \code{data.table}.
+A \link[quanteda:dictionary]{quanteda::dictionary} containing two polarity categories (negative
+and positive) and two valence-shitfing categories (negator and amplifier).
 }
 \source{
-\url{https://sraf.nd.edu/textual-analysis/resources/}
+\url{https://sraf.nd.edu/textual-analysis/resources/} for the lexicon
+and \link[lexicon:hash_valence_shifters]{lexicon::hash_valence_shifters} for the valence shifters
 }
 \usage{
-data("LoughranMcDonald")
+LoughranMcDonald
 }
 \description{
-...
+The Loughran-McDonald lexicon for financial texts adapted for
+usage in \strong{sentopics}. The lexicon is enhanced with two list of
+valence-shitfting words.
 }
 \examples{
-data("LoughranMcDonald")
-summary(LoughranMcDonald)
+JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 
+}
+\references{
+Loughran, T. & McDonald, B. (2011). \href{https://doi.org/10.1111/j.1540-6261.2010.01625.x}{When Is a Liability Not a Liability? Textual Analysis, Dictionaries, and 10-Ks}. \emph{The Journal of
+Finance}, 66(1), 35--65.
+}
+\seealso{
+\code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}}
 }
 \keyword{datasets}

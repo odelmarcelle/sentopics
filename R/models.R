@@ -1,4 +1,13 @@
 
+
+#' Create a Latent Dirichlet Allocation model
+#'
+#' @description This function initialize a Latent Dirichlet Allocation model.
+#'
+#' @references Blei, D.M., Ng, A.Y. and Jordan, M.I. (2003). [Latent Dirichlet
+#'   Allocation](https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf).
+#'   *Journal of Machine Learning Research*, 3, 993--1022.
+#'
 #' @inherit rJST
 #' @export
 #' @family topic models
@@ -7,14 +16,29 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
   as.LDA(sentopicmodel(x, lexicon = NULL, L1 = K, L2 = 1, L1prior = alpha, L2prior = 0, beta = beta))
 }
 
+#' Create a Reversed Joint Sentiment/Topic model
+#'
+#' @description This function initialize a Reversed Joint Sentiment/Topic model.
+#'
+#' @references Lin, C. and He, Y. (2009). [Joint sentiment/topic model for
+#' sentiment analysis](https://doi.org/10.1145/1645953.1646003). In *Proceedings
+#' of the 18th ACM conference on Information and knowledge management*,
+#' 375--384.
+#'
+#' Lin, C., He, Y., Everson, R. and Ruger, S. (2012). [Weakly Supervised Joint
+#' Sentiment-Topic Detection from Text](https://doi.org/10.1109/TKDE.2011.48).
+#' *IEEE Transactions on Knowledge and Data Engineering*, 24(6), 1134–-1145.
+#'
 #' @inherit sentopicmodel
 #'
 #' @param K the number of topics
 #' @param S the number of sentiments
 #' @param alpha the hyperparameter of topic-document distribution
 #' @param gamma the hyperparameter of sentiment-document distribution
-#' @param alphaCycle integer specifying the cycle size between two updates of the hyperparameter alpha
-#' @param gammaCycle integer specifying the cycle size between two updates of the hyperparameter alpha
+#' @param alphaCycle integer specifying the cycle size between two updates of
+#'   the hyperparameter alpha
+#' @param gammaCycle integer specifying the cycle size between two updates of
+#'   the hyperparameter alpha
 #'
 #' @export
 #' @seealso Growing a model: [grow()], extracting top words: [topWords()]
@@ -94,6 +118,19 @@ rJST.LDA <- function(x, lexicon = NULL, K = 5, S = 3,
   as.rJST(x)
 }
 
+#' Create a Joint Sentiment/Topic model
+#'
+#' @description This function initialize a Joint Sentiment/Topic model.
+#'
+#' @references Lin, C. and He, Y. (2009). [Joint sentiment/topic model for
+#' sentiment analysis](https://doi.org/10.1145/1645953.1646003). In *Proceedings
+#' of the 18th ACM conference on Information and knowledge management*,
+#' 375--384.
+#'
+#' Lin, C., He, Y., Everson, R. and Ruger, S. (2012). [Weakly Supervised Joint
+#' Sentiment-Topic Detection from Text](https://doi.org/10.1109/TKDE.2011.48).
+#' *IEEE Transactions on Knowledge and Data Engineering*, 24(6), 1134–-1145.
+#'
 #' @inherit rJST
 #' @export
 #' @seealso Growing a model: [grow()], extracting top words: [topWords()]
@@ -111,8 +148,10 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #'
 #' @author Olivier Delmarcelle
 #'
-#' @description The set of functions [LDA()], [JST()], [rJST()] and [sentopicmodel()] are all wrappers to an unified C++
-#'   routine and attempt to replicate their corresponding model.
+#' @description The set of functions [LDA()], [JST()], [rJST()] and
+#'   [sentopicmodel()] are all wrappers to an unified C++ routine and attempt to
+#'   replicate their corresponding model. This function is the lower level
+#'   wrapper to the C++ routine.
 #'
 #'
 #' @param x tokens object containing the texts. A coercion will be attempted if `x` is not a tokens.
@@ -127,21 +166,29 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #' @param lexicon a `quanteda` dictionary with positive and negative categories
 #' @param smooth integer specyfing the number of iterations of the smoothed burn-in
 #'
-#' @return An initialized `sentopicmodel` object inheriting the relevant model class.
-#'   This object corresponds to a Gibbs sampler estimation with zero iterations.
-#'   The MCMC can be iterated using the [grow()] function.
-#'
-#'   The estimated distributions of the model are accessible using the dollar-sign operator.
-#'   The [topWords()] function easily extract the most probables words of each topic/sentiment.
-#'
 #' @seealso Growing a model: [grow()], extracting top words: [topWords()]
 #' @family topic models
 #'
 #' @keywords internal
 #'
+#' @return An S3 list containing the model parameter and the estimated mixture.
+#'   This object corresponds to a Gibbs sampler estimator with zero iterations.
+#'   The MCMC can be iterated using the [grow()] function.
+#' 
+#'   - `tokens` is the tokens object used to create the model
+#'   - `vocabulary` contains the set of words of the corpus
+#'   - `it` tracks the number of Gibbs sampling iterations
+#'   - `za` is the list of topic assignment, aligned to the `tokens` object with
+#'     padding removed
+#'   - `logLikelihood` returns the measured log-likelihood at each iteration,
+#'     with a breakdown of the likelihood into hierarchical components as
+#'     attribute
+#'   
+#'   The [topWords()] function easily extract the most probables words of each
+#'   topic/sentiment.
+#'
 #' @export
 #' @examples
-#' data(ECB_press_conferences_tokens)
 #' LDA(ECB_press_conferences_tokens)
 #' rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 sentopicmodel <- function(x, lexicon = NULL, L1 = 5, L2 = 3,

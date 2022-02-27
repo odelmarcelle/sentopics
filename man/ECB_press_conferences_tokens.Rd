@@ -3,22 +3,34 @@
 \docType{data}
 \name{ECB_press_conferences_tokens}
 \alias{ECB_press_conferences_tokens}
-\title{Example tokenized speeches}
+\title{Tokenized press conferences}
 \format{
-A \code{quanteda::tokens} object.
+A \link[quanteda:tokens]{quanteda::tokens} object.
 }
 \source{
 \url{www.ecb.europa.eu/press/key/html/index.en.html}.
 }
 \usage{
-data("ECB_press_conferences_tokens")
+ECB_press_conferences_tokens
 }
 \description{
-...
+The pre-processed and tokenized version of the
+\link{ECB_press_conferences} corpus of press conferences. The processing
+involved the following steps:
+\itemize{
+\item Subset paragraphs shorter than 10 words
+\item Removal of stop words
+\item Part-of-speech tagging, following which only nouns, proper nouns and
+adjective were retained.
+\item Detection and merging of frequent compound words
+\item Frequency-based cleaning of rare and very common words
+}
 }
 \examples{
-data("ECB_press_conferences_tokens")
-head(ECB_press_conferences_tokens)
+LDA(ECB_press_conferences_tokens)
 
+}
+\seealso{
+\link{ECB_press_conferences}
 }
 \keyword{datasets}

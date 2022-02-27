@@ -15,7 +15,7 @@
 )
 }
 \arguments{
-\item{x}{dfm to be coerced}
+\item{x}{\link[quanteda:dfm]{quanteda::dfm} to be coerced}
 
 \item{concatenator}{only used for consistency with the generic}
 
@@ -28,8 +28,8 @@ from the initial tokens object. Useful to avoid removing some lexicon word
 following the usage of \code{\link[quanteda:dfm_trim]{quanteda::dfm_trim()}}.}
 
 \item{case_insensitive}{only used when the \code{tokens} argument is provided.
-Default to \code{FALSE}. This function removes words in the initial \code{tokens}
-based on the remaining features in the \code{dfm} object. This check is
+Default to \code{FALSE}. This function removes words in the initial \link{tokens}
+based on the remaining features in the \link{dfm} object. This check is
 case-sensitive by default, and can be relaxed by setting this argument to
 \code{TRUE}.}
 
@@ -53,4 +53,7 @@ dfm <- dfm_trim(dfm, min_termfreq = 200)
 as.tokens(dfm)
 as.tokens(dfm, tokens = ECB_press_conferences_tokens)
 as.tokens(dfm, tokens = ECB_press_conferences_tokens, padding = FALSE)
+}
+\seealso{
+\code{\link[quanteda:as.tokens]{quanteda::as.tokens()}} \code{\link[quanteda:dfm]{quanteda::dfm()}}
 }

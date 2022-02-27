@@ -20,9 +20,8 @@ test_that("growing a sentopicmodel works", {
   expect_true(all(c("L1post", "L2post", "phi") %in% names(sentopicmodel)))
 })
 
-test_that("print, summary and plot methods work", {
+test_that("print and plot methods work", {
   expect_output(print(sentopicmodel), "A sentopicmodel topic model with 5 topics and 3 sentiments. Currently grown by 5 Gibbs sampling iterations.")
-  expect_true(all(c("vocabulary", "topicMixtures", "sentimentMixtures", "wordMixtures") %in% names(summary(sentopicmodel))))
 })
 
 test_that("output functions works", {

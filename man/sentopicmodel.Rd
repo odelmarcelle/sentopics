@@ -43,19 +43,30 @@ sentopicmodel(
 \item{smooth}{integer specyfing the number of iterations of the smoothed burn-in}
 }
 \value{
-An initialized \code{sentopicmodel} object inheriting the relevant model class.
-This object corresponds to a Gibbs sampler estimation with zero iterations.
+An S3 list containing the model parameter and the estimated mixture.
+This object corresponds to a Gibbs sampler estimator with zero iterations.
 The MCMC can be iterated using the \code{\link[=grow]{grow()}} function.
+\itemize{
+\item \code{tokens} is the tokens object used to create the model
+\item \code{vocabulary} contains the set of words of the corpus
+\item \code{it} tracks the number of Gibbs sampling iterations
+\item \code{za} is the list of topic assignment, aligned to the \code{tokens} object with
+padding removed
+\item \code{logLikelihood} returns the measured log-likelihood at each iteration,
+with a breakdown of the likelihood into hierarchical components as
+attribute
+}
 
-The estimated distributions of the model are accessible using the dollar-sign operator.
-The \code{\link[=topWords]{topWords()}} function easily extract the most probables words of each topic/sentiment.
+The \code{\link[=topWords]{topWords()}} function easily extract the most probables words of each
+topic/sentiment.
 }
 \description{
-The set of functions \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} and \code{\link[=sentopicmodel]{sentopicmodel()}} are all wrappers to an unified C++
-routine and attempt to replicate their corresponding model.
+The set of functions \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} and
+\code{\link[=sentopicmodel]{sentopicmodel()}} are all wrappers to an unified C++ routine and attempt to
+replicate their corresponding model. This function is the lower level
+wrapper to the C++ routine.
 }
 \examples{
-data(ECB_press_conferences_tokens)
 LDA(ECB_press_conferences_tokens)
 rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 }

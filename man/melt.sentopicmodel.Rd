@@ -7,17 +7,39 @@
 \method{melt}{sentopicmodel}(data, ..., include_docvars = FALSE)
 }
 \arguments{
-\item{data}{...}
+\item{data}{a model created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}} function
+and estimated with \code{\link[=grow]{grow()}}}
 
-\item{...}{...}
+\item{...}{not used}
 
-\item{include_docvars}{...}
+\item{include_docvars}{if \code{TRUE}, the melted result will also include the
+\emph{docvars} stored in the \link{tokens} object provided at model initialization}
 }
 \value{
-...
+A \link{data.table} in the long format, where each line is the estimated
+proportion of a single topic/sentiment for a document. For JST and rJST
+models, the probability is also decomposed into 'L1' and 'L2' layers,
+representing the probability at each layer of the topic-sentiment
+hierarchy.
 }
 \description{
-...
+This function extracts the estimated document mixtures from a
+topic model and returns them in a long \link{data.table} format.
+}
+\examples{
+# only returns topic proportion for LDA models
+lda <- LDA(ECB_press_conferences_tokens)
+lda <- grow(lda, 10)
+melt(lda)
+
+# includes sentiment for JST and rJST models
+jst <- JST(ECB_press_conferences_tokens)
+jst <- grow(jst, 10)
+melt(jst)
+}
+\seealso{
+\code{\link[=topWords]{topWords()}} for extracting representative words,
+\code{\link[data.table:melt.data.table]{data.table::melt()}} and \code{\link[data.table:dcast.data.table]{data.table::dcast()}}
 }
 \author{
 Olivier Delmarcelle

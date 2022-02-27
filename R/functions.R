@@ -6,8 +6,7 @@
 #' @description Extract the top words in each topic/sentiment from a
 #'   `sentopicmodel`.
 #'
-#' @param x a `sentopicmodel` created from the [LDA()], [JST()], [rJST()] or
-#'   [sentopicmodel()] function
+#' @param x a `sentopicmodel` created from the [LDA()], [JST()] or [rJST()]
 #' @param nWords the number of top words to extract
 #' @param method specify if a re-ranking function should be applied before
 #'   returning the top words
@@ -25,6 +24,7 @@
 #'
 #' @import data.table
 #' @export
+#' @seealso [melt.sentopicmodel()] for extracting estimated mixtures
 #' @examples
 #' model <- LDA(ECB_press_conferences_tokens)
 #' model <- grow(model, 10)
@@ -227,7 +227,8 @@ plot_topWords <- function(x,
 #'   For best results, consider cleaning the initial tokens object with `padding
 #'   = TRUE`.
 #'
-#' @param x a LDA, JST, rJST or sentopicmodel object.
+#' @param x a model created from the [LDA()], [JST()] or [rJST()] function
+#'   and estimated with [grow()]
 #' @param method the coherence method used.
 #' @param nWords the number of words in each topic used for evaluation.
 #' @param window optional. If `NULL`, use the default window for each coherence

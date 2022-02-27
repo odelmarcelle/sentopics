@@ -3,13 +3,14 @@
 # To sentopicmodel --------------------------------------------------------
 
 #' @name sentopics-conversions
-#' @rdname as.cDLA
+#' @rdname sentopics-conversions
+#' @keywords internal
 #'
-#' @title Title
+#' @title Internal conversions between **sentopics** models.
 #'
-#' @param x ...
+#' @param x a **sentopics** model
 #'
-#' @return a relevant `sentopicmodel` object
+#' @return a **sentopics** model of the relevant class
 #' @export
 as.sentopicmodel <- function(x) {
   UseMethod("as.sentopicmodel")
@@ -113,9 +114,7 @@ as.sentopicmodel.default <- function(x) {
 # From sentopicmodel ------------------------------------------------------
 
 
-#' @rdname as.cDLA
-#' @param x ...
-#'
+#' @rdname sentopics-conversions
 #' @export
 as.LDA <- function(x) {
   UseMethod("as.LDA")
@@ -154,9 +153,7 @@ as.LDA.default <- function(x) {
   stop("Unexpected object passed to as.LDA")
 }
 
-#' @rdname as.cDLA
-#' @param x ...
-#'
+#' @rdname sentopics-conversions
 #' @export
 as.rJST <- function(x) {
   UseMethod("as.rJST")
@@ -192,9 +189,7 @@ as.rJST.default <- function(x) {
   stop("Unexpected object passed to as.rJST")
 }
 
-#' @rdname as.cDLA
-#' @param x ...
-#'
+#' @rdname sentopics-conversions
 #' @export
 as.JST <- function(x) {
   UseMethod("as.JST")
@@ -248,7 +243,7 @@ quanteda::as.tokens
 
 #' Convert back a dfm to a tokens object
 #'
-#' @param x dfm to be coerced
+#' @param x [quanteda::dfm] to be coerced
 #' @param concatenator only used for consistency with the generic
 #' @param tokens optionally, the tokens from which the dfm was created.
 #'   Providing the initial tokens will ensure that the word order will be
@@ -261,13 +256,14 @@ quanteda::as.tokens
 #'   behavior of the coherence metrics (see [coherence()]) that rely on word
 #'   positions.
 #' @param case_insensitive only used when the `tokens` argument is provided.
-#'   Default to `FALSE`. This function removes words in the initial `tokens`
-#'   based on the remaining features in the `dfm` object. This check is
+#'   Default to `FALSE`. This function removes words in the initial [tokens]
+#'   based on the remaining features in the [dfm] object. This check is
 #'   case-sensitive by default, and can be relaxed by setting this argument to
 #'   `TRUE`.
 #' @param ... unused
 #'
 #' @return a quanteda [quanteda::tokens] object.
+#' @seealso [quanteda::as.tokens()] [quanteda::dfm()]
 #' @export
 #' @examples
 #' library(quanteda)

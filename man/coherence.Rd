@@ -13,7 +13,8 @@ coherence(
 )
 }
 \arguments{
-\item{x}{a LDA, JST, rJST or sentopicmodel object.}
+\item{x}{a model created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}} function
+and estimated with \code{\link[=grow]{grow()}}}
 
 \item{nWords}{the number of words in each topic used for evaluation.}
 

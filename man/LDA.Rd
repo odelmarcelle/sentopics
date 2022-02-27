@@ -2,7 +2,7 @@
 % Please edit documentation in R/models.R
 \name{LDA}
 \alias{LDA}
-\title{Create a sentopic model}
+\title{Create a Latent Dirichlet Allocation model}
 \usage{
 LDA(x, K = 5, alpha = 1, beta = 0.01)
 }
@@ -16,21 +16,33 @@ LDA(x, K = 5, alpha = 1, beta = 0.01)
 \item{beta}{the hyperparameter of vocabulary distribution}
 }
 \value{
-An initialized \code{sentopicmodel} object inheriting the relevant model class.
-This object corresponds to a Gibbs sampler estimation with zero iterations.
+An S3 list containing the model parameter and the estimated mixture.
+This object corresponds to a Gibbs sampler estimator with zero iterations.
 The MCMC can be iterated using the \code{\link[=grow]{grow()}} function.
+\itemize{
+\item \code{tokens} is the tokens object used to create the model
+\item \code{vocabulary} contains the set of words of the corpus
+\item \code{it} tracks the number of Gibbs sampling iterations
+\item \code{za} is the list of topic assignment, aligned to the \code{tokens} object with
+padding removed
+\item \code{logLikelihood} returns the measured log-likelihood at each iteration,
+with a breakdown of the likelihood into hierarchical components as
+attribute
+}
 
-The estimated distributions of the model are accessible using the dollar-sign operator.
-The \code{\link[=topWords]{topWords()}} function easily extract the most probables words of each topic/sentiment.
+The \code{\link[=topWords]{topWords()}} function easily extract the most probables words of each
+topic/sentiment.
 }
 \description{
-The set of functions \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} and \code{\link[=sentopicmodel]{sentopicmodel()}} are all wrappers to an unified C++
-routine and attempt to replicate their corresponding model.
+This function initialize a Latent Dirichlet Allocation model.
 }
 \examples{
-data(ECB_press_conferences_tokens)
 LDA(ECB_press_conferences_tokens)
 rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
+}
+\references{
+Blei, D.M., Ng, A.Y. and Jordan, M.I. (2003). \href{https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf}{Latent Dirichlet Allocation}.
+\emph{Journal of Machine Learning Research}, 3, 993--1022.
 }
 \seealso{
 Growing a model: \code{\link[=grow]{grow()}}, extracting top words: \code{\link[=topWords]{topWords()}}

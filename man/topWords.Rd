@@ -23,8 +23,7 @@ plot_topWords(
 )
 }
 \arguments{
-\item{x}{a \code{sentopicmodel} created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} or
-\code{\link[=sentopicmodel]{sentopicmodel()}} function}
+\item{x}{a \code{sentopicmodel} created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}}}
 
 \item{nWords}{the number of top words to extract}
 
@@ -62,6 +61,9 @@ jst <- JST(ECB_press_conferences_tokens)
 jst <- grow(jst, 10)
 plot_topWords(jst)
 plot_topWords(jst, subset = topic \%in\% 1:2 & sentiment == 3)
+}
+\seealso{
+\code{\link[=melt.sentopicmodel]{melt.sentopicmodel()}} for extracting estimated mixtures
 }
 \author{
 Olivier Delmarcelle

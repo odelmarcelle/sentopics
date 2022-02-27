@@ -6,7 +6,7 @@
 \alias{as.LDA}
 \alias{as.rJST}
 \alias{as.JST}
-\title{Title}
+\title{Internal conversions between \strong{sentopics} models.}
 \usage{
 as.sentopicmodel(x)
 
@@ -17,11 +17,12 @@ as.rJST(x)
 as.JST(x)
 }
 \arguments{
-\item{x}{...}
+\item{x}{a \strong{sentopics} model}
 }
 \value{
-a relevant \code{sentopicmodel} object
+a \strong{sentopics} model of the relevant class
 }
 \description{
-Title
+Internal conversions between \strong{sentopics} models.
 }
+\keyword{internal}

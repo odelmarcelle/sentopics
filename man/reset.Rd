@@ -7,8 +7,8 @@
 reset(x)
 }
 \arguments{
-\item{x}{a \code{sentopicmodel} that has been estimated with the \code{\link[=grow]{grow()}}
-function.}
+\item{x}{a model created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}} function and
+estimated with \code{\link[=grow]{grow()}}}
 }
 \value{
 a \code{sentopicmodel} of the relevant model class, with the iteration count

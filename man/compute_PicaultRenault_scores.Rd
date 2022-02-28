@@ -28,7 +28,9 @@ It is possible to compute the score for paragraphs and sentences for a
 \link[quanteda:corpus]{quanteda::corpus} segmented using \link[quanteda:corpus_reshape]{quanteda::corpus_reshape}. Segmenting a
 corpus using \strong{quanteda}'s helpers retain track to which document each
 paragraph/sentence belong. However, in that case, it is possible that
-paragraphs or sentences are scored outside the -1 - 1 interval.
+paragraphs or sentences are scored outside the (-1,1) interval. In any
+case, the of the paragraph/sentences scores averaged over documents will be
+contained in the (-1,1) interval.
 }
 \examples{
 # on documents

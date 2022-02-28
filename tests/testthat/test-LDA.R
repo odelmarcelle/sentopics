@@ -41,3 +41,8 @@ test_that("test convergence", {
   sapply(distToGenerative(LDA, vocab), expect_lte, .15)
 })
 
+test_that("misc", {
+  expect_length(dim(LDA$phi), 2)
+  expect_length(dim(as.sentopicmodel(LDA)$phi), 3)
+  expect_length(dim(as.LDA(as.sentopicmodel(LDA))$phi), 2)
+})

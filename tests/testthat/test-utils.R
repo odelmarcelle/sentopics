@@ -28,7 +28,7 @@ test_that("melt works", {
   model <- sentopicmodel(toks)
   expect_error(melt.sentopicmodel(model), "Nothing to melt")
   model <- grow(model, 10, displayProgress = FALSE)
-  melt.sentopicmodel(model)
+  melt.sentopicmodel(model, include_docvars = TRUE)
 })
 
 test_that("sunburst works", {

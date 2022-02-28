@@ -16,7 +16,7 @@
 #'   extracted from the parsed speechs to form a `tokens` object.
 #'
 #' @return Depending on the arguments, returns either a data.frame or a [quanteda::tokens] object containing speeches of the ECB.
-get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, compute_sentiment = TRUE, tokenize_w_POS = FALSE) {
+get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, compute_sentiment = TRUE, tokenize_w_POS = FALSE) { # nocov start
   ## CMD check
   pos <- NULL
 
@@ -110,7 +110,7 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
   }
 
   ECB_speeches
-}
+} # nocov end
 
 
 #' Download press conferences from the European Central Bank
@@ -143,7 +143,7 @@ get_ECB_press_conferences <- function(years = 1998:2021, data.table = TRUE) {
       "https://www.ecb.europa.eu",
       regmatches(html, gregexpr(r"(/press.*?\.en\.html)", html, perl = TRUE))[[1]]
     ) |> unique()
-    print(year)
+    message(year)
     LIST <- lapply(
       stats::setNames(LIST,
                regmatches(LIST, regexpr(r"([0-9]{6})", LIST, perl = TRUE)) |> as.Date(format = "%y%m%d")),
@@ -271,7 +271,9 @@ get_ECB_press_conferences <- function(years = 1998:2021, data.table = TRUE) {
 #'   [quanteda::corpus] segmented using [quanteda::corpus_reshape]. Segmenting a
 #'   corpus using **quanteda**'s helpers retain track to which document each
 #'   paragraph/sentence belong. However, in that case, it is possible that
-#'   paragraphs or sentences are scored outside the -1 - 1 interval.
+#'   paragraphs or sentences are scored outside the (-1,1) interval. In any
+#'   case, the of the paragraph/sentences scores averaged over documents will be
+#'   contained in the (-1,1) interval.
 #'
 #' @export
 #' @seealso [PicaultRenault]
@@ -289,7 +291,8 @@ get_ECB_press_conferences <- function(years = 1998:2021, data.table = TRUE) {
 compute_PicaultRenault_scores <- function(x, min_ngram = 2, return_dfm = FALSE) {
   PicaultRenault <- PicaultRenault[PicaultRenault$ngram >= min_ngram, ]
   x <- quanteda::tokens(x, remove_numbers = TRUE, remove_punct = TRUE,
-                        remove_symbols = TRUE) |>
+                        remove_symbols = TRUE, remove_separators = FALSE) |>
+    quanteda::tokens_remove(" ") |> 
     quanteda::tokens_wordstem() |> 
     quanteda::tokens_tolower()
   

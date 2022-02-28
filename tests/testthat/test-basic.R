@@ -20,6 +20,15 @@ test_that("growing a sentopicmodel works", {
   expect_true(all(c("L1post", "L2post", "phi") %in% names(sentopicmodel)))
 })
 
+test_that("reset works", {
+  res <- reset(sentopicmodel)
+  expect_equal(res$it, 0)
+  expect_null(res$L1post)
+  expect_null(res$L2post)
+  expect_false(isTRUE(all.equal(sentopicmodel$za, res$za)))
+  expect_length(res$logLikelihood, 1)
+})
+
 test_that("print and plot methods work", {
   expect_output(print(sentopicmodel), "A sentopicmodel topic model with 5 topics and 3 sentiments. Currently grown by 5 Gibbs sampling iterations.")
 })

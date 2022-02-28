@@ -36,13 +36,13 @@ devtools::install_github("odelmarcelle/sentopics")
 
 ## Basic usage
 
-Using a sample of speeches from the European Central Bank, a LDA model is easily created from a list of tokenized texts. See https://quanteda.io for details on `tokens` input objects and pre-processing functions.
+Using a sample of press conferences from the European Central Bank, a LDA model is easily created from a list of tokenized texts. See https://quanteda.io for details on `tokens` input objects and pre-processing functions.
 
 ``` {r}
 library(sentopics)
-print(ECB_speeches, 2)
-set.seed(12)
-lda <- LDA(ECB_speeches, K = 4)
+print(ECB_press_conferences_tokens, 2)
+set.seed(123)
+lda <- LDA(ECB_press_conferences_tokens, K = 4)
 lda <- grow(lda, 100)
 lda
 ```
@@ -50,9 +50,12 @@ lda
 There are various way to extract results from the model: it is either possible to directly access the estimated mixtures from the `lda` object or to use some helper functions.
 
 ```{r paged.print=FALSE}
-head(lda$theta) # The document-topic distributions
-head(melt(lda, include_docvars = TRUE)) # The document-topic in a 'long' format & with meta-data
-topWords(lda, output = "matrix") # The most probable words per topic
+# The document-topic distributions
+head(lda$theta) 
+# The document-topic in a 'long' format & optionally with meta-data
+head(melt(lda, include_docvars = FALSE))
+# The most probable words per topic
+topWords(lda, output = "matrix") 
 ```
 
 Two visualization are also implemented: `plot_topWords()` display the most probable words and `plot()` summarize the topic proportions and their top words.
@@ -66,9 +69,20 @@ plot(lda) |> plotly::layout(width = 500, height = 500)
 
 
 After properly incorporating date and sentiment medata data (if they are not already present in the `tokens` input), time series functions allows to study the evolution of topic proportions and related sentiment.
+
 ```{r series, message=FALSE, out.width="100%"}
-sentopics_date(lda) <- ECB_speeches$.date
-sentopics_sentiment(lda) <- ECB_speeches$.sentiment
-head(proportion_topics(lda, period = "month"))
-plot_sentiment_breakdown(lda, period = "day", rolling_window = 90)
+sentopics_date(lda)  |> head(2)
+sentopics_sentiment(lda) |> head(2)
+proportion_topics(lda, period = "month") |> head(2)
+plot_sentiment_breakdown(lda, period = "quarter", rolling_window = 3)
 ```
+
+## Advanced usage
+
+Feel free to refer to the vignettes of the package for a more extensive introduction to the features of the package. Because the package is not yet on CRAN, you'll have to build the vignettes locally.
+
+```{r, eval = FALSE}
+devtools::install_github("odelmarcelle/sentopics", build_vignettes = TRUE)
+vignette(package = "sentopics")
+```
+

@@ -30,6 +30,7 @@
 #' model <- grow(model, 10)
 #' topWords(model)
 #' topWords(model, output = "matrix")
+#' topWords(model, method = "FREX")
 topWords <- function(x,
                      nWords = 10,
                      method = c("frequency", "probability", "term-score", "FREX"),
@@ -173,7 +174,7 @@ topWords_dt <- function(x,
            # phiStats[, list(word, value = data.table::frank(exclusivity) / .N), by = c("L1", "L2")][word == "euro_area"][1:5]
            # 
            
-           phiStats[, exclusivity := value / sum(value), by = word]
+           phiStats[, "exclusivity" := value / sum(value), by = word]
            phiStats <-
              phiStats[, list(word, value =
                                w * data.table::frank(value) / .N +

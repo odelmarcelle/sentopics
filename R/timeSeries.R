@@ -119,7 +119,7 @@ sentopics_sentiment <- function(x,
 
     ## discard topics, only need L1_prob
     # res <- dcast(melted, .id ~ sent, value.var = "L1_prob", fun.aggregate = mean)
-    res <- dcast(melted[, .(L1_prob = mean(L1_prob)), by = c("sent", ".id")],
+    res <- dcast(melted[, list("L1_prob" = mean(L1_prob)), by = c("sent", ".id")],
           .id ~ sent, value.var = "L1_prob")
     res <- fn(res)
     
@@ -524,7 +524,8 @@ sentiment_breakdown <- function(x,
                                 ...) {
   ## CMD check
   .id <- .date <- .sentiment <- .sentiment_scaled <- sentiment <- value <-
-    variable <- width <- Topic <- date_center <- theta <- s <- ..cols <- NULL
+    variable <- width <- Topic <- date_center <- theta <- s <- ..cols <-
+    prob <- NULL
 
   if (!inherits(x, c("LDA", "rJST"))) stop("`sentiment_breakdown` is only implemented for LDA and rJST models.")
   
@@ -545,7 +546,7 @@ sentiment_breakdown <- function(x,
                             paste0("'", mis, "'", collapse = ", "),")" )
   
   # proportions <- dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
-  proportions <- dcast(melt(x)[, .(prob = sum(prob)), by = c("topic", ".id")],
+  proportions <- dcast(melt(x)[, list(prob = sum(prob)), by = c("topic", ".id")],
                        .id ~ topic, value.var = "prob")
 
   if (scale & period != "identity") {
@@ -796,7 +797,7 @@ sentiment_topics <- function(x,
                              ...) {
   ## CMD check
   .id <- .date <- .sentiment <- .sentiment_scaled <- sentiment <- value <-
-    variable <- theta <- s <- ..cols <- NULL
+    variable <- theta <- s <- ..cols <- prob <-  NULL
 
   if (!inherits(x, c("LDA", "rJST"))) stop("`sentiment_topics` is only implemented for LDA and rJST models.")
   
@@ -819,7 +820,7 @@ sentiment_topics <- function(x,
                             paste0("'", mis, "'", collapse = ", "),")" )
 
   # proportions <- dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
-  proportions <- dcast(melt(x)[, .(prob = sum(prob)), by = c("topic", ".id")],
+  proportions <- dcast(melt(x)[, list(prob = sum(prob)), by = c("topic", ".id")],
                        .id ~ topic, value.var = "prob")
 
   if (scale & period != "identity") {
@@ -1039,7 +1040,7 @@ proportion_topics <- function(x,
                               as.xts = TRUE,
                               ...) {
   ## CMD check
-  .date <- value <- variable <- NULL
+  .date <- value <- variable <- prob <- NULL
 
   period <- match.arg(period)
   plot <- as.character(plot)
@@ -1070,12 +1071,12 @@ proportion_topics <- function(x,
                           LDA = {dcast(melt(x), .id ~ topic, value.var = "prob")},
                           rJST = {
                             # dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
-                            dcast(melt(x)[, .(prob = sum(prob)), by = c("topic", ".id")],
+                            dcast(melt(x)[, list(prob = sum(prob)), by = c("topic", ".id")],
                                   .id ~ topic, value.var = "prob")
                           },
                           JST = {
                             # dcast(melt(x), .id ~ sent, value.var = "prob", fun.aggregate = sum)
-                            dcast(melt(x)[, .(prob = sum(prob)), by = c("sent", ".id")],
+                            dcast(melt(x)[, list(prob = sum(prob)), by = c("sent", ".id")],
                                   .id ~ sent, value.var = "prob")
                           },
                           stop("Undefined input"))

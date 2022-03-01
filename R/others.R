@@ -127,6 +127,9 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
 #'   [quanteda::tokens] object containing speeches of the ECB.
 get_ECB_press_conferences <- function(years = 1998:2021, data.table = TRUE) {
   
+  # R CMD check:
+  paragraph_id <- doc_id <- sections <- NULL
+  
   res <- lapply(stats::setNames(nm = years), function(year) {
     
     ## Get index page
@@ -314,7 +317,7 @@ compute_PicaultRenault_scores <- function(x, min_ngram = 2, return_dfm = FALSE) 
   MP <- quanteda::as.dfm(weighted_dfms$mp_rest - weighted_dfms$mp_acco)
   # MP <- MP/sum(Reduce(`+`, weighted_dfms[c("mp_acco", "mp_neut", "mp_rest")]))
   denom <- as.matrix(Reduce(`+`, weighted_dfms[c("mp_acco", "mp_neut", "mp_rest")]))
-  denom <- rowSums(denom) |> aggregate(mean, by = list(doc = quanteda::docid(dfm)))
+  denom <- rowSums(denom) |> stats::aggregate(mean, by = list(doc = quanteda::docid(dfm)))
   ## Prevents 0 denominator
   denom$x[denom$x < sqrt(.Machine$double.eps)] <- sqrt(.Machine$double.eps)
   MP <- as.matrix(MP)
@@ -326,7 +329,7 @@ compute_PicaultRenault_scores <- function(x, min_ngram = 2, return_dfm = FALSE) 
   
   EC <- quanteda::as.dfm(weighted_dfms$ec_posi - weighted_dfms$ec_nega)
   denom <- as.matrix(Reduce(`+`, weighted_dfms[c("ec_nega", "ec_neut", "ec_posi")]))
-  denom <- rowSums(denom) |> aggregate(mean, by = list(doc = quanteda::docid(dfm)))
+  denom <- rowSums(denom) |> stats::aggregate(mean, by = list(doc = quanteda::docid(dfm)))
   ## Prevents 0 denominator
   denom$x[denom$x < sqrt(.Machine$double.eps)] <- sqrt(.Machine$double.eps)
   EC <- as.matrix(EC)

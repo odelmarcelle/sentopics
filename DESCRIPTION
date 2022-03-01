@@ -11,7 +11,7 @@ License: GPL (>= 2)
 BugReports: https://github.com/odelmarcelle/sentopics/issues
 URL: https://github.com/odelmarcelle/sentopics
 Encoding: UTF-8
-Depends: R (>= 2.10)
+Depends: R (>= 4.0.0)
 Imports: Rcpp (>= 1.0.4.6), 
   methods,
   quanteda (>= 3.2.0),

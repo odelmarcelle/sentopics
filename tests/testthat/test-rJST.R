@@ -61,7 +61,7 @@ test_that("test convergence", {
   ## No lexicon
   retry <- 0
   convergence <- FALSE
-  while (convergence == FALSE && retry < 10) {
+  while (convergence == FALSE && retry < 20) {
     rJST <- rJST(toks, K = 3, S = 2, alpha = .1)
     rJST <- grow(rJST, 100, nChains = 2, displayProgress = FALSE)
     expect_message(distToGenerative(rJST, vocab), "No lexicon detected, allowing")

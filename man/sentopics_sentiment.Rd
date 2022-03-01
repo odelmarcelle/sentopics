@@ -37,7 +37,7 @@ in the internal \code{tokens} object of the model}
 \item{value}{a numeric vector of sentiment to input into the model.}
 }
 \value{
-a data.frame with the stored sentiment per document.
+A data.frame with the stored sentiment per document.
 }
 \description{
 Compute, extract or replace the internal sentiment of a
@@ -48,7 +48,7 @@ the output of the model. Otherwise, sentiment obtained externally should be
 added for each document.
 }
 \details{
-the computed sentiment varies depending on the model. For \link{LDA},
+The computed sentiment varies depending on the model. For \link{LDA},
 sentiment computation is not possible.
 
 For \link{JST}, the sentiment is computed on a per-document basis according to
@@ -58,6 +58,11 @@ For a \link{rJST} model, a sentiment is computed for each topic, resulting in
 \code{K} sentiment values per document. In that case, the \code{.sentiment} column is
 an average of the \code{K} sentiment values, weighted by they respective topical
 proportions.
+}
+\note{
+The internal sentiment is stored internally in the \emph{docvars} of the
+topic model. This means that sentiment may also be accessed through the
+\code{\link[=docvars]{docvars()}} function, although this is discouraged.
 }
 \examples{
 # example dataset already contains ".sentiment" docvar

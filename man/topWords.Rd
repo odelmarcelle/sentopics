@@ -54,6 +54,7 @@ model <- LDA(ECB_press_conferences_tokens)
 model <- grow(model, 10)
 topWords(model)
 topWords(model, output = "matrix")
+topWords(model, method = "FREX")
 plot_topWords(model)
 plot_topWords(model, subset = topic \%in\% 1:2)
 

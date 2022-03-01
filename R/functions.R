@@ -128,7 +128,7 @@ topWords_dt <- function(x,
                         w = .5) {
 
   ## CMD check
-  word <- value <- prob <- tprob <- sprob <- NULL
+  word <- value <- prob <- tprob <- sprob <- exclusivity <- NULL
   phiStats <- x$phi
   # Removing dimnames in order to have topic and sentiment number only in the next table
   dimnames(phiStats)[2:3] <- list(NULL, NULL)

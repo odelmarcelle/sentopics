@@ -28,6 +28,11 @@ internal dates are used to create time series using the functions
 using \code{sentopics_date(x) <- value} or by storing a '.date' docvars in
 the \link{tokens} object used to create the model.
 }
+\note{
+The internal date is stored internally in the \emph{docvars} of the topic
+model. This means that dates may also be accessed through the \code{\link[=docvars]{docvars()}}
+function, although this is discouraged.
+}
 \examples{
 # example dataset already contains ".date" docvar
 docvars(ECB_press_conferences_tokens)

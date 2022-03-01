@@ -35,10 +35,22 @@ test_that("print and plot methods work", {
 
 test_that("output functions works", {
   expect_silent(tops <- topWords(sentopicmodel, output = "matrix"))
+  expect_type(tops, "character")
   expect_false(anyNA(tops))
   txts <- getTexts(sentopicmodel, topic = "l1-1", "negative")
   expect_length(txts, 3)
   expect_type(unlist(txts), "character")
+})
+
+test_that("topWords subset works", {
+  expect_silent(tops <- topWords(sentopicmodel, output = "matrix", subset = topic %in% 1))
+  expect_equal(dim(tops), c(10L, 3L))
+  expect_silent(tops <- topWords(sentopicmodel, output = "matrix",
+                                 subset = topic %in% 1 & sentiment == 3L))
+  expect_equal(dim(tops), c(10L, 1L))
+  expect_silent(tops <- topWords(sentopicmodel, output = "matrix",
+                                 subset = topic %in% 1 & sentiment == 9L))
+  expect_equal(dim(tops), c(10L, 0L))
 })
 
 test_that("Updates works", {

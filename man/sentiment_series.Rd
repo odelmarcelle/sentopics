@@ -29,7 +29,9 @@ period unit and rely on actual dates (i.e, is not affected by unequally
 spaced data points).}
 
 \item{scale}{if \code{TRUE}, the resulting time series will be scaled to a mean of
-zero and a standard deviation of 1.}
+zero and a standard deviation of 1. This argument also has the side effect
+of attaching scaled sentiment values as \emph{docvars} to the input object with
+the \verb{_scaled} suffix.}
 
 \item{scaling_period}{the date range over which the scaling should be
 applied. Particularly useful to normalize only the beginning of the time
@@ -62,6 +64,11 @@ sentiment_series(rjst)
 sentopics_sentiment(rjst) <- NULL ## remove existing sentiment
 rjst <- grow(rjst, 10) ## estimating the model is then needed
 sentiment_series(rjst)
+
+# note the presence of both raw and scaled sentiment values
+# in the initial object
+sentopics_sentiment(lda)
+sentopics_sentiment(rjst)
 }
 \seealso{
 sentopics_sentiment sentopics_date

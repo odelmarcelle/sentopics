@@ -42,7 +42,9 @@ period unit and rely on actual dates (i.e, is not affected by unequally
 spaced data points).}
 
 \item{scale}{if \code{TRUE}, the resulting time series will be scaled to a mean of
-zero and a standard deviation of 1.}
+zero and a standard deviation of 1. This argument also has the side effect
+of attaching scaled sentiment values as \emph{docvars} to the input object with
+the \verb{_scaled} suffix.}
 
 \item{scaling_period}{the date range over which the scaling should be
 applied. Particularly useful to normalize only the beginning of the time

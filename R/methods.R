@@ -644,9 +644,28 @@ reset <- function(x) {
 
 # melt --------------------------------------------------------------------
 
-#' @importFrom data.table melt
+
+#' Replacement generic for [data.table::melt()]
+#'
+#' Up to the CRAN release of the 1.14.3 version of **data.table**, the
+#' [data.table::melt()] function is not a generic. This function aims to
+#' temporary provide a generic to this function, so that [melt.sentopicmodel()]
+#' can be effectively dispatched when used. Expect this function to disappear
+#' shortly after the release of **data.table** 1.14.3.
+#'
+#' @param data an object to melt
+#' @param ... arguments passed to other methods
+#' 
+#' @seealso [data.table::melt()], [melt.sentopicmodel()]
 #' @export
-data.table::melt
+melt <- function(data, ...) {
+  UseMethod("melt")
+}
+
+# TODO: re-activate once data.table 1.14.3 is released.
+# #' @importFrom data.table melt
+# #' @export
+# data.table::melt
 
 
 #' Melt for sentopicmodels

@@ -277,6 +277,8 @@ as.tokens.dfm <- function(x, concatenator = NULL, tokens = NULL, ignore_list = N
     if (!is.null(ignore_list)) keep <- c(dimnames(x)$features, ignore_list) else
       keep <- dimnames(x)$features
     ntypes <- length(dimnames(x)$features)
+    ## force removal of padding in the dfm object
+    if (!padding) keep <- setdiff(keep, "")
     res <- quanteda::as.tokens(
       quanteda::tokens_select(tokens,
                               keep,

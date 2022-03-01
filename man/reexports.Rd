@@ -4,7 +4,6 @@
 \name{reexports}
 \alias{reexports}
 \alias{as.tokens}
-\alias{melt}
 \alias{docvars}
 \alias{tokens}
 \title{Objects exported from other packages}
@@ -14,8 +13,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{data.table}{\code{\link[data.table:melt.data.table]{melt}}}
-
   \item{quanteda}{\code{\link[quanteda]{as.tokens}}, \code{\link[quanteda]{docvars}}, \code{\link[quanteda]{tokens}}}
 }}
 

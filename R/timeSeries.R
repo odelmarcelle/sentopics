@@ -182,7 +182,8 @@ sentopics_sentiment <- function(x,
     idx <- names(docvars)[names(docvars) %in% paste0(".s_", sentopics_labels(x, flat = FALSE)[["topic"]])]
     if (length(idx) > 0) {
       for (i in idx) {
-        eval(data.table::substitute2(x$tokens$y <- NULL, list(y = i)))
+        eval(substitute(x$tokens$y <- NULL, list(y = i)))
+        # eval(data.table::substitute2(x$tokens$y <- NULL, list(y = i)))
       }
     } 
   }
@@ -549,21 +550,21 @@ sentiment_breakdown <- function(x,
 
   if (scale & period != "identity") {
     invisible(sentiment_series(x, period = period, rolling_window = rolling_window, scale = scale, scaling_period = scaling_period, ...))
-    # tmp_sent <- sentopics_sentiment(x, quiet = TRUE)[, list(.id, sentiment = .sentiment_scaled)]
     tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
     cols <- grepl("^\\.s", names(tmp_sent)) & grepl("_scaled$", names(tmp_sent))
     cols <- names(tmp_sent)[cols]
-    tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
-    # names(tmp_sent) <- gsub("(^\\.(s_)?(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
+    tmp_sent <- eval(substitute(tmp_sent[, c(".id", ..cols)], list(..cols = cols)))
+    # TODO: re-activate once data.table 1.14.3 is released.
+    # tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
     names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
   } else {
-    # tmp_sent <- sentopics_sentiment(x, quiet = TRUE)[, list(.id, sentiment = .sentiment)]
     tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
     cols <- grepl("^\\.s", names(tmp_sent)) & !grepl("_scaled$", names(tmp_sent))
     cols <- names(tmp_sent)[cols]
-    tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
-    # names(tmp_sent) <- gsub("(^\\.(s_)?(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
-    names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
+    tmp_sent <- eval(substitute(tmp_sent[, c(".id", ..cols)], list(..cols = cols)))
+    # TODO: re-activate once data.table 1.14.3 is released.
+    # tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
+     names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
   }
   
   
@@ -582,12 +583,20 @@ sentiment_breakdown <- function(x,
     sCols <- names(proportions)[grepl("^s_", names(proportions))]
     if (length(sCols) == 0) sCols <- "sentiment"
     thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
-    breakdown <- proportions[, c(
-      list(date = .date, sentiment = sentiment),
-      mapply(function(s_i, theta_i) s_i * theta_i,
-             theta_i = .SD[, theta], s_i = .SD[, s],
-             SIMPLIFY = FALSE)),
-      env = I(list( s = sCols, theta = thetaCols))]
+    breakdown <- eval(substitute(
+      proportions[, c(
+        list(date = .date, sentiment = sentiment),
+        mapply(function(s_i, theta_i) s_i * theta_i,
+               theta_i = .SD[, theta], s_i = .SD[, s],
+               SIMPLIFY = FALSE))],
+      list( s = sCols, theta = thetaCols)))
+    # TODO: re-activate once data.table 1.14.3 is released.
+    # breakdown <- proportions[, c(
+    #   list(date = .date, sentiment = sentiment),
+    #   mapply(function(s_i, theta_i) s_i * theta_i,
+    #          theta_i = .SD[, theta], s_i = .SD[, s],
+    #          SIMPLIFY = FALSE)),
+    #   env = I(list( s = sCols, theta = thetaCols))]
     return(breakdown)
   }
 
@@ -601,12 +610,20 @@ sentiment_breakdown <- function(x,
     ## deal with topical sentiment values (rJST)
     sCols <- names(proportions)[grepl("^s_", names(proportions))]
     thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
-    breakdown <- proportions[, c(list(sentiment = mean(sentiment)),
-                                 mapply(function(s_i, theta_i) mean(s_i * theta_i),
-                                        theta_i = .SD[, theta], s_i = .SD[, s],
-                                        SIMPLIFY = FALSE)),
-                             by = list(date = floor_date(.date, period)),
-                             env = I(list( s = sCols, theta = thetaCols))]
+    breakdown <- eval(substitute(
+      proportions[, c(list(sentiment = mean(sentiment)),
+                      mapply(function(s_i, theta_i) mean(s_i * theta_i),
+                             theta_i = .SD[, theta], s_i = .SD[, s],
+                             SIMPLIFY = FALSE)),
+                  by = list(date = floor_date(.date, period))],
+      list( s = sCols, theta = thetaCols)))
+    # TODO: re-activate once data.table 1.14.3 is released.
+    # breakdown <- proportions[, c(list(sentiment = mean(sentiment)),
+    #                              mapply(function(s_i, theta_i) mean(s_i * theta_i),
+    #                                     theta_i = .SD[, theta], s_i = .SD[, s],
+    #                                     SIMPLIFY = FALSE)),
+    #                          by = list(date = floor_date(.date, period)),
+    #                          env = I(list( s = sCols, theta = thetaCols))]
   }
 
   
@@ -807,20 +824,20 @@ sentiment_topics <- function(x,
 
   if (scale & period != "identity") {
     invisible(sentiment_series(x, period = period, rolling_window = rolling_window, scale = scale, scaling_period = scaling_period, ...))
-    # tmp_sent <- sentopics_sentiment(x, quiet = TRUE)[, list(.id, sentiment = .sentiment_scaled)]
     tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
     cols <- grepl("^\\.s", names(tmp_sent)) & grepl("_scaled$", names(tmp_sent))
     cols <- names(tmp_sent)[cols]
-    tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
-    # names(tmp_sent) <- gsub("(^\\.(s_)?(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
+    tmp_sent <- eval(substitute(tmp_sent[, c(".id", ..cols)], list(..cols = cols)))
+    # TODO: re-activate once data.table 1.14.3 is released.
+    # tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
     names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
   } else {
-    # tmp_sent <- sentopics_sentiment(x, quiet = TRUE)[, list(.id, sentiment = .sentiment)]
     tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
     cols <- grepl("^\\.s", names(tmp_sent)) & !grepl("_scaled$", names(tmp_sent))
     cols <- names(tmp_sent)[cols]
-    tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
-    # names(tmp_sent) <- gsub("(^\\.(s_)?(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
+    tmp_sent <- eval(substitute(tmp_sent[, c(".id", ..cols)], list(..cols = cols)))
+    # TODO: re-activate once data.table 1.14.3 is released.
+    # tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
     names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
   }
 
@@ -839,13 +856,23 @@ sentiment_topics <- function(x,
     sCols <- names(proportions)[grepl("^s_", names(proportions))]
     if (length(sCols) == 0) sCols <- "sentiment"
     thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
-    topical_sent <- proportions[, c(
-      list(date = .date),
-      mapply(function(s_i, theta_i) s_i * theta_i,
-             theta_i = .SD[, theta], s_i = .SD[, s],
-             SIMPLIFY = FALSE)),
-      env = I(list( s = sCols, theta = thetaCols))]
+    topical_sent <- eval(substitute(
+      proportions[, c(
+        list(date = .date),
+        mapply(function(s_i, theta_i) s_i * theta_i,
+               theta_i = .SD[, theta], s_i = .SD[, s],
+               SIMPLIFY = FALSE))],
+      list( s = sCols, theta = thetaCols)))
+    # TODO: re-activate once data.table 1.14.3 is released.
+    # topical_sent <- proportions[, c(
+    #   list(date = .date),
+    #   mapply(function(s_i, theta_i) s_i * theta_i,
+    #          theta_i = .SD[, theta], s_i = .SD[, s],
+    #          SIMPLIFY = FALSE)),
+    #   env = I(list( s = sCols, theta = thetaCols))]
     return(topical_sent)
+    
+    
   }
   
   if (length(tmp_sent) <= 2) {
@@ -858,11 +885,18 @@ sentiment_topics <- function(x,
     ## deal with topical sentiment values (rJST)
     sCols <- names(proportions)[grepl("^s_", names(proportions))]
     thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
-    topical_sent <- proportions[, mapply(function(s_i, theta_i) sum(s_i * theta_i) / sum(theta_i),
-                                         theta_i = .SD[, theta], s_i = .SD[, s],
-                                         SIMPLIFY = FALSE),
-                                by = list(date = floor_date(.date, period)),
-                                env = I(list( s = sCols, theta = thetaCols))]
+    topical_sent <- eval(substitute(
+      proportions[, mapply(function(s_i, theta_i) sum(s_i * theta_i) / sum(theta_i),
+                           theta_i = .SD[, theta], s_i = .SD[, s],
+                           SIMPLIFY = FALSE),
+                  by = list(date = floor_date(.date, period))],
+      list( s = sCols, theta = thetaCols)))
+    # TODO: re-activate once data.table 1.14.3 is released.
+    # topical_sent <- proportions[, mapply(function(s_i, theta_i) sum(s_i * theta_i) / sum(theta_i),
+    #                                      theta_i = .SD[, theta], s_i = .SD[, s],
+    #                                      SIMPLIFY = FALSE),
+    #                             by = list(date = floor_date(.date, period)),
+    #                             env = I(list( s = sCols, theta = thetaCols))]
   }
   
   topical_sent <- topical_sent[order(date)]

@@ -62,7 +62,7 @@ plot(lda)
 The estimated topic model adds a layer of topical proportions to the existing documents. This appears clearly when using `melt()` on the model. Leveraging on the topic and sentiment information at the document level we can compute the share of sentiment that belong to a given topic.
 
 ```{r}
-document_datas <- melt(lda, include_docvars = TRUE)
+document_datas <- sentopics::melt(lda, include_docvars = TRUE)
 head(document_datas)
 head(document_datas[, list(.date, topic, share_of_sentiment = prob * .sentiment), keyby = ".id"])
 ```

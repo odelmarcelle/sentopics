@@ -12,12 +12,9 @@ coverage](https://codecov.io/gh/odelmarcelle/sentopics/branch/master/graph/badge
 
 ## Installation
 
-`sentopics` currently requires the development version of data.table
-(1.14.3 or greater).
+`sentopics` is currently installable from GitHub.
 
 ``` r
-if (!requireNamespace("data.table", quietly = TRUE)) install.packages("data.table")
-data.table::update.dev.pkg()
 devtools::install_github("odelmarcelle/sentopics") 
 ```
 
@@ -76,14 +73,13 @@ head(lda$theta)
 #    1_6 0.11111111 0.6666667 0.11111111 0.11111111
 # The document-topic in a 'long' format & optionally with meta-data
 head(melt(lda, include_docvars = FALSE))
-#     topic    .id       prob
-#    <fctr> <char>      <num>
-# 1: topic1    1_1 0.04761905
-# 2: topic1    1_2 0.03703704
-# 3: topic1    1_3 0.10000000
-# 4: topic1    1_4 0.42857143
-# 5: topic1    1_5 0.06666667
-# 6: topic1    1_6 0.11111111
+#     topic .id       prob
+# 1: topic1 1_1 0.04761905
+# 2: topic1 1_2 0.03703704
+# 3: topic1 1_3 0.10000000
+# 4: topic1 1_4 0.42857143
+# 5: topic1 1_5 0.06666667
+# 6: topic1 1_6 0.11111111
 # The most probable words per topic
 topWords(lda, output = "matrix") 
 #       topic1            topic2              topic3           
@@ -126,15 +122,13 @@ to study the evolution of topic proportions and related sentiment.
 
 ``` r
 sentopics_date(lda)  |> head(2)
-#       .id      .date
-#    <char>     <Date>
-# 1:    1_1 1998-06-09
-# 2:    1_2 1998-06-09
+#    .id      .date
+# 1: 1_1 1998-06-09
+# 2: 1_2 1998-06-09
 sentopics_sentiment(lda) |> head(2)
-#       .id  .sentiment
-#    <char>       <num>
-# 1:    1_1 -0.01470588
-# 2:    1_2 -0.02500000
+#    .id  .sentiment
+# 1: 1_1 -0.01470588
+# 2: 1_2 -0.02500000
 proportion_topics(lda, period = "month") |> head(2)
 #               topic1    topic2    topic3    topic4
 # 1998-06-01 0.1233053 0.6463265 0.1139985 0.1163698

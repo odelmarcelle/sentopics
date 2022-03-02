@@ -9,8 +9,8 @@ A \link[quanteda:dictionary]{quanteda::dictionary} containing two polarity categ
 and positive) and two valence-shitfing categories (negator and amplifier).
 }
 \source{
-\url{https://sraf.nd.edu/textual-analysis/resources/} for the lexicon
-and \link[lexicon:hash_valence_shifters]{lexicon::hash_valence_shifters} for the valence shifters
+\url{https://sraf.nd.edu/loughranmcdonald-master-dictionary/} for the
+lexicon and \link[lexicon:hash_valence_shifters]{lexicon::hash_valence_shifters} for the valence shifters
 }
 \usage{
 LoughranMcDonald

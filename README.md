@@ -7,7 +7,7 @@
 
 [![R-CMD-check](https://github.com/odelmarcelle/sentopics/workflows/R-CMD-check/badge.svg)](https://github.com/odelmarcelle/sentopics/actions)
 [![Codecov test
-coverage](https://codecov.io/gh/odelmarcelle/sentopics/branch/master/graph/badge.svg?token=V6M82L4ZCX)](https://codecov.io/gh/odelmarcelle/sentopics?branch=master)
+coverage](https://codecov.io/gh/odelmarcelle/sentopics/branch/master/graph/badge.svg?token=V6M82L4ZCX)](https://app.codecov.io/gh/odelmarcelle/sentopics)
 <!-- badges: end -->
 
 ## Installation

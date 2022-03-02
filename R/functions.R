@@ -81,8 +81,8 @@ topWords <- function(x,
            p <- ggplot2::ggplot(
              top,
              ggplot2::aes(
-               tidytext::reorder_within(
-                 tidytext::reorder_within(word, value, L1),
+               reorder_within(
+                 reorder_within(word, value, L1),
                  value, L2),
                value, L1, fill = factor(L1))) +
              {if (attr(top, "method") == "frequency")
@@ -98,7 +98,7 @@ topWords <- function(x,
                scales = "free"
              ) +
              ggplot2::coord_flip() +
-             tidytext::scale_x_reordered() +
+             scale_x_reordered() +
              ggplot2::labs(x = "word", y = attr(top, "method")) +
              ggplot2::theme(
                strip.text.x = ggplot2::element_text(

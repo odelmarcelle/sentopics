@@ -307,13 +307,8 @@ grow.JST <- function(x, iterations = 100, nChains = 1, nCores = 1, displayProgre
 #' @export
 grow.sentopicmodel <- function(x, iterations = 100, nChains = 1, nCores = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL) {
 
-  ## historical variable.. to be removed
-  burn = 0
-
   ## force deep copy
   x <- data.table::copy(x)
-  # x <- generateZWD(x, FALSE)
-  # x$beta <- switchBeta(x$beta, x$T, x$S)
 
   if (nChains == 1) {
     if (!is.null(seed)) set.seed(seed * (x$it + 1)) # else set.seed(sample.int(2^30, 1)) ### if set.seed is not defined internal rng of cpp_model repeat every call
@@ -321,20 +316,10 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1, nCores = 1, dis
     base <- core(x)
     cpp_model <- rebuild_cppModel(x, base)
 
-    cpp_model$iterate(iterations + burn, displayProgress, computeLikelihood)
+    cpp_model$iterate(iterations, displayProgress, computeLikelihood)
 
-    # x <- utils::modifyList(x, extract_cppModel(cpp_model, core(x))) ## slow if large tokens
-    ## replaced by:
     tmp <- extract_cppModel(cpp_model, base)
     x[names(tmp)] <- tmp
-
-    # x <- generateWTSD(x)
-    # x$beta <- switchBeta(x$beta, x$T, x$S)
-
-    # x$theta <- computeTheta(x)
-    # x$pi <- computePi(x)
-    # x$phi <- computePhi(x)
-    # x$logLikelihood <- x$logLikelihoodW + x$logLikelihoodT + x$logLikelihoodS
 
     reorder_sentopicmodel(x)
   } else if (nChains > 1) {
@@ -355,133 +340,60 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1, nCores = 1, dis
         parallel::stopCluster(cl)
         options(oopts)
       })
-      # if (!is.null(seed)) doRNG::registerDoRNG(seed * (x$it + 1), FALSE)
     } else {
-      # future::plan("sequential")
-      # if (!is.null(seed)) doRNG::registerDoRNG(seed * (x$it + 1), FALSE)
+      on.exit(options(oopts))
     }
 
     if (!is.null(seed)) seed <- seed * (x$it + 1)
 
     ## determine how often the progress bar is refreshed (too high refresh rate can negatively affect performance)
-    chunkProgress <- min(max(((burn + iterations) * nChains/nCores) %/% 10, 10), 1000, iterations)
-
+    chunkProgress <- min(max((iterations * nChains/nCores) %/% 10, 10), 1000, iterations)
+    
     # if (displayProgress) progressr::handlers("progress") else progressr::handlers("void")
     # progressr::with_progress({
-      start_time <- Sys.time()
-      ############################################ WARNING : exporting p or using progressr seems to cause memory leaks.... investigate ? run_MC as example
-      # p <- progressr::progressor(steps = nChains * ((burn + iterations) * 1000 + 3))
-      chains <- doRNG::`%dorng%`(foreach::foreach(i = 1:nChains, .packages = c("sentopics"),
-                                                  .export = c("x", "burn", "iterations", "chunkProgress", "start_time", "base", "computeLikelihood"),
-                                                  .final = function(x) stats::setNames(x, paste0("chain", 1:nChains)), .options.RNG = seed),
-                                 {
+    # start_time <- Sys.time()
+    # p <- progressr::progressor(steps = nChains * ((iterations) * 1000 + 3))
+    chains <- doRNG::`%dorng%`(
+      foreach::foreach(i = 1:nChains, .packages = c("sentopics"),
+                       .export = c("x", "iterations", "chunkProgress", "base", "computeLikelihood"),
+                       .final = function(x) stats::setNames(x, paste0("chain", 1:nChains)),
+                       .options.RNG = seed),
+      {
         # p(sprintf("Starting chain %d", i), class = "sticky", amount = 1)
-
+        
         ## need to duplicate memory location of x$za. Otherwise, all chains
         ## share the same memory location
         x$za <- data.table::copy(x$za)
-
-        # message(paste(ls(environment(), all.names = TRUE), collapse = "  "))
-        # # message(ls(...future.env, all.names = TRUE))
-        # message(paste0(sapply(mget(ls(environment(), all.names = TRUE)), object.size), collapse = " "))
-        #
-        # message(paste(ls(parent.frame(), all.names = TRUE), collapse = "  "))
-        # message(paste(ls(parent.frame(2), all.names = TRUE), collapse = "  "))
-        # message(paste(ls(parent.frame(3), all.names = TRUE), collapse = "  "))
-        # message(paste(ls(parent.frame(3), all.names = TRUE), collapse = "  "))
-        # message(paste(ls(parent.frame(4), all.names = TRUE), collapse = "  "))
-        # message(paste0(sapply(mget(ls(parent.frame(4), all.names = TRUE), envir = parent.frame(4)), object.size), collapse = " "))
-        # message(paste(ls(parent.frame(5), all.names = TRUE), collapse = "  "))
-        # message(paste(ls(parent.frame(6), all.names = TRUE), collapse = "  "))
-        # message(paste(ls(parent.frame(7), all.names = TRUE), collapse = "  "))
-        # message(paste(ls(parent.frame(8), all.names = TRUE), collapse = "  "))
-        # message(paste0(sapply(mget(ls(parent.frame(8), all.names = TRUE), envir = parent.frame(8)), object.size), collapse = " "))
-        # message(paste(ls(parent.frame(9), all.names = TRUE), collapse = "  "))
-        # message(paste(ls(parent.frame(10), all.names = TRUE), collapse = "  "))
-        # message(paste(ls(parent.frame(11), all.names = TRUE), collapse = "  "))
-        # message(paste(ls(parent.frame(12), all.names = TRUE), collapse = "  "))
-        # message(paste(ls(parent.frame(13), all.names = TRUE), collapse = "  "))
-        # message(paste(ls(parent.frame(14), all.names = TRUE), collapse = "  "))
-        # message(ls(...future.env, all.names = TRUE))
-        # message(paste0(sapply(mget(ls(parent.frame(), all.names = TRUE)), object.size), collapse = " "))
-
-        # if (x$it != 0) {
-        #   cpp_model <- sentopics:::rebuild_cppModel(x)
-        # } else {
-        #   cpp_model <- methods::new(sentopics:::model)
-        #   cpp_model$init(
-        #     x$tokens, x$V, x$T, x$S, x$lexicon, x$classVector,
-        #     x$initAlpha, x$initBeta, x$initGamma, x$alphaCycle, x$gammaCycle, x$sentDelay, 1, x$annealing, x$annealing_base
-        #   )
-        #   cpp_model$alpha <- x$alpha
-        #   cpp_model$gamma <- x$gamma
-        #   cpp_model$beta <- x$beta
-        # }
-        # message("debug1")
-        # message(quanteda::docvars(base$tokens, "class"))
+        
         cpp_model <- sentopics:::rebuild_cppModel(x, base)
-
-        # message("debug2")
-        # message(cpp_model$za[[1]][1:20])
-        # message(.Random.seed[1:5])
+        
         ## generate different initial assignment for each chain
         if (x$it == 0) cpp_model$initAssignments()
-
-        # message(cpp_model$za[[1]][1:20])
-
-
-
-        for (j in seq((burn + iterations) %/% chunkProgress)) {
+        
+        
+        
+        for (j in seq((iterations) %/% chunkProgress)) {
           cpp_model$iterate(chunkProgress, FALSE, computeLikelihood)
           # p(
-            # message = sprintf("Elapsed time: %g", round(as.numeric(Sys.time() - start_time, units = "secs"), 0)),
-            amount = chunkProgress * 1000
+          # message = sprintf("Elapsed time: %g", round(as.numeric(Sys.time() - start_time, units = "secs"), 0)),
+          # amount = chunkProgress * 1000
           # )
         }
-        if ((burn + iterations) %% chunkProgress != 0) {
-          cpp_model$iterate((burn + iterations) %% chunkProgress, FALSE, computeLikelihood)
+        if ((iterations) %% chunkProgress != 0) {
+          cpp_model$iterate((iterations) %% chunkProgress, FALSE, computeLikelihood)
           # p(
-            # message = sprintf("Elapsed time: %g", round(as.numeric(Sys.time() - start_time, units = "secs"), 0)), ### TODO: test difftime(Sys.time(), t1, units = "sec")
-            amount = ((burn + iterations) %% chunkProgress) * 1000
+          # message = sprintf("Elapsed time: %g", round(as.numeric(Sys.time() - start_time, units = "secs"), 0)), ### TODO: test difftime(Sys.time(), t1, units = "sec")
+          # amount = ((iterations) %% chunkProgress) * 1000
           # )
         }
-
-        # message("in cpp:", head(cpp_model$za[[1]]))
-
-        ### TODO: re-implement message for burned chain ?
-        # p(message = sprintf("Burned chain %g", i), amount  = 1)
-        # p(message = sprintf("Processed chain %g", i), amount = 2)
-        # x <- utils::modifyList(x, sentopics:::extract_cppModel(cpp_model, base))
+        
         tmp <- sentopics:::extract_cppModel(cpp_model, base)
         x[names(tmp)] <- tmp
-
-        # message("in R:", head(x$za[[1]]))
-
-        # message("theta1:", head(x$theta[, 1]))
-        # message("theta2:", head(sentopics:::computeTheta(x, base)[, 1]))
-        # message("debug3")
-        # x <- sentopics:::generateWTSD(x, base = base)
-        # message("debug3.5")
-        # base$beta <- sentopics:::switchBeta(base$beta, x$T, x$S) #### only for current worker... not well optimized overall
-        # message("debug4")
-        # x$theta <- sentopics:::computeTheta(x, base)
-        # x$pi <- sentopics:::computePi(x, base)
-        # x$phi <- sentopics:::computePhi(x, base)
-        # # message("debug5")
-        # x$logLikelihood <- x$logLikelihoodW + x$logLikelihoodT + x$logLikelihoodS
-        #
-        #
-        # # message(paste(ls(environment(), all.names = TRUE), collapse = "  "))
-        # # # message(ls(...future.env, all.names = TRUE))
-        # # message(paste0(sapply(mget(ls(environment(), all.names = TRUE)), object.size), collapse = " "))
-        #
+        
         x
-        # sentopics:::extract_cppModel(cpp_model, names(base$tokens))
       })
-    # })
     class(chains) <- "multiChains"
     attr(chains, "nChains") <- nChains
-    # base$beta <- switchBeta(base$beta, x$T, x$S)
     attr(chains, "base") <- base
     attr(chains, "containedClass") <- "sentopicmodel"
 
@@ -493,34 +405,25 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1, nCores = 1, dis
 
 ### TODO: allow chain selection with nChains ?
 #' @export
-grow.multiChains <- function(x, iterations = 100, nChains = NULL, nCores = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL) {
-
-  ## historical variable.. to be removed
-  burn = 0
-
-  ### TODO: automated chain selection
+grow.multiChains <- function(x, iterations = 100, nChains = NULL, nCores = 1,
+                             displayProgress = TRUE, computeLikelihood = TRUE,
+                             seed = NULL) {
+  
+  
   nChains <- attr(x, "nChains")
   base <- attr(x, "base")
   containedClass <- attr(x, "containedClass")
-  # if (containedClass == "JST") { ## need to switch alpha and gamma in base
-  #   index <- which(names(base) %in% c("alpha", "gamma"))
-  #   names(base)[index] <- names(base)[rev(index)]
-  # }
-
+  
   x <- unclass(x) ## unclass to prevent usage of `[[.multiChains`
-  # base$beta <- switchBeta(base$beta, x[[1]]$T, x[[1]]$S) ## to 2D
-
   x <- lapply(x, as.sentopicmodel) ## return to sentopicmodel objects
-
-  ## erase posterior to limit memory transfers
+  
+  ## erase posterior in each chain to limit memory transfers
   for (i in seq_along(x)) {
     x[[i]][["L1post"]] <- x[[i]][["L2post"]] <- x[[i]][["phi"]] <- NULL
   }
-  #
-  #
+
   ### maybe not the most proper way to do this but...
   oopts <- options("doFuture.foreach.export" = ".export")
-
 
   names <- names(x)[1:nChains]
   doFuture::registerDoFuture()
@@ -532,66 +435,49 @@ grow.multiChains <- function(x, iterations = 100, nChains = NULL, nCores = 1, di
       parallel::stopCluster(cl)
       options(oopts)
     })
-    # if (!is.null(seed)) doRNG::registerDoRNG(seed * (x[[1]]$it + 1), FALSE)
   } else {
-    # future::plan("sequential")
-    # if (!is.null(seed)) doRNG::registerDoRNG(seed * (x[[1]]$it + 1), FALSE)
+    on.exit(options(oopts))
   }
   ## determine how often is the progress bar refreshed ## note that a refresh rate too high can negatively affect performance
-  chunkProgress <- min(max(((burn + iterations)*nChains/nCores) %/% 10, 10), 1000, iterations)
+  chunkProgress <- min(max((iterations*nChains/nCores) %/% 10, 10), 1000, iterations)
 
   if (!is.null(seed)) seed <- seed * (x[[1]]$it + 1)
 
-  # message(seed)
-
   # if (displayProgress) progressr::handlers("progress") else progressr::handlers("void")
   # progressr::with_progress({
-    start_time <- Sys.time()
-    p <- progressr::progressor(steps = nChains * ((burn + iterations) * 1000 + 3))
-    chains <- doRNG::`%dorng%`(foreach::foreach(x = x, i = 1:nChains, .packages = c("sentopics"), .export = c("burn", "iterations", "chunkProgress", "start_time", "base", "computeLikelihood"),
-                                                .final = function(x) stats::setNames(x, paste0("chain", 1:nChains)), .options.RNG = seed),
-                               {
-                                 # x <- data.table::copy(x)
-       # p(sprintf("Starting chain %d", i), class = "sticky", amount = 1)
-       # x <- x[[i]]
-       cpp_model <- sentopics:::rebuild_cppModel(x, base)
-
-       # message(.Random.seed)
-
-       for (j in seq((burn + iterations) %/% chunkProgress)) {
-         cpp_model$iterate(chunkProgress, FALSE, computeLikelihood)
-         # p(
-         #   message = sprintf("Elapsed time: %g", round(as.numeric(Sys.time() - start_time, units = "secs"), 0)),
-         #   amount = chunkProgress * 1000
-         # )
-       }
-       if ((burn + iterations) %% chunkProgress != 0) {
-         cpp_model$iterate((burn + iterations) %% chunkProgress, FALSE, computeLikelihood)
-         # p(
-         #   message = sprintf("Elapsed time: %g", round(as.numeric(Sys.time() - start_time, units = "secs"), 0)), ### TODO: test difftime(Sys.time(), t1, units = 'sec')
-         #   amount = ((burn + iterations) %% chunkProgress) * 1000
-         # )
-       }
-
-       ### TODO: re-implement message for burned chain ?
-       # p(message = sprintf("Burned chain %g", i), amount  = 1)
-       # p(message = sprintf("Processed chain %g", i), amount = 2)
-       # x <- utils::modifyList(x, sentopics:::extract_cppModel(cpp_model, base))
-       tmp <- sentopics:::extract_cppModel(cpp_model, base)
-       x[names(tmp)] <- tmp
-       # x <- sentopics:::generateWTSD(x, base = base)
-       # base$beta <- sentopics:::switchBeta(base$beta, x$T, x$S) #### only for current worker... not well optimized overall
-       # x$theta <- sentopics:::computeTheta(x, base)
-       # x$pi <- sentopics:::computePi(x, base)
-       # x$phi <- sentopics:::computePhi(x, base)
-       # x$logLikelihood <- x$logLikelihoodW + x$logLikelihoodT + x$logLikelihoodS
-
-       x
-     })
-  # })
+  # start_time <- Sys.time()
+  # p <- progressr::progressor(steps = nChains * ((iterations) * 1000 + 3))
+  chains <- doRNG::`%dorng%`(
+    foreach::foreach(x = x, i = 1:nChains, .packages = c("sentopics"),
+                     .export = c("iterations", "chunkProgress", "base", "computeLikelihood"),
+                     .final = function(x) stats::setNames(x, paste0("chain", 1:nChains)),
+                     .options.RNG = seed),
+    {
+      # p(sprintf("Starting chain %d", i), class = "sticky", amount = 1)
+      cpp_model <- sentopics:::rebuild_cppModel(x, base)
+      
+      for (j in seq((iterations) %/% chunkProgress)) {
+        cpp_model$iterate(chunkProgress, FALSE, computeLikelihood)
+        # p(
+        #   message = sprintf("Elapsed time: %g", round(as.numeric(Sys.time() - start_time, units = "secs"), 0)),
+        #   amount = chunkProgress * 1000
+        # )
+      }
+      if ((iterations) %% chunkProgress != 0) {
+        cpp_model$iterate((iterations) %% chunkProgress, FALSE, computeLikelihood)
+        # p(
+        #   message = sprintf("Elapsed time: %g", round(as.numeric(Sys.time() - start_time, units = "secs"), 0)), ### TODO: test difftime(Sys.time(), t1, units = 'sec')
+        #   amount = ((iterations) %% chunkProgress) * 1000
+        # )
+      }
+      
+      tmp <- sentopics:::extract_cppModel(cpp_model, base)
+      x[names(tmp)] <- tmp
+      
+      x
+    })
   class(chains) <- "multiChains"
   attr(chains, "nChains") <- nChains
-  # base$beta <- switchBeta(base$beta, x[[1]]$T, x[[1]]$S) ## back to 3D
   attr(chains, "base") <- base
   attr(chains, "containedClass") <- containedClass
   names(chains) <- names
@@ -708,16 +594,13 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
   .id <- topic <- sentiment <- prob <- L1_prob <- L2_prob <- NULL # due to NSE notes in R CMD check
 
   L1stats <- data.table::as.data.table(data$L1post, sorted = FALSE, keep.rownames = ".id")
-  # colnames(L1stats) <- c(".id", 1:(ncol(L1stats) - 1))
   L1_name <- names(dimnames(data$L1post))[2]
   L1stats <- melt(L1stats, id = ".id", variable.factor = TRUE,
                   variable.name = L1_name, value.name = "L1_prob")
   if (attr(data, "Sdim") == "L1") stopifnot(identical(levels(L1stats[[L1_name]]), levels(data$vocabulary$lexicon)))
-  # L1stats$L1 <- as.numeric(L1stats$L1)
 
   if (class != "LDA") {
     L2stats <- data$L2post
-    # dimnames(L2stats)[1:2] <- list(NULL, NULL)
     names(dimnames(L2stats))[3] <- ".id"
     L2_name <- names(dimnames(L2stats))[1]
 
@@ -727,8 +610,6 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
     }
     if (attr(data, "Sdim") == "L1") stopifnot(identical(levels(L1stats[[L1_name]]), levels(L1stats[[L1_name]])))
     if (attr(data, "Sdim") == "L2") stopifnot(identical(levels(L2stats[[L2_name]]), levels(data$vocabulary$lexicon)))
-
-    # colnames(L2stats) <- c("L2", "L1", "id", "prob")
 
     mixtureStats <- L2stats[L1stats, on = c(".id", L1_name)]
     mixtureStats[, prob := L2_prob * L1_prob]
@@ -747,33 +628,24 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
     mixtureStats <- mixtureStats[, list(topic, .id, prob)]
   }
 
-  # mixtureStats <- mixtureStats[, list(id, L1, L2, prob = prob * i.prob, l2prob = prob, l1prob = i.prob)]
-
   if (include_docvars) {
     docvars <- quanteda::docvars(data$tokens)
     docvars$.id <- names(data$tokens)
     mixtureStats <- merge(mixtureStats, docvars, sort = FALSE)
     data.table::setcolorder(mixtureStats, c(colnames(mixtureStats)[2:4], ".id"))
   }
-
-
-
   mixtureStats[]
 }
 
 # Accessors ---------------------------------------------------------------
 
-## structure() for attributes ie structure(NextMethod(), class="foo")
-
+## TODO: structure() for attributes ie structure(NextMethod(), class="foo")?
 #' @export
 `[[.multiChains` <- function(x, i, ...) {
 
   base <- attr(x, "base")
   containedClass <- attr(x, "containedClass")
-
-  # ## coerce to sentopicmodel to manipulate with core(x)
-  # x <- lapply(unclass(x), as.sentopicmodel)
-
+  
   x <- NextMethod()
   core(x) <- base
 
@@ -792,8 +664,6 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
   } else {
     base <- attr(x, "base")
     containedClass <- attr(x, "containedClass")
-    # ## coerce to sentopicmodel to manipulate with core(x)
-    # x <- lapply(unclass(x), as.sentopicmodel)
     x <- NextMethod()
     core(x) <- base
     fun <- get(paste0("as.", containedClass))
@@ -816,7 +686,7 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
   attr(x, "nChains") <- nChains
   attr(x, "rng") <- rng
   attr(x, "containedClass") <- containedClass
-  # TODO : check attributes
+  # TODO : check attributes?
 
   class(x) <- "multiChains"
 

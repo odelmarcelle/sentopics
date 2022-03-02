@@ -7,7 +7,7 @@ Authors@R: c(person("Olivier", "Delmarcelle", email = "delmarcelle.olivier@gmail
   person("Samuel", "Borms", email = "samuel.borms@unine.ch", role = c("ctb"), comment = c(ORCID = "0000-0001-9533-1870")))
 Maintainer: Olivier Delmarcelle <delmarcelle.olivier@gmail.com>
 Description: An R package for joint sentiment and topic analysis of textual data.
-License: GPL (>= 2)
+License: GPL (>= 3)
 BugReports: https://github.com/odelmarcelle/sentopics/issues
 URL: https://github.com/odelmarcelle/sentopics
 Encoding: UTF-8

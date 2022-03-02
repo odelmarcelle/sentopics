@@ -38,8 +38,8 @@ test_that("test convergence", {
   toks <- generateDocuments(vocab, nDocs = 100, L1prior = 1, nWords = 100, nClass = 1)
   LDA <- LDA(toks)
 
-  LDA <- grow(LDA, 100, nChains = 2, displayProgress = FALSE)
-  sapply(distToGenerative(LDA, vocab), expect_lte, .15)
+  LDA <- grow(LDA, 100, nChains = 10, displayProgress = FALSE)
+  expect_lte(mean(distToGenerative(LDA, vocab)), .15)
 })
 
 test_that("misc", {

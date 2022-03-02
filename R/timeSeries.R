@@ -348,11 +348,6 @@ sentopics_labels <- function(x, flat = TRUE) {
 
   ## force update of labels on theta phi ect..
   x <- grow(x, 0, displayProgress = FALSE)
-  # class <- class(x)[1]
-  # x <- as.sentopicmodel(x)
-  # fun <- get(paste0("as.", class))
-  # x <- fun(reorder_sentopicmodel(x))
-  
   
   ## manually adjust stored sentiment in docvars (if any)
   docvars <- attr(x$tokens, "docvars")
@@ -424,15 +419,6 @@ sentiment_series <- function(x,
                             "Install command: install.packages(",
                             paste0("'", mis, "'", collapse = ", "),")" )
 
-  # if (is.character(date_docvar)) {
-  #   if (!date_docvar %in% colnames(docvars(x$tokens)))
-  #     stop("\"", date_docvar, "\" not found in the docvars of the quanteda object. Please check that the input of the model retained his docvars using `docvars()`. Instead of providing a column name, you can also directly input a date vector to this function.")
-  # } else if (inherits(date_docvar, "Date")) {
-  #   x$tokens$date <- date_docvar
-  #   date_docvar <- "date"
-  # } else {
-  #   stop("Incorrect input to date_docvar.")
-  # }
   res <- cbind(
     sentopics_sentiment(x, quiet = TRUE),
     sentopics_date(x)

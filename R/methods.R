@@ -404,7 +404,6 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1, nCores = 1, dis
   }
 }
 
-### TODO: allow chain selection with nChains ?
 #' @export
 grow.multiChains <- function(x, iterations = 100, nChains = NULL, nCores = 1,
                              displayProgress = TRUE, computeLikelihood = TRUE,

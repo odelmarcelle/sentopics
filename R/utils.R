@@ -26,7 +26,7 @@ extract_cppModel <- function(x, base) {
 
 ## function rebuilding C++ model from an R object
 rebuild_cppModel <- function(x, base) {
-  ### TODO: base$cleaned is not protected after the call to rebuild_cppModel...
+  ### careful: base$cleaned is not protected after the call to rebuild_cppModel...
   ### create an issue since it is not copied to CPP
 
   ## source alpha and gamma from x if updates are enabled
@@ -58,8 +58,7 @@ rebuild_cppModel <- function(x, base) {
       if (is.null(x$logLikelihood)) 0 else attr(x$logLikelihood, "components")$logLikelihoodL1,
       if (is.null(x$logLikelihood)) 0 else attr(x$logLikelihood, "components")$logLikelihoodL2,
       # x$histAlpha,
-      # x$histGamma,
-      # x$lambdaFactor
+      # x$histGamma
       stats::median(base$beta) ### caution... will not work if too many lexicon
     )
   cppModel
@@ -156,7 +155,6 @@ reorder_sentopicmodel <- function(x) {
 
 
 core <- function(x) {
-  # res <- x[c("tokens", "vocabulary", "L1prior", "beta", "L2prior", "L1cycle", "L2cycle")]
   res <- x[c("tokens", "vocabulary", "beta", "L1cycle", "L2cycle")]
   attr(res, "Sdim") <- attr(x, "Sdim")
   attr(res, "reversed") <- attr(x, "reversed")
@@ -220,8 +218,6 @@ computeTheta <- function(x, base = core(x)) {
 
   L1post <- t(L1post)
   dimnames(L1post) <- list(.id = names(base$tokens), L1 = labels_sentopicmodel(x, base)[["L1"]] )
-  # dimnames(theta)[[2]] <- paste0("topic", 1:x$T)
-  # dimnames(theta)[[1]] <- names(base$intTokens)
 
   L1post
 }
@@ -258,9 +254,6 @@ computePi <- function(x, base = core(x)) {
 
   L2post <- array(L2post, dim = c(L2, L1, length(base$tokens)))
   dimnames(L2post) <- list(L2 = labels_sentopicmodel(x, base)[["L2"]], L1 = labels_sentopicmodel(x, base)[["L1"]], .id = names(base$tokens))
-  # dimnames(pi)[[2]] <- paste0("topic", 1:x$T)
-  # dimnames(pi)[[1]] <- paste0("sent", 1:x$S)
-  # dimnames(pi)[[3]] <- names(base$intTokens)
 
   L2post
 }
@@ -283,11 +276,6 @@ computePhi <- function(x, base = core(x)) {
 
   dimnames(phi) <- list(word = base$vocabulary$word, L2 = labels_sentopicmodel(x, base)[["L2"]], L1 = labels_sentopicmodel(x, base)[["L1"]])
 
-  # dimnames(phi)[[1]] <- base$vocabulary$word
-  # dimnames(phi)[[3]] <- paste0("topic", 1:x$T)
-  # dimnames(phi)[[2]] <- paste0("sent", 1:x$S)
-
-  ### TODO: find a way to simplify phi for LDA without breaking checks afterwards
   phi
 }
 
@@ -422,7 +410,7 @@ invariantEuclideanOptim <- function(multiChains, L1 = multiChains[[1]]$L1,
       # )))
       d <- FUN_aggregate(apply(expandPairs, c(1,3), function(x) tmp[x[1], x[2]]))
 
-      ##TODO: safety, to be removed
+      ## TODO: safety, to be removed
       if (!identical(dim(expandPairs), as.integer(c(L2, 2L, L1)))) stop("Condition not fulfilled")
     }
     else if (!attr(unclass(multiChains)[[1]], "reversed") && strict) {
@@ -456,20 +444,6 @@ invariantEuclideanOptim <- function(multiChains, L1 = multiChains[[1]]$L1,
       ## max distance among topic-sentiment pairs
       d <- max(tmp[matches])
     }
-
-
-
-    # tmp
-    # m <- 4
-    # tmp[1 + 0L:(m - 1L) * (dim(tmp)[1L] + 1)]
-    #
-    # diag(tmp)
-    # diag(tmp[nrow(tmp):1, ])
-
-
-    #
-
-
 
     distMatrix[cb[[i]][1], cb[[i]][2]] <- d
     distMatrix[cb[[i]][2], cb[[i]][1]] <- d
@@ -893,7 +867,7 @@ makeVocabulary <- function(toks, dictionary, S) {
       if (S == 2) { ## attempts to coerce to two sentiments
 
         lexicon <- lexicon[tolower(names(lexicon)) %in% c("negative", "positive")]
-        ## TODO: manage polarised dictionary3
+        ## TODO: manage polarised dictionary3?
         if (length(lexicon) != 2) stop("Please provide a dictionary with negative and positive categories.")
       } else if (S == 3) { ## attempts to coerce to negative-neutral-positive
 
@@ -971,7 +945,7 @@ makeVocabulary <- function(toks, dictionary, S) {
 
 
 
-### TODO: check
+### TODO: check and export one day
 getTexts <- function(x, topic, sentiment, n = 3, collapsed = TRUE) {
   
   # CMD check

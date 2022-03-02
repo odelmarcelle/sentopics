@@ -79,7 +79,5 @@ test_that("Updates works", {
   expect_false(isTRUE(all.equal(rep(1, 5), alphaU$alpha)))
 })
 
-# JST <- JST(toks, lexicon = quanteda::dictionary(quanteda.dictionaries::data_dictionary_LoughranMcDonald))
-
 ### TODO: add test for utils functions such as getTheta()
 

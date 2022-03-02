@@ -146,10 +146,8 @@ test_that("equality between euclidean distances", {
 
 
 
-test_that("print, summary and plot methods work", {
+test_that("plot methods work", {
 
   expect_silent(plot(generated_sentopicmodel))
 
-  ## TODO: implement print and summary methods
-  ## TODO: implement expect_
 })

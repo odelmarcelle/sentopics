@@ -87,14 +87,6 @@ as.sentopicmodel.JST <- function(x) {
   names(x) <- rename
   class(x) <- setdiff(class(x), "JST")
 
-  # TODO: ?
-  # # correct phi theta pi structure and names
-  # if (x$it > 0) {
-  #   dimnames(x$theta) <- list(doc_id = names(x$tokens), topic = paste0("topic", 1:x$T))
-  #   dimnames(x$pi) <- list(sent = paste0("sent", 1:x$S), topic = paste0("topic", 1:x$T), doc_id = names(x$tokens))
-  #   dimnames(x$phi) <- list(word = x$vocabulary$word, sent = paste0("sent", 1:x$S), topic = paste0("topic", 1:x$T))
-  # }
-
   as.sentopicmodel_defaults(x)
 }
 #' @export

@@ -46,6 +46,7 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #'   the hyperparameter alpha
 #' @param gammaCycle integer specifying the cycle size between two updates of
 #'   the hyperparameter alpha
+#' @param ... not used
 #'
 #' @export
 #' @seealso Growing a model: [grow()], extracting top words: [topWords()]
@@ -75,7 +76,7 @@ rJST <- function(x, ...) {
 #' @export
 rJST.default <- function(x, lexicon = NULL, K = 5, S = 3,
                  alpha = 1, gamma = 5, beta = 0.01,
-                 alphaCycle = 0, gammaCycle = 0) {
+                 alphaCycle = 0, gammaCycle = 0, ...) {
   as.rJST(sentopicmodel(x, lexicon, K, S, alpha, gamma, beta, alphaCycle, gammaCycle))
 }
 #' @rdname rJST
@@ -88,7 +89,7 @@ rJST.default <- function(x, lexicon = NULL, K = 5, S = 3,
 rJST.LDA <- function(x,
                      lexicon = NULL,
                      S = 3,
-                     gamma = 5) {
+                     gamma = 5, ...) {
   
   if (x$it < 1) stop("Requires an estimated LDA model.")
   x <- as.sentopicmodel(x)

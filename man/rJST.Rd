@@ -17,13 +17,16 @@ rJST(x, ...)
   gamma = 5,
   beta = 0.01,
   alphaCycle = 0,
-  gammaCycle = 0
+  gammaCycle = 0,
+  ...
 )
 
-\method{rJST}{LDA}(x, lexicon = NULL, S = 3, gamma = 5)
+\method{rJST}{LDA}(x, lexicon = NULL, S = 3, gamma = 5, ...)
 }
 \arguments{
 \item{x}{tokens object containing the texts. A coercion will be attempted if \code{x} is not a tokens.}
+
+\item{...}{not used}
 
 \item{lexicon}{a \code{quanteda} dictionary with positive and negative categories}
 

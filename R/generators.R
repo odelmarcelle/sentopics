@@ -148,7 +148,7 @@ distToGenerative <- function(x, generativeVocabulary, plot = FALSE, full = FALSE
   x[[length(x)]]$phi <- generativeVocabulary[order(match(rownames(generativeVocabulary),x$vocabulary$word)),,,drop = FALSE]
 
   attr(x, "nChains") <- length(x)
-  d <- chainsDistances(x, method)
+  d <- chainsDistances(x, method, FUN_aggregate = "max")
   if (plot) {
     coord <- stats::cmdscale(stats::as.dist(d))
     plot(coord[, 1], coord[, 2], type = "n", xlab = "Coordinate 1", ylab = "Coordinate 2", main = paste0("Distance to true vocabulary"))

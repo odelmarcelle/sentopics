@@ -125,9 +125,25 @@ test_that("scores & distances works", {
   expect_silent(distances2 <- chainsDistances(generated_sentopicmodel, method = "invariantEuclidean"))
   expect_false(anyNA(distances))
   expect_true(all(distances <= distances2))
-  expect_silent(distances <- chainsDistances(generated_sentopicmodel, method = "stupidEuclidean"))
+  expect_silent(distances <- chainsDistances(generated_sentopicmodel, method = "naiveEuclidean"))
   expect_false(anyNA(distances))
 })
+
+
+test_that("equality between euclidean distances", {
+  toks <- ECB_press_conferences_tokens[1:10]
+  LDA <- LDA(toks)
+  LDAs <- grow(LDA, 10, nChains = 5)
+  expect_equal(
+    chainsDistances(LDAs),
+    chainsDistances(LDAs, method = "invariantEuclidean"))
+  rJST <- rJST(toks, S = 1)
+  rJSTs <- grow(rJST, 10, nChains = 5)
+  expect_equal(
+    chainsDistances(rJSTs),
+    chainsDistances(rJSTs, method = "invariantEuclidean"))
+})
+
 
 
 test_that("print, summary and plot methods work", {

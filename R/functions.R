@@ -214,8 +214,8 @@ plot_topWords <- function(x,
 #'   For best results, consider cleaning the initial tokens object with `padding
 #'   = TRUE`.
 #'
-#' @param x a model created from the [LDA()], [JST()] or [rJST()] function
-#'   and estimated with [grow()]
+#' @param x a model created from the [LDA()], [JST()] or [rJST()] function and
+#'   estimated with [grow()]
 #' @param method the coherence method used.
 #' @param nWords the number of words in each topic used for evaluation.
 #' @param window optional. If `NULL`, use the default window for each coherence
@@ -233,9 +233,9 @@ plot_topWords <- function(x,
 #'   is 110 for C_V.
 #'
 #' @references Röder, M., Both, A., & Hinneburg, A. (2015). [Exploring the Space
-#'   of Topic Coherence Measures](https://doi.org/10.1145/2684822.2685324).
-#'   Proceedings of the Eighth ACM International Conference on Web Search and
-#'   Data Mining, 399–408.
+#'   of Topic Coherence Measures](https://doi.org/10.1145/2684822.2685324). In
+#'   *Proceedings of the Eighth ACM International Conference on Web Search and
+#'   Data Mining*, 399-–408.
 #' @export
 coherence <- function(x, nWords = 10, method = c("C_NPMI", "C_V"), window = NULL, NPMIs = NULL) {
   UseMethod("coherence")
@@ -293,20 +293,41 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 #' @param x a valid `multiChains` object, obtained through the estimation of a
 #'   topic model using [grow()] and the argument `nChains` greater than `1`.
 #' @param method the method used to measure the distance between chains.
+#' @param ... futher arguments passed to internal distance functions.
 #'
+#' @details the `method` argument determines how are computed distance.
+#' 
+#'  - `euclidean` finds the pairs of topics that minimizes and returns the total
+#'  Euclidean distance.
+#'  - `hellinger` does the same but based on the Hellinger distance.
+#'  - `cosine` does the same but based on the Cosine distance.
+#'  - `minMax` computes the maximum distance among the best pairs of distances.
+#'  Inspired by the *minimum-matching distance* from Tang et al. (2014).
+#'  - `naiveEuclidean` computes the Euclidean distance without searching for the
+#'  best pairs of topics.
+#'  - `invariantEuclidean` computes the best pairs of topics for all allowed
+#'  permutations of topic indices. For JST and reversed-JST models, the two-
+#'  levels hierarchy of document-sentiment-topic leads some permutations of
+#'  indices to represent a drastically different outcome. This setting restricts
+#'  the set of permutations to the ones that do not change the interpretation of
+#'  the model. Equivalent to `euclidean` for LDA models.
 #'
-#' @details the `method` argument determines how are computed distance. In
-#'   general, you would want to use *invariantEuclidean* distance. TODO
-#'
-#' @return a matrix of distance between the elements of `w`
+#' @return a matrix of distance between the elements of `x`
 #' @examples
 #' model <- LDA(ECB_press_conferences_tokens)
 #' model <- grow(model, 10, nChains = 5)
 #' chainsDistances(model)
 #'
 #' @seealso [plot.multiChains()] [chainsScores()]
+#' @references Tang, J., Meng, Z., Nguyen, X., Mei, Q., and Zhang, M. (2014).
+#'   [Understanding the limiting factors of topicmodeling via posterior
+#'   contraction analysis](https://proceedings.mlr.press/v32/tang14.html). In
+#'   *Proceedings of the 31st International Conference on Machine Learning*, 32,
+#'   90--198.
 #' @export
-chainsDistances <- function(x, method = c("euclidean", "hellinger", "cosine", "minMax", "stupidEuclidean", "stupidEuclidean2", "stupidEuclideanDistances23JST", "invariantEuclidean")) {
+chainsDistances <- function(x,
+                            method = c("euclidean", "hellinger", "cosine", "minMax", "naiveEuclidean", "invariantEuclidean"),
+                            ...) {
   if (!inherits(x, "multiChains")) stop("Please provide a correct multiChains object")
 
   x <- as.sentopicmodel(x)
@@ -316,9 +337,9 @@ chainsDistances <- function(x, method = c("euclidean", "hellinger", "cosine", "m
          "cosine" = cosineDistances(x),
          "hellinger" = hellingerDistances(x),
          "euclidean" = euclideanDistances(x),
-         "stupidEuclidean" = stupidEuclideanDistances(x),
+         "naiveEuclidean" = naiveEuclideanDistances(x),
          "minMax" = minMaxEuclidean(x),
-         "invariantEuclidean" = invariantEuclideanOptim(x),
+         "invariantEuclidean" = invariantEuclideanOptim(x, ...),
          stop("Error in distance method")
   )
 }

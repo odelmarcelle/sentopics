@@ -6,8 +6,9 @@
 \usage{
 chainsDistances(
   x,
-  method = c("euclidean", "hellinger", "cosine", "minMax", "stupidEuclidean",
-    "stupidEuclidean2", "stupidEuclideanDistances23JST", "invariantEuclidean")
+  method = c("euclidean", "hellinger", "cosine", "minMax", "naiveEuclidean",
+    "invariantEuclidean"),
+  ...
 )
 }
 \arguments{
@@ -15,9 +16,11 @@ chainsDistances(
 topic model using \code{\link[=grow]{grow()}} and the argument \code{nChains} greater than \code{1}.}
 
 \item{method}{the method used to measure the distance between chains.}
+
+\item{...}{futher arguments passed to internal distance functions.}
 }
 \value{
-a matrix of distance between the elements of \code{w}
+a matrix of distance between the elements of \code{x}
 }
 \description{
 Computes the distance between different estimates of a topic
@@ -27,14 +30,35 @@ the distance between distinct realizations of the estimation process.
 Estimates are referred to as \emph{chains}.
 }
 \details{
-the \code{method} argument determines how are computed distance. In
-general, you would want to use \emph{invariantEuclidean} distance. TODO
+the \code{method} argument determines how are computed distance.
+\itemize{
+\item \code{euclidean} finds the pairs of topics that minimizes and returns the total
+Euclidean distance.
+\item \code{hellinger} does the same but based on the Hellinger distance.
+\item \code{cosine} does the same but based on the Cosine distance.
+\item \code{minMax} computes the maximum distance among the best pairs of distances.
+Inspired by the \emph{minimum-matching distance} from Tang et al. (2014).
+\item \code{naiveEuclidean} computes the Euclidean distance without searching for the
+best pairs of topics.
+\item \code{invariantEuclidean} computes the best pairs of topics for all allowed
+permutations of topic indices. For JST and reversed-JST models, the two-
+levels hierarchy of document-sentiment-topic leads some permutations of
+indices to represent a drastically different outcome. This setting restricts
+the set of permutations to the ones that do not change the interpretation of
+the model. Equivalent to \code{euclidean} for LDA models.
+}
 }
 \examples{
 model <- LDA(ECB_press_conferences_tokens)
 model <- grow(model, 10, nChains = 5)
 chainsDistances(model)
 
+}
+\references{
+Tang, J., Meng, Z., Nguyen, X., Mei, Q., and Zhang, M. (2014).
+\href{https://proceedings.mlr.press/v32/tang14.html}{Understanding the limiting factors of topicmodeling via posterior contraction analysis}. In
+\emph{Proceedings of the 31st International Conference on Machine Learning}, 32,
+90--198.
 }
 \seealso{
 \code{\link[=plot.multiChains]{plot.multiChains()}} \code{\link[=chainsScores]{chainsScores()}}

@@ -7,7 +7,7 @@
 \method{plot}{multiChains}(
   x,
   ...,
-  method = c("euclidean", "hellinger", "cosine", "minMax", "stupidEuclidean",
+  method = c("euclidean", "hellinger", "cosine", "minMax", "naiveEuclidean",
     "invariantEuclidean")
 )
 }

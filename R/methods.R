@@ -219,7 +219,7 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, ...) {
 #' plot(models)
 #'
 #' @export
-plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosine", "minMax", "stupidEuclidean", "invariantEuclidean")) {
+plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosine", "minMax", "naiveEuclidean", "invariantEuclidean")) {
   if (attr(x, "nChains") < 3) stop("At least 3 chains are required for proper plotting.")
   method <- match.arg(method)
   d <- stats::as.dist(chainsDistances(x, method))

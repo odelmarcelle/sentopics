@@ -332,6 +332,7 @@ euclideanDistances <- function(multiChains) {
     ## euclidean norm
     # tmp <- fields::rdist(t(phi1), t(phi2))
     tmp <- euclidean_cdist(phi1, phi2)
+
     d <- RcppHungarian::HungarianSolver(tmp)$cost
 
     distMatrix[cb[[i]][1], cb[[i]][2]] <- d
@@ -342,7 +343,7 @@ euclideanDistances <- function(multiChains) {
 }
 
 ## compute pairwise distance between MCMCs
-stupidEuclideanDistances <- function(multiChains) {
+naiveEuclideanDistances <- function(multiChains) {
   nChains <- attr(multiChains, "nChains")
   l_phi <- lapply(multiChains, function(x){
     matrix(x$phi, nrow(x$vocabulary), x$L1 * x$L2)
@@ -369,8 +370,10 @@ stupidEuclideanDistances <- function(multiChains) {
 
 ## compute pairwise distance between MCMCs
 ## This assumes that sentiments are correctly estimated
-invariantEuclideanOptim <- function(multiChains, L1 = multiChains[[1]]$L1, L2 = multiChains[[1]]$L2) {
+invariantEuclideanOptim <- function(multiChains, L1 = multiChains[[1]]$L1,
+                                    L2 = multiChains[[1]]$L2, FUN_aggregate = c("sum", "max")) {
 
+  FUN_aggregate <- get(match.arg(FUN_aggregate))
   # if (S == 1) stop("invariantEuclidan is undefined for non-JST models.")
   strict <- TRUE
   if (all(is.na(multiChains$vocabulary$lexicon)) && L2 > 1) {
@@ -389,9 +392,8 @@ invariantEuclideanOptim <- function(multiChains, L1 = multiChains[[1]]$L1, L2 = 
     phi2 <- l_phi[[cb[[i]][2]]]
 
     ## euclidean norm
-    # tmp <- fields::rdist(t(phi1), t(phi2))
     tmp <- euclidean_cdist(phi1, phi2)
-
+    
     ## Check only permutations of L1. Size: factorial(L1)
     ## Idea: L2 are fixed per L1. Reduce the size of the (L1*L2, L1*L2) matrix
     ## to a (L1, L1) matrix by summing the diagonal of each submatrix (L2, L2).
@@ -418,7 +420,7 @@ invariantEuclideanOptim <- function(multiChains, L1 = multiChains[[1]]$L1, L2 = 
       #   sum(apply(expandPairs, c(1,3), function(x) tmp[x[1], x[2]])),
       #   RcppHungarian::HungarianSolver(tmp2)$cost
       # )))
-      d <- max(apply(expandPairs, c(1,3), function(x) tmp[x[1], x[2]]))
+      d <- FUN_aggregate(apply(expandPairs, c(1,3), function(x) tmp[x[1], x[2]]))
 
       ##TODO: safety, to be removed
       if (!identical(dim(expandPairs), as.integer(c(L2, 2L, L1)))) stop("Condition not fulfilled")

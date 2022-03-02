@@ -54,9 +54,9 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #' # simple rJST model
 #' rJST(ECB_press_conferences_tokens)
 #' 
-#' estimating a rJST model including lexicon
-#' rjst <- rJST(ECB_press_conferences_token, lexicon = LoughranMcDonalds)
-#' rjst <- grow(rJST, 100)
+#' # estimating a rJST model including lexicon
+#' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
+#' rjst <- grow(rjst, 100)
 #' 
 #' # from an LDA model:
 #' lda <- LDA(ECB_press_conferences_tokens)

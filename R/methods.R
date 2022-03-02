@@ -77,7 +77,8 @@ print.multiChains <- function(x, ...) {
 
 #' @export
 print.topWords <- function(x, ...) {
-  if (!is.null(attr(x, "method"))) colnames(x)[colnames(x) == "value"] <- attr(x, "method")
+  if (!is.null(attr(x, "method"))) colnames(x)[colnames(x) == "value"] <-
+      paste0("value[", attr(x, "method"), "]")
   NextMethod()
 }
 

@@ -153,26 +153,12 @@ topWords_dt <- function(x,
            phiStats <- freq
          },
          "term-score" = {phiStats <-
-           phiStats[, list(L1, L2, value = value * log(value / prod(value)^(1/nClusters))), by = word]},
+           phiStats[ #apply smoothing on value to avoid 0 probability from lexicon words
+             , list(word, L1, L2, value = value + .Machine$double.eps)][
+               , list(L1, L2, value = value * log(value / prod(value)^(1/nClusters))), by = word]},
          "FREX" = {
            
            if (w < 0 | w > 1) stop("The argument 'w' should be constrained between 0 and 1.")
-
-           # test <- t(x$phi[,,])
-           # ((apply(test,1,data.table::frank)/ncol(test)))[457, , drop = FALSE]
-           # ((apply(test,1,data.table::frank)/ncol(test)))[1163, , drop = FALSE]
-           # phiStats[, list(word, value = data.table::frank(value) / .N), by = c("L1", "L2")][word == "euro_area"][1:5]
-           # 
-           # colSums(t(t(test)/colSums(test)))
-           # (a <- t(t(test)/colSums(test))) |> head(c(5,20))
-           # (apply(a,1,data.table::frank)/ncol(test))[1163, ]
-           # (apply(a,1,data.table::frank)/ncol(test)) |> head(c(5,20))
-           # 
-           # a[, 1163]
-           # phiStats[, exclusivity := value / sum(value), by = word]
-           # phiStats[word == "euro_area"][1:5]
-           # phiStats[, list(word, value = data.table::frank(exclusivity) / .N), by = c("L1", "L2")][word == "euro_area"][1:5]
-           # 
            
            phiStats[, "exclusivity" := value / sum(value), by = word]
            phiStats <-
@@ -323,9 +309,7 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 chainsDistances <- function(x, method = c("euclidean", "hellinger", "cosine", "minMax", "stupidEuclidean", "stupidEuclidean2", "stupidEuclideanDistances23JST", "invariantEuclidean")) {
   if (!inherits(x, "multiChains")) stop("Please provide a correct multiChains object")
 
-  ## hacky. Preserve L1/L2 labels of elements when accessing through [[ and $
   x <- as.sentopicmodel(x)
-  # attr(x, "containedClass") <- "sentopicmodel"
 
   method <- match.arg(method)
   switch(method,
@@ -378,38 +362,44 @@ chainsScores <- function(x, window = 110, nWords = 10, nCores = 1) {
     NPMIsW <- NPMIs10 <- computeNPMI(x$tokens, window)
   }
 
-  ## Registering backend
+  ### maybe not the most proper way to do this but...
+  oopts <- options("doFuture.foreach.export" = ".export")
+  
+  ## multiple chain setup is built based on parallel computation, if no back-end it will behave sequentially
   doFuture::registerDoFuture()
   if (nCores > 1) {
     cl <- parallel::makeCluster(nCores)
-    future::plan("cluster", workers = cl)
+    oplan <- future::plan("cluster", workers = cl)
+    on.exit({
+      future::plan(oplan)
+      parallel::stopCluster(cl)
+      options(oopts)
+    })
   } else {
-    future::plan("sequential")
+    on.exit(options(oopts))
   }
-
-  chainsScores <- foreach::foreach(x = x, name = names(x), .combine = 'rbind', .export = c("NPMIsW", "NPMIs10", "iterations", "nWords", "nWordsHierarchy"), .packages = c("sentopics")) %dopar% {
-
-    score <- data.table::data.table(
-      name = name,
-      logLikelihood = c(utils::tail(x$logLikelihood, 1)),
-      max_logLikelihood = max(x$logLikelihood)
-    )
-    if (score$logLikelihood == 0) {
-      score$logLikelihood <- sentopics:::multLikelihood(x)[1, 1]
+  
+  chainsScores <- foreach::foreach(
+    x = x, name = names(x), .combine = 'rbind',
+    .export = c("NPMIsW", "NPMIs10", "iterations", "nWords"),
+    .packages = c("sentopics")) %dopar% {
+      
+      score <- data.table::data.table(
+        name = name,
+        logLikelihood = c(utils::tail(x$logLikelihood, 1)),
+        max_logLikelihood = max(x$logLikelihood)
+      )
+      if (score$logLikelihood == 0) {
+        score$logLikelihood <- sentopics:::multLikelihood(x)[1, 1]
+      }
+      
+      ## Coherence measures
+      score$C_NPMI <- mean(coherence(x, nWords, method = "C_NPMI", NPMIs = NPMIs10))
+      score$C_V <- mean(coherence(x, nWords, method = "C_V", NPMIs = NPMIsW))
+      
+      score
     }
 
-    ## Coherence measures
-    score$C_NPMI <- mean(coherence(x, nWords, method = "C_NPMI", NPMIs = NPMIs10))
-    score$C_V <- mean(coherence(x, nWords, method = "C_V", NPMIs = NPMIsW))
-
-    score
-  }
-
-  ## Close backend
-  if (nCores > 1) {
-    future::plan("sequential")
-    parallel::stopCluster(cl)
-  }
 
   chainsScores
 }

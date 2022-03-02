@@ -53,6 +53,21 @@ test_that("topWords subset works", {
   expect_equal(dim(tops), c(10L, 0L))
 })
 
+
+tops <- topWords(sentopicmodel, method = "FREX")
+expect_true(all(is.finite(tops$value)))
+
+test_that("topWords methods works", {
+  topWords(tops <- topWords(sentopicmodel, method = "probability"))
+  expect_true(all(is.finite(tops$value)))
+  
+  expect_silent(tops <- topWords(sentopicmodel, method = "term-score"))
+  expect_true(all(is.finite(tops$value)))
+  
+  topWords(tops <- topWords(sentopicmodel, method = "FREX"))
+  expect_true(all(is.finite(tops$value)))
+})
+
 test_that("Updates works", {
   alphaU <- sentopicmodel(toks, L1cycle = 2)
   alphaU <- grow(alphaU, 5, displayProgress = FALSE)

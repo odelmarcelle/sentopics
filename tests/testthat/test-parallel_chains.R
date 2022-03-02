@@ -77,7 +77,9 @@ if (Sys.getenv("R_COVR") != "true") {
     sentopicmodel_22 <- grow(sentopicmodel_2, 2, displayProgress = FALSE, nChains = 2, nCores = 2, seed = NULL)
     expect_false(identical(sentopicmodel_11, sentopicmodel_22))
 
-
+    
+    # cran is annoyed by more than 2 cores => skip it
+    skip_on_cran()
     # for CMD check
     chk <- Sys.getenv("_R_CHECK_LIMIT_CORES_", "")
     if (nzchar(chk) && chk == "TRUE") {

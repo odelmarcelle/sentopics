@@ -25,8 +25,8 @@ JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 
 }
 \references{
-Loughran, T. & McDonald, B. (2011). \href{https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2010.01625.x}{When Is a Liability Not a Liability? Textual Analysis, Dictionaries, and 10-Ks}.
-\emph{The Journal of Finance}, 66(1), 35--65.
+Loughran, T. & McDonald, B. (2011). \href{https://doi.org/10.1111/j.1540-6261.2010.01625.x}{When Is a Liability Not a Liability? Textual Analysis, Dictionaries, and 10-Ks}. \emph{The Journal of
+Finance}, 66(1), 35--65.
 }
 \seealso{
 \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}}

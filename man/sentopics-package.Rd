@@ -40,11 +40,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Olivier Delmarcelle \email{delmarcelle.olivier@gmail.com}
+\strong{Maintainer}: Olivier Delmarcelle \email{delmarcelle.olivier@gmail.com} (\href{https://orcid.org/0000-0003-4347-070X}{ORCID})
 
-Authors:
+Other contributors:
 \itemize{
-  \item Samuel Borms \email{samuel.borms@unine.ch} (\href{https://orcid.org/0000-0001-9533-1870}{ORCID})
+  \item Samuel Borms \email{samuel.borms@unine.ch} (\href{https://orcid.org/0000-0001-9533-1870}{ORCID}) [contributor]
 }
 
 }

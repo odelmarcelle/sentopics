@@ -1,12 +1,12 @@
 Package: sentopics
 Type: Package
 Title: Tools for Estimating and Analyzing Various Classes of Sentiment/Topic Models
-Version: 0.5.0
-Date: 2021-12-31
-Authors@R: c(person("Olivier", "Delmarcelle", email = "delmarcelle.olivier@gmail.com", role = c("aut", "cre")),
-  person("Samuel", "Borms", email = "samuel.borms@unine.ch", role = c("aut"), comment = c(ORCID = "0000-0001-9533-1870")))
+Version: 0.6.0
+Date: 2022-03-01
+Authors@R: c(person("Olivier", "Delmarcelle", email = "delmarcelle.olivier@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-4347-070X")),
+  person("Samuel", "Borms", email = "samuel.borms@unine.ch", role = c("ctb"), comment = c(ORCID = "0000-0001-9533-1870")))
 Maintainer: Olivier Delmarcelle <delmarcelle.olivier@gmail.com>
-Description: Various textual topic models enhanced with sentiment information, including contra LDA and reverse JST.
+Description: An R package for joint sentiment and topic analysis of textual data.
 License: GPL (>= 2)
 BugReports: https://github.com/odelmarcelle/sentopics/issues
 URL: https://github.com/odelmarcelle/sentopics
@@ -16,7 +16,6 @@ Imports: Rcpp (>= 1.0.4.6),
   methods,
   quanteda (>= 3.2.0),
   data.table (>= 1.13.6),
-  RcppProgress,
   foreach,
   future,
   doFuture,

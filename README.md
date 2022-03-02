@@ -47,7 +47,7 @@ set.seed(123)
 lda <- LDA(ECB_press_conferences_tokens, K = 4)
 lda <- grow(lda, 100)
 lda
-# A LDA model with 4 topics. Currently grown by 100 Gibbs sampling iterations.
+# An LDA model with 4 topics. Currently grown by 100 Gibbs sampling iterations.
 # ------------------Useful methods------------------
 # grow      :Iterates the model using Gibbs sampling
 # topics    :Return the most important topic of each document

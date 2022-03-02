@@ -34,7 +34,7 @@ devtools::install_github("odelmarcelle/sentopics")
 
 ## Basic usage
 
-Using a sample of press conferences from the European Central Bank, a LDA model is easily created from a list of tokenized texts. See https://quanteda.io for details on `tokens` input objects and pre-processing functions.
+Using a sample of press conferences from the European Central Bank, an LDA model is easily created from a list of tokenized texts. See https://quanteda.io for details on `tokens` input objects and pre-processing functions.
 
 ``` {r}
 library(sentopics)

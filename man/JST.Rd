@@ -58,9 +58,20 @@ topic/sentiment.
 \description{
 This function initialize a Joint Sentiment/Topic model.
 }
+\details{
+The \code{rJST.LDA} methods enable the transition from a previously
+estimated \link{LDA} model to a sentiment-aware \code{rJST} model. The function
+retains the previously estimated topics and randomly assigns sentiment to
+every word of the corpus. The new model will retain the iteration count of
+the initial \link{LDA} model.
+}
 \examples{
-LDA(ECB_press_conferences_tokens)
-rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
+# creating a JST model
+JST(ECB_press_conferences_tokens)
+
+# estimating a JST model including a lexicon
+jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
+jst <- grow(jst, 100)
 }
 \references{
 Lin, C. and He, Y. (2009). \href{https://doi.org/10.1145/1645953.1646003}{Joint sentiment/topic model for sentiment analysis}. In \emph{Proceedings

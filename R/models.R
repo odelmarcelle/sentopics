@@ -12,6 +12,13 @@
 #' @export
 #' @family topic models
 #' @seealso Growing a model: [grow()], extracting top words: [topWords()]
+#' @examples
+#' # creating a model
+#' LDA(ECB_press_conferences_tokens, K = 5, alpha = 0.1, beta = 0.01)
+#' 
+#' # estimating an LDA model
+#' lda <- LDA(ECB_press_conferences_tokens)
+#' lda <- grow(lda, 100)
 LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
   as.LDA(sentopicmodel(x, lexicon = NULL, L1 = K, L2 = 1, L1prior = alpha, L2prior = 0, beta = beta))
 }
@@ -43,21 +50,45 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #' @export
 #' @seealso Growing a model: [grow()], extracting top words: [topWords()]
 #' @family topic models
-rJST <- function(x, lexicon = NULL, K = 5, S = 3,
-                 alpha = 1, gamma = 5, beta = 0.01,
-                 alphaCycle = 0, gammaCycle = 0) {
+#' @examples 
+#' # simple rJST model
+#' rJST(ECB_press_conferences_tokens)
+#' 
+#' estimating a rJST model including lexicon
+#' rjst <- rJST(ECB_press_conferences_token, lexicon = LoughranMcDonalds)
+#' rjst <- grow(rJST, 100)
+#' 
+#' # from an LDA model:
+#' lda <- LDA(ECB_press_conferences_tokens)
+#' lda <- grow(lda, 100)
+#' 
+#' # creating a rJST model out of it
+#' rjst <- rJST(lda, lexicon = LoughranMcDonald)
+#' # topic proportions remain identical
+#' identical(lda$theta, rjst$theta)
+#' # model should be iterated to estimate sentiment proportions
+#' rjst <- grow(rjst, 100)
+rJST <- function(x, ...) {
   UseMethod("rJST")
 }
+#' @rdname rJST
 #' @export
 rJST.default <- function(x, lexicon = NULL, K = 5, S = 3,
                  alpha = 1, gamma = 5, beta = 0.01,
                  alphaCycle = 0, gammaCycle = 0) {
   as.rJST(sentopicmodel(x, lexicon, K, S, alpha, gamma, beta, alphaCycle, gammaCycle))
 }
+#' @rdname rJST
+#' @details The `rJST.LDA` methods enable the transition from a previously
+#'   estimated [LDA] model to a sentiment-aware `rJST` model. The function
+#'   retains the previously estimated topics and randomly assigns sentiment to
+#'   every word of the corpus. The new model will retain the iteration count of
+#'   the initial [LDA] model.
 #' @export
-rJST.LDA <- function(x, lexicon = NULL, K = 5, S = 3,
-                     alpha = 1, gamma = 5, beta = 0.01,
-                     alphaCycle = 0, gammaCycle = 0) {
+rJST.LDA <- function(x,
+                     lexicon = NULL,
+                     S = 3,
+                     gamma = 5) {
   
   if (x$it < 1) stop("Requires an estimated LDA model.")
   x <- as.sentopicmodel(x)
@@ -135,6 +166,13 @@ rJST.LDA <- function(x, lexicon = NULL, K = 5, S = 3,
 #' @export
 #' @seealso Growing a model: [grow()], extracting top words: [topWords()]
 #' @family topic models
+#' @examples
+#' # creating a JST model
+#' JST(ECB_press_conferences_tokens)
+#' 
+#' # estimating a JST model including a lexicon
+#' jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
+#' jst <- grow(jst, 100)
 JST <- function(x, lexicon = NULL, S = 3, K = 5,
                  gamma = 1, alpha = 5, beta = 0.01,
                  gammaCycle = 0, alphaCycle = 0) {

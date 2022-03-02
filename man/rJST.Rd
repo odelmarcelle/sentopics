@@ -2,9 +2,13 @@
 % Please edit documentation in R/models.R
 \name{rJST}
 \alias{rJST}
+\alias{rJST.default}
+\alias{rJST.LDA}
 \title{Create a Reversed Joint Sentiment/Topic model}
 \usage{
-rJST(
+rJST(x, ...)
+
+\method{rJST}{default}(
   x,
   lexicon = NULL,
   K = 5,
@@ -15,6 +19,8 @@ rJST(
   alphaCycle = 0,
   gammaCycle = 0
 )
+
+\method{rJST}{LDA}(x, lexicon = NULL, S = 3, gamma = 5)
 }
 \arguments{
 \item{x}{tokens object containing the texts. A coercion will be attempted if \code{x} is not a tokens.}
@@ -58,9 +64,31 @@ topic/sentiment.
 \description{
 This function initialize a Reversed Joint Sentiment/Topic model.
 }
+\details{
+The \code{rJST.LDA} methods enable the transition from a previously
+estimated \link{LDA} model to a sentiment-aware \code{rJST} model. The function
+retains the previously estimated topics and randomly assigns sentiment to
+every word of the corpus. The new model will retain the iteration count of
+the initial \link{LDA} model.
+}
 \examples{
-LDA(ECB_press_conferences_tokens)
-rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
+# simple rJST model
+rJST(ECB_press_conferences_tokens)
+
+estimating a rJST model including lexicon
+rjst <- rJST(ECB_press_conferences_token, lexicon = LoughranMcDonalds)
+rjst <- grow(rJST, 100)
+
+# from an LDA model:
+lda <- LDA(ECB_press_conferences_tokens)
+lda <- grow(lda, 100)
+
+# creating a rJST model out of it
+rjst <- rJST(lda, lexicon = LoughranMcDonald)
+# topic proportions remain identical
+identical(lda$theta, rjst$theta)
+# model should be iterated to estimate sentiment proportions
+rjst <- grow(rjst, 100)
 }
 \references{
 Lin, C. and He, Y. (2009). \href{https://doi.org/10.1145/1645953.1646003}{Joint sentiment/topic model for sentiment analysis}. In \emph{Proceedings

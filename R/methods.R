@@ -50,7 +50,7 @@ print.rJST <- function(x, extended = FALSE, ...) {
 #' @rdname print.sentopicmodel
 #' @export
 print.LDA <- function(x, extended = FALSE, ...) {
-  cat("A LDA model with", x$K, "topics. Currently grown by",
+  cat("An LDA model with", x$K, "topics. Currently grown by",
       x$it, "Gibbs sampling iterations.\n")
   if (getOption("sentopics_print_extended", TRUE) | extended) {
     sentopics_print_extend(extended)

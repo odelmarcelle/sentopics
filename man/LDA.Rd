@@ -36,9 +36,20 @@ topic/sentiment.
 \description{
 This function initialize a Latent Dirichlet Allocation model.
 }
+\details{
+The \code{rJST.LDA} methods enable the transition from a previously
+estimated \link{LDA} model to a sentiment-aware \code{rJST} model. The function
+retains the previously estimated topics and randomly assigns sentiment to
+every word of the corpus. The new model will retain the iteration count of
+the initial \link{LDA} model.
+}
 \examples{
-LDA(ECB_press_conferences_tokens)
-rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
+# creating a model
+LDA(ECB_press_conferences_tokens, K = 5, alpha = 0.1, beta = 0.01)
+
+# estimating an LDA model
+lda <- LDA(ECB_press_conferences_tokens)
+lda <- grow(lda, 100)
 }
 \references{
 Blei, D.M., Ng, A.Y. and Jordan, M.I. (2003). \href{https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf}{Latent Dirichlet Allocation}.

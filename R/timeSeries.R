@@ -13,9 +13,9 @@
 #'
 #' @param x a `sentopicmodel` created from the [LDA()], [JST()], [rJST()] or
 #'   [sentopicmodel()] function
-#' @param method the method used to compute sentiment. Currently, only
-#'   "proportionalPol" is implemented. Ignored if an internal sentiment is
-#'   already stored.
+#' @param method the method used to compute sentiment, see "Methods" below.
+#'   Ignored if an internal sentiment is already stored, unless `override` is
+#'   `TRUE`.
 #' @param override by default, the function computes sentiment only if no
 #'   internal sentiment is already stored within the `sentopicmodel` object.
 #'   This avoid, for example, erasing externally provided sentiment. Set to
@@ -37,6 +37,23 @@
 #'   `K` sentiment values per document. In that case, the `.sentiment` column is
 #'   an average of the `K` sentiment values, weighted by they respective topical
 #'   proportions.
+#'
+#' @section Methods:
+#'
+#'   The function accepts two methods of computing sentiment:
+#'
+#'   - **proportional** computes the difference between the estimated positive
+#'   and negative proportions for each document (and possibly each topic).
+#'   \deqn{positive - negative}
+#'
+#'   - **proportionalPol** computes the difference between positive and negative
+#'   proportions, divided by the sum of positive and negative proportions. As a
+#'   result, the computed sentiment lies within the (-1;1) interval.
+#'   \deqn{\frac{positive - negative}{positive + negative}}{(positive -
+#'   negative) / (positive + negative)}
+#'
+#'   Both methods will lead to the same result for a JST model containing only
+#'   negative and positive sentiments.
 #'
 #' @note The internal sentiment is stored internally in the *docvars* of the
 #'   topic model. This means that sentiment may also be accessed through the
@@ -98,7 +115,7 @@ sentopics_sentiment <- function(x,
     return(res[])
   }
 
-  if (inherits(x, "LDA")) stop("Impossible to compute sentiment for a LDA model. Please input first a '.sentiment' docvars by either\n\t1: ensuring the presence of a '.sentiment' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_sentiment(x) <- value` to register a vector of sentiment values in the topic model object.")
+  if (inherits(x, "LDA")) stop("Impossible to compute sentiment for an LDA model. Please input first a '.sentiment' docvars by either\n\t1: ensuring the presence of a '.sentiment' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_sentiment(x) <- value` to register a vector of sentiment values in the topic model object.")
   if (any(!c("positive", "negative") %in% levels(x$vocabulary$lexicon))) stop("Sentiment computation requires defined positive and negative sentiment. Ensure that a lexicon containing negative and positive categories was provided when creating the model or input a '.sentiment' docvars by either\n\t1: ensuring the presence of a '.sentiment' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_sentiment(x) <- value` to register a vector of sentiment values in the topic model object.")
   
   method <- match.arg(method)

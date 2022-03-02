@@ -19,9 +19,9 @@ sentopics_sentiment(x) <- value
 \item{x}{a \code{sentopicmodel} created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} or
 \code{\link[=sentopicmodel]{sentopicmodel()}} function}
 
-\item{method}{the method used to compute sentiment. Currently, only
-"proportionalPol" is implemented. Ignored if an internal sentiment is
-already stored.}
+\item{method}{the method used to compute sentiment, see "Methods" below.
+Ignored if an internal sentiment is already stored, unless \code{override} is
+\code{TRUE}.}
 
 \item{override}{by default, the function computes sentiment only if no
 internal sentiment is already stored within the \code{sentopicmodel} object.
@@ -64,6 +64,25 @@ The internal sentiment is stored internally in the \emph{docvars} of the
 topic model. This means that sentiment may also be accessed through the
 \code{\link[=docvars]{docvars()}} function, although this is discouraged.
 }
+\section{Methods}{
+
+
+The function accepts two methods of computing sentiment:
+\itemize{
+\item \strong{proportional} computes the difference between the estimated positive
+and negative proportions for each document (and possibly each topic).
+\deqn{positive - negative}
+\item \strong{proportionalPol} computes the difference between positive and negative
+proportions, divided by the sum of positive and negative proportions. As a
+result, the computed sentiment lies within the (-1;1) interval.
+\deqn{\frac{positive - negative}{positive + negative}}{(positive -
+  negative) / (positive + negative)}
+}
+
+Both methods will lead to the same result for a JST model containing only
+negative and positive sentiments.
+}
+
 \examples{
 # example dataset already contains ".sentiment" docvar
 docvars(ECB_press_conferences_tokens)

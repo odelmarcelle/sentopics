@@ -7,7 +7,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-This vignette describes the most basic usage of the `sentopics` package by estimating a LDA model and analysis it's output. Two other vignettes, describing time series and topic models with sentiment are also available.
+This vignette describes the most basic usage of the `sentopics` package by estimating an LDA model and analysis it's output. Two other vignettes, describing time series and topic models with sentiment are also available.
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -51,7 +51,7 @@ In `sentopics` the LDA model is estimated through Gibb's sampling, that iterativ
 
 ## Estimating LDA models with `sentopic`
 
-The estimation of a LDA model is easily replicated using the `LDA()` and `grow()` function. The first function prepares the `R` object and initialize the assignment of the latent topics. The second function estimates the model using Gibb's sampling for a given number of iterations. Note that `grow()` may be used to iterate the model multiple times without resetting the estimation.
+The estimation of an LDA model is easily replicated using the `LDA()` and `grow()` function. The first function prepares the `R` object and initialize the assignment of the latent topics. The second function estimates the model using Gibb's sampling for a given number of iterations. Note that `grow()` may be used to iterate the model multiple times without resetting the estimation.
 
 ```{r}
 set.seed(123)

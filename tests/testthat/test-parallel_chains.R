@@ -85,7 +85,7 @@ if (Sys.getenv("R_COVR") != "true") {
       num_workers <- 2L
     } else {
       # use all cores in devtools::test()
-      num_workers <- parallel::detectCores()
+      num_workers <- min(parallel::detectCores(), 5L)
     }
 
     ### this works !

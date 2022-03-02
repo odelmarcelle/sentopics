@@ -5,6 +5,7 @@ toks <- ECB_press_conferences_tokens[1:10]
 rJST <- rJST(toks, lexicon = LoughranMcDonald)
 
 test_that("rJST works", {
+  expect_output(print(rJST), "A reversed-JST model with 5 topics and 3 sentiments. Currently grown by 0 Gibbs sampling iterations.")
   tabl <- table(rJST$vocabulary$lexicon)
   expect_length(tabl, 3)
   expect_gt(sum(tabl), 0)
@@ -76,3 +77,16 @@ test_that("test convergence", {
   }
   sapply(suppressMessages(distToGenerative(rJST, vocab)), expect_lte, .15)
 })
+
+test_that("from LDA works", {
+  toks <- ECB_press_conferences_tokens[1:10]
+  LDA <- LDA(toks) |> grow(10)
+  rJST <- rJST(LDA, lexicon = LoughranMcDonald)
+  
+  expect_identical(LDA$theta, rJST$theta)
+  expect_equal(unlist(LDA$za, use.names = FALSE),
+               (unlist(rJST$za, use.names = FALSE) - 1) %/% rJST$S + 1)
+  expect_identical(LDA$it, rJST$it)
+  expect_identical(LDA$logLikelihood, rJST$logLikelihood)
+})
+

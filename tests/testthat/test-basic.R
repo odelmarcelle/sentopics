@@ -60,12 +60,15 @@ expect_true(all(is.finite(tops$value)))
 test_that("topWords methods works", {
   topWords(tops <- topWords(sentopicmodel, method = "probability"))
   expect_true(all(is.finite(tops$value)))
+  expect_output(print(tops), "probability")
   
   expect_silent(tops <- topWords(sentopicmodel, method = "term-score"))
   expect_true(all(is.finite(tops$value)))
+  expect_output(print(tops), "term-score")
   
   topWords(tops <- topWords(sentopicmodel, method = "FREX"))
   expect_true(all(is.finite(tops$value)))
+  expect_output(print(tops), "FREX")
 })
 
 test_that("Updates works", {

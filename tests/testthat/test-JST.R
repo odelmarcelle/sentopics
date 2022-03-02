@@ -5,6 +5,7 @@ toks <- ECB_press_conferences_tokens[1:10]
 JST <- JST(toks, lexicon = LoughranMcDonald)
 
 test_that("JST works", {
+  expect_output(print(JST), "A JST model with 3 sentiments and 5 topics. Currently grown by 0 Gibbs sampling iterations.")
   tabl <- table(JST$vocabulary$lexicon)
   expect_length(tabl, 3)
   expect_gt(sum(tabl), 0)

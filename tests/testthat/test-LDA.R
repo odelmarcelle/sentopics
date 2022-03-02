@@ -5,6 +5,7 @@ toks <- ECB_press_conferences_tokens[1:10]
 LDA <- LDA(toks)
 
 test_that("LDA works", {
+  expect_output(print(LDA), "An LDA model with 5 topics. Currently grown by 0 Gibbs sampling iterations.")
   LDA <- grow(LDA, 2, displayProgress = FALSE)
   expect_true(check_integrity(LDA, fast = FALSE))
   expect_s3_class(LDA, "LDA")

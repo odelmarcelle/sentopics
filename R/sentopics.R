@@ -87,7 +87,7 @@ NULL
 #'
 #' @references Loughran, T. & McDonald, B. (2011). [When Is a Liability Not a
 #'   Liability? Textual Analysis, Dictionaries, and
-#'   10-Ks](https://doi.org/10.1111/j.1540-6261.2010.01625.x). *The Journal of
+#'   10-Ks](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1331573). *The Journal of
 #'   Finance*, 66(1), 35--65.
 "LoughranMcDonald"
 
@@ -111,7 +111,7 @@ NULL
 #' 
 #' @references Picault, M. & Renault, T. (2017). [Words are not all created
 #'   equal: A new measure of ECB
-#'   communication](https://doi.org/10.1016/j.jimonfin.2017.09.005). *Journal of
+#'   communication](https://www.sciencedirect.com/science/article/abs/pii/S0261560617301808). *Journal of
 #'    International Money and Finance*, 79, 136--156.
 #'
 #' @seealso [compute_PicaultRenault_scores()]
@@ -142,7 +142,7 @@ NULL
 #' 
 #' @references Picault, M. & Renault, T. (2017). [Words are not all created
 #'   equal: A new measure of ECB
-#'   communication](https://doi.org/10.1016/j.jimonfin.2017.09.005). *Journal of
+#'   communication](https://www.sciencedirect.com/science/article/abs/pii/S0261560617301808). *Journal of
 #'    International Money and Finance*, 79, 136--156.
 #'
 #' @source The data was manually prepared by the author of this package.

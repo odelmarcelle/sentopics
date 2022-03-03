@@ -233,7 +233,7 @@ plot_topWords <- function(x,
 #'   is 110 for C_V.
 #'
 #' @references Röder, M., Both, A., & Hinneburg, A. (2015). [Exploring the Space
-#'   of Topic Coherence Measures](https://doi.org/10.1145/2684822.2685324). In
+#'   of Topic Coherence Measures](https://dl.acm.org/doi/10.1145/2684822.2685324). In
 #'   *Proceedings of the Eighth ACM International Conference on Web Search and
 #'   Data Mining*, 399-–408.
 #' @export

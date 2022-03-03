@@ -44,7 +44,7 @@ follows Röder & al. (2015). For C_NPMI, the sliding window is 10 whereas it
 is 110 for C_V.
 }
 \references{
-Röder, M., Both, A., & Hinneburg, A. (2015). \href{https://doi.org/10.1145/2684822.2685324}{Exploring the Space of Topic Coherence Measures}. In
+Röder, M., Both, A., & Hinneburg, A. (2015). \href{https://dl.acm.org/doi/10.1145/2684822.2685324}{Exploring the Space of Topic Coherence Measures}. In
 \emph{Proceedings of the Eighth ACM International Conference on Web Search and
 Data Mining}, 399-–408.
 }

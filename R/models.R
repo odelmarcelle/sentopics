@@ -28,12 +28,12 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #' @description This function initialize a Reversed Joint Sentiment/Topic model.
 #'
 #' @references Lin, C. and He, Y. (2009). [Joint sentiment/topic model for
-#' sentiment analysis](https://doi.org/10.1145/1645953.1646003). In *Proceedings
+#' sentiment analysis](https://dl.acm.org/doi/10.1145/1645953.1646003). In *Proceedings
 #' of the 18th ACM conference on Information and knowledge management*,
 #' 375--384.
 #'
 #' Lin, C., He, Y., Everson, R. and Ruger, S. (2012). [Weakly Supervised Joint
-#' Sentiment-Topic Detection from Text](https://doi.org/10.1109/TKDE.2011.48).
+#' Sentiment-Topic Detection from Text](https://ieeexplore.ieee.org/document/5710933).
 #' *IEEE Transactions on Knowledge and Data Engineering*, 24(6), 1134–-1145.
 #'
 #' @inherit sentopicmodel
@@ -155,12 +155,12 @@ rJST.LDA <- function(x,
 #' @description This function initialize a Joint Sentiment/Topic model.
 #'
 #' @references Lin, C. and He, Y. (2009). [Joint sentiment/topic model for
-#' sentiment analysis](https://doi.org/10.1145/1645953.1646003). In *Proceedings
+#' sentiment analysis](https://dl.acm.org/doi/10.1145/1645953.1646003). In *Proceedings
 #' of the 18th ACM conference on Information and knowledge management*,
 #' 375--384.
 #'
 #' Lin, C., He, Y., Everson, R. and Ruger, S. (2012). [Weakly Supervised Joint
-#' Sentiment-Topic Detection from Text](https://doi.org/10.1109/TKDE.2011.48).
+#' Sentiment-Topic Detection from Text](https://ieeexplore.ieee.org/document/5710933).
 #' *IEEE Transactions on Knowledge and Data Engineering*, 24(6), 1134–-1145.
 #'
 #' @inherit rJST

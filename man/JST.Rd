@@ -74,11 +74,11 @@ jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 jst <- grow(jst, 100)}
 }
 \references{
-Lin, C. and He, Y. (2009). \href{https://doi.org/10.1145/1645953.1646003}{Joint sentiment/topic model for sentiment analysis}. In \emph{Proceedings
+Lin, C. and He, Y. (2009). \href{https://dl.acm.org/doi/10.1145/1645953.1646003}{Joint sentiment/topic model for sentiment analysis}. In \emph{Proceedings
 of the 18th ACM conference on Information and knowledge management},
 375--384.
 
-Lin, C., He, Y., Everson, R. and Ruger, S. (2012). \href{https://doi.org/10.1109/TKDE.2011.48}{Weakly Supervised Joint Sentiment-Topic Detection from Text}.
+Lin, C., He, Y., Everson, R. and Ruger, S. (2012). \href{https://ieeexplore.ieee.org/document/5710933}{Weakly Supervised Joint Sentiment-Topic Detection from Text}.
 \emph{IEEE Transactions on Knowledge and Data Engineering}, 24(6), 1134–-1145.
 }
 \seealso{

@@ -282,7 +282,7 @@ get_ECB_press_conferences <- function(years = 1998:2021, data.table = TRUE) {
 #' @seealso [PicaultRenault]
 #' @references Picault, M. & Renault, T. (2017). [Words are not all created
 #'   equal: A new measure of ECB
-#'   communication](https://doi.org/10.1016/j.jimonfin.2017.09.005). *Journal of
+#'   communication](https://www.sciencedirect.com/science/article/abs/pii/S0261560617301808). *Journal of
 #'   International Money and Finance*, 79, 136--156.
 #' @examples
 #' \donttest{# on documents

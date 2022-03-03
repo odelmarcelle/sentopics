@@ -35,8 +35,7 @@ Suggests:
     sentometrics,
     spacyr,
     knitr,
-    rmarkdown,
-    webshot
+    rmarkdown
 LinkingTo: Rcpp, RcppArmadillo, RcppProgress
 RcppModules: model_module
 Roxygen: list(markdown = TRUE)

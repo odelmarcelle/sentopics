@@ -105,12 +105,12 @@ Note that merging topics is only useful for presentation purpose. Using again `g
 
 Provided that the `plotly` package is installed, one can also directly use `plot()` on the estimated topic model to enjoy a dynamic view of topic proportions and their most probable words (presented as a screenshot hereafter to limit this vignette's size).
 
-```{r, screenshot.force = TRUE}
+```{r}
 plot(lda)
 ```
 
 
-```{r, screenshot.force = TRUE}
+```{r}
 plot(merged)
 ```
 

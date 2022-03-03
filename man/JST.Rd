@@ -66,12 +66,12 @@ every word of the corpus. The new model will retain the iteration count of
 the initial \link{LDA} model.
 }
 \examples{
-# creating a JST model
+\donttest{# creating a JST model
 JST(ECB_press_conferences_tokens)
 
 # estimating a JST model including a lexicon
 jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
-jst <- grow(jst, 100)
+jst <- grow(jst, 100)}
 }
 \references{
 Lin, C. and He, Y. (2009). \href{https://doi.org/10.1145/1645953.1646003}{Joint sentiment/topic model for sentiment analysis}. In \emph{Proceedings

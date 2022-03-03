@@ -355,7 +355,7 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1, nCores = 1, dis
     # start_time <- Sys.time()
     # p <- progressr::progressor(steps = nChains * ((iterations) * 1000 + 3))
     chains <- doRNG::`%dorng%`(
-      foreach::foreach(i = 1:nChains, .packages = c("sentopics"),
+      foreach::foreach(i = 1:nChains, .packages = "sentopics",
                        .export = c("x", "iterations", "chunkProgress", "base", "computeLikelihood"),
                        .final = function(x) stats::setNames(x, paste0("chain", 1:nChains)),
                        .options.RNG = seed),
@@ -366,7 +366,9 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1, nCores = 1, dis
         ## share the same memory location
         x$za <- data.table::copy(x$za)
         
-        cpp_model <- sentopics:::rebuild_cppModel(x, base)
+        rebuild_cppModel <- get("rebuild_cppModel",
+                                envir = getNamespace("sentopics"))
+        cpp_model <- rebuild_cppModel(x, base)
         
         ## generate different initial assignment for each chain
         if (x$it == 0) cpp_model$initAssignments()
@@ -388,7 +390,9 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1, nCores = 1, dis
           # )
         }
         
-        tmp <- sentopics:::extract_cppModel(cpp_model, base)
+        extract_cppModel <- get("extract_cppModel",
+                                envir = getNamespace("sentopics"))
+        tmp <- extract_cppModel(cpp_model, base)
         x[names(tmp)] <- tmp
         
         x
@@ -448,13 +452,15 @@ grow.multiChains <- function(x, iterations = 100, nChains = NULL, nCores = 1,
   # start_time <- Sys.time()
   # p <- progressr::progressor(steps = nChains * ((iterations) * 1000 + 3))
   chains <- doRNG::`%dorng%`(
-    foreach::foreach(x = x, i = 1:nChains, .packages = c("sentopics"),
+    foreach::foreach(x = x, i = 1:nChains, .packages = "sentopics",
                      .export = c("iterations", "chunkProgress", "base", "computeLikelihood"),
                      .final = function(x) stats::setNames(x, paste0("chain", 1:nChains)),
                      .options.RNG = seed),
     {
       # p(sprintf("Starting chain %d", i), class = "sticky", amount = 1)
-      cpp_model <- sentopics:::rebuild_cppModel(x, base)
+      rebuild_cppModel <- get("rebuild_cppModel",
+                              envir = getNamespace("sentopics"))
+      cpp_model <- rebuild_cppModel(x, base)
       
       for (j in seq((iterations) %/% chunkProgress)) {
         cpp_model$iterate(chunkProgress, FALSE, computeLikelihood)
@@ -471,7 +477,9 @@ grow.multiChains <- function(x, iterations = 100, nChains = NULL, nCores = 1,
         # )
       }
       
-      tmp <- sentopics:::extract_cppModel(cpp_model, base)
+      extract_cppModel <- get("extract_cppModel",
+                              envir = getNamespace("sentopics"))
+      tmp <- extract_cppModel(cpp_model, base)
       x[names(tmp)] <- tmp
       
       x
@@ -519,7 +527,7 @@ reset <- function(x) {
   cpp_model <- rebuild_cppModel(x, core(x))
   cpp_model$initAssignments()
   # x <- utils::modifyList(x, extract_cppModel(cpp_model, core(x)))
-  tmp <- sentopics:::extract_cppModel(cpp_model, core(x))
+  tmp <- extract_cppModel(cpp_model, core(x))
   x[names(tmp)] <- tmp
   
   

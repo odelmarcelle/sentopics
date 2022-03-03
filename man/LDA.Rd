@@ -44,12 +44,12 @@ every word of the corpus. The new model will retain the iteration count of
 the initial \link{LDA} model.
 }
 \examples{
-# creating a model
+\donttest{# creating a model
 LDA(ECB_press_conferences_tokens, K = 5, alpha = 0.1, beta = 0.01)
 
 # estimating an LDA model
 lda <- LDA(ECB_press_conferences_tokens)
-lda <- grow(lda, 100)
+lda <- grow(lda, 100)}
 }
 \references{
 Blei, D.M., Ng, A.Y. and Jordan, M.I. (2003). \href{https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf}{Latent Dirichlet Allocation}.

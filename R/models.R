@@ -13,12 +13,12 @@
 #' @family topic models
 #' @seealso Growing a model: [grow()], extracting top words: [topWords()]
 #' @examples
-#' # creating a model
+#' \donttest{# creating a model
 #' LDA(ECB_press_conferences_tokens, K = 5, alpha = 0.1, beta = 0.01)
 #' 
 #' # estimating an LDA model
 #' lda <- LDA(ECB_press_conferences_tokens)
-#' lda <- grow(lda, 100)
+#' lda <- grow(lda, 100)}
 LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
   as.LDA(sentopicmodel(x, lexicon = NULL, L1 = K, L2 = 1, L1prior = alpha, L2prior = 0, beta = beta))
 }
@@ -52,7 +52,7 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #' @seealso Growing a model: [grow()], extracting top words: [topWords()]
 #' @family topic models
 #' @examples 
-#' # simple rJST model
+#' \donttest{# simple rJST model
 #' rJST(ECB_press_conferences_tokens)
 #' 
 #' # estimating a rJST model including lexicon
@@ -68,7 +68,7 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #' # topic proportions remain identical
 #' identical(lda$theta, rjst$theta)
 #' # model should be iterated to estimate sentiment proportions
-#' rjst <- grow(rjst, 100)
+#' rjst <- grow(rjst, 100)}
 rJST <- function(x, ...) {
   UseMethod("rJST")
 }
@@ -168,12 +168,12 @@ rJST.LDA <- function(x,
 #' @seealso Growing a model: [grow()], extracting top words: [topWords()]
 #' @family topic models
 #' @examples
-#' # creating a JST model
+#' \donttest{# creating a JST model
 #' JST(ECB_press_conferences_tokens)
 #' 
 #' # estimating a JST model including a lexicon
 #' jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
-#' jst <- grow(jst, 100)
+#' jst <- grow(jst, 100)}
 JST <- function(x, lexicon = NULL, S = 3, K = 5,
                  gamma = 1, alpha = 5, beta = 0.01,
                  gammaCycle = 0, alphaCycle = 0) {

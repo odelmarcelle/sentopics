@@ -68,7 +68,7 @@ Aggregate the topical or sentiment proportions at the document
 level into time series.
 }
 \examples{
-lda <- LDA(ECB_press_conferences_tokens)
+\donttest{lda <- LDA(ECB_press_conferences_tokens)
 lda <- grow(lda, 100)
 proportion_topics(lda)
 
@@ -83,7 +83,7 @@ jst <- grow(jst, 100)
 # including both layers
 proportion_topics(jst)
 # or not
-proportion_topics(jst, complete = FALSE)
+proportion_topics(jst, complete = FALSE)}
 }
 \seealso{
 sentopics_sentiment sentopics_date

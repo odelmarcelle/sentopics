@@ -31,7 +31,7 @@ advised to use \code{\link[=grow]{grow()}} on the merged topic model as it will 
 affect the content and proportions of the new themes.
 }
 \examples{
-lda <- LDA(ECB_press_conferences_tokens, K = 5)
+\donttest{lda <- LDA(ECB_press_conferences_tokens, K = 5)
 lda <- grow(lda, 100)
 merging_list <- list(
   c(1,5),
@@ -50,7 +50,7 @@ sentopics_labels(merged)
 # implemented for rJST
 rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 rjst <- grow(rjst, 100)
-mergeTopics(rjst, merging_list2)
+mergeTopics(rjst, merging_list2)}
 }
 \seealso{
 sentopics_labels

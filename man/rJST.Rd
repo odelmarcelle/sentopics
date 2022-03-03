@@ -75,7 +75,7 @@ every word of the corpus. The new model will retain the iteration count of
 the initial \link{LDA} model.
 }
 \examples{
-# simple rJST model
+\donttest{# simple rJST model
 rJST(ECB_press_conferences_tokens)
 
 # estimating a rJST model including lexicon
@@ -91,7 +91,7 @@ rjst <- rJST(lda, lexicon = LoughranMcDonald)
 # topic proportions remain identical
 identical(lda$theta, rjst$theta)
 # model should be iterated to estimate sentiment proportions
-rjst <- grow(rjst, 100)
+rjst <- grow(rjst, 100)}
 }
 \references{
 Lin, C. and He, Y. (2009). \href{https://doi.org/10.1145/1645953.1646003}{Joint sentiment/topic model for sentiment analysis}. In \emph{Proceedings

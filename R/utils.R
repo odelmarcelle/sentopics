@@ -972,7 +972,7 @@ getTexts <- function(x, topic, sentiment, n = 3, collapsed = TRUE) {
 
 
 computeFcm <- function(x, window = 10) {
-  collocationsV <- quanteda::dfm(sentopics:::virtualDocuments(x, window), tolower = FALSE)
+  collocationsV <- quanteda::dfm(virtualDocuments(x, window), tolower = FALSE)
   ### FOR QUANTEDA 3.2+: now dfm() reorder the types in the order in which they
   ### appear. This is not the case for a tokens object following
   ### tokens_compound(), creating a mismatch. Solution: enforce the order of the

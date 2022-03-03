@@ -403,7 +403,7 @@ chainsScores <- function(x, window = 110, nWords = 10, nCores = 1) {
   chainsScores <- foreach::foreach(
     x = x, name = names(x), .combine = 'rbind',
     .export = c("NPMIsW", "NPMIs10", "iterations", "nWords"),
-    .packages = c("sentopics")) %dopar% {
+    .packages = "sentopics") %dopar% {
       
       score <- data.table::data.table(
         name = name,
@@ -411,7 +411,9 @@ chainsScores <- function(x, window = 110, nWords = 10, nCores = 1) {
         max_logLikelihood = max(x$logLikelihood)
       )
       if (score$logLikelihood == 0) {
-        score$logLikelihood <- sentopics:::multLikelihood(x)[1, 1]
+        multLikelihood <- get("multLikelihood",
+                                envir = getNamespace("sentopics"))
+        score$logLikelihood <- multLikelihood(x)[1, 1]
       }
       
       ## Coherence measures

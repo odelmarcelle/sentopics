@@ -84,7 +84,7 @@ negative and positive sentiments.
 }
 
 \examples{
-# example dataset already contains ".sentiment" docvar
+\donttest{# example dataset already contains ".sentiment" docvar
 docvars(ECB_press_conferences_tokens)
 # sentiment is automatically stored in the sentopicmodel object
 lda <- LDA(ECB_press_conferences_tokens)
@@ -102,7 +102,7 @@ sentopics_sentiment(jst, override = TRUE) # replace existing sentiment
 ## for rJST models one sentiment value is computed by topic
 rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 rjst <- grow(rjst, 100)
-sentopics_sentiment(rjst, override = TRUE)
+sentopics_sentiment(rjst, override = TRUE)}
 }
 \seealso{
 Other sentopics helpers: 

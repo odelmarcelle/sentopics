@@ -285,12 +285,12 @@ get_ECB_press_conferences <- function(years = 1998:2021, data.table = TRUE) {
 #'   communication](https://doi.org/10.1016/j.jimonfin.2017.09.005). *Journal of
 #'   International Money and Finance*, 79, 136--156.
 #' @examples
-#' # on documents
+#' \donttest{# on documents
 #' docs <- quanteda::corpus_reshape(ECB_press_conferences, "documents")
 #' compute_PicaultRenault_scores(docs)
 #'
 #' # on paragraphs
-#' compute_PicaultRenault_scores(ECB_press_conferences)
+#' compute_PicaultRenault_scores(ECB_press_conferences)}
 compute_PicaultRenault_scores <- function(x, min_ngram = 2, return_dfm = FALSE) {
   PicaultRenault <- PicaultRenault[PicaultRenault$ngram >= min_ngram, ]
   x <- quanteda::tokens(x, remove_numbers = TRUE, remove_punct = TRUE,

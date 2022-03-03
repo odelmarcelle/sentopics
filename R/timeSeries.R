@@ -61,7 +61,7 @@
 #'
 #' @export
 #' @examples
-#' # example dataset already contains ".sentiment" docvar
+#' \donttest{# example dataset already contains ".sentiment" docvar
 #' docvars(ECB_press_conferences_tokens)
 #' # sentiment is automatically stored in the sentopicmodel object
 #' lda <- LDA(ECB_press_conferences_tokens)
@@ -79,7 +79,7 @@
 #' ## for rJST models one sentiment value is computed by topic
 #' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' rjst <- grow(rjst, 100)
-#' sentopics_sentiment(rjst, override = TRUE)
+#' sentopics_sentiment(rjst, override = TRUE)}
 sentopics_sentiment <- function(x,
                       method = c("proportional", "proportionalPol"),
                       override = FALSE,
@@ -519,7 +519,7 @@ sentiment_series <- function(x,
 #'   averaged to compute the breakdown of the sentiment time series.
 #' @seealso sentopics_sentiment sentopics_date
 #' @examples
-#' lda <- LDA(ECB_press_conferences_tokens)
+#' \donttest{lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- grow(lda, 100)
 #' sentiment_breakdown(lda)
 #'
@@ -530,7 +530,7 @@ sentiment_series <- function(x,
 #' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' rjst <- grow(rjst, 100)
 #' sentopics_sentiment(rjst, override = TRUE)
-#' plot_sentiment_breakdown(rjst)
+#' plot_sentiment_breakdown(rjst)}
 sentiment_breakdown <- function(x,
                                 period = c("year", "quarter", "month", "day", "identity"),
                                 rolling_window = 1,
@@ -791,7 +791,7 @@ plot_sentiment_breakdown <- function(x,
 #'   sentiments.
 #' @export
 #' @examples
-#' lda <- LDA(ECB_press_conferences_tokens)
+#' \donttest{lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- grow(lda, 100)
 #' sentiment_topics(lda)
 #'
@@ -804,7 +804,7 @@ plot_sentiment_breakdown <- function(x,
 #' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' rjst <- grow(rjst, 100)
 #' sentopics_sentiment(rjst, override = TRUE)
-#' sentiment_topics(rjst)
+#' sentiment_topics(rjst)}
 sentiment_topics <- function(x,
                              period = c("year", "quarter", "month", "day", "identity"),
                              rolling_window = 1,
@@ -1034,7 +1034,7 @@ plot_sentiment_topics <- function(x,
 #'
 #' @seealso sentopics_sentiment sentopics_date
 #' @examples
-#' lda <- LDA(ECB_press_conferences_tokens)
+#' \donttest{lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- grow(lda, 100)
 #' proportion_topics(lda)
 #'
@@ -1049,7 +1049,7 @@ plot_sentiment_topics <- function(x,
 #' # including both layers
 #' proportion_topics(jst)
 #' # or not
-#' proportion_topics(jst, complete = FALSE)
+#' proportion_topics(jst, complete = FALSE)}
 proportion_topics <- function(x,
                               period = c("year", "quarter", "month", "day", "identity"),
                               rolling_window = 1,

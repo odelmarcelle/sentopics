@@ -33,12 +33,12 @@ case, the of the paragraph/sentences scores averaged over documents will be
 contained in the (-1,1) interval.
 }
 \examples{
-# on documents
+\donttest{# on documents
 docs <- quanteda::corpus_reshape(ECB_press_conferences, "documents")
 compute_PicaultRenault_scores(docs)
 
 # on paragraphs
-compute_PicaultRenault_scores(ECB_press_conferences)
+compute_PicaultRenault_scores(ECB_press_conferences)}
 }
 \references{
 Picault, M. & Renault, T. (2017). \href{https://doi.org/10.1016/j.jimonfin.2017.09.005}{Words are not all created equal: A new measure of ECB communication}. \emph{Journal of

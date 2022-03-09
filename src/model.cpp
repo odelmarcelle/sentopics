@@ -409,7 +409,7 @@ void model::iterateLDA(uword start, uword iterations, bool computeLikelihood, Pr
       for (uword w = 0; w < size; w++){
         DEBUG_MSG("Word/document index: [" << d << "]-" << w);
         DEBUG_MSG("Vocabulary index : (" << intTokens[d]->at(w) << ")");
-        samplingTrueLDA2(intTokens[d]->at(w), za[d]->at(w), c, d);
+        samplingLDA(intTokens[d]->at(w), za[d]->at(w), c, d);
         DEBUG_MSG("Word re-sampled");
       }
 
@@ -517,7 +517,7 @@ void model::iteratel2(uword start, uword iterations, bool computeLikelihood, Pro
       for (uword w = 0; w < size; w++){
         DEBUG_MSG("Word/document index: [" << d << "]-" << w);
         DEBUG_MSG("Vocabulary index : (" << intTokens[d]->at(w) << ")");
-        sampling2(intTokens[d]->at(w), za[d]->at(w), c, d);
+        sampling(intTokens[d]->at(w), za[d]->at(w), c, d);
         DEBUG_MSG("Word re-sampled");
       }
 
@@ -558,7 +558,7 @@ void model::iteratel2(uword start, uword iterations, bool computeLikelihood, Pro
 
 
 // sample a new topic and sentiment for a word
-void model::sampling2(const uword& word, uword& zLeave, uword c, uword d)  {
+void model::sampling(const uword& word, uword& zLeave, uword c, uword d)  {
 
   // uniform random draw
   double u;
@@ -702,7 +702,7 @@ void model::sampling2(const uword& word, uword& zLeave, uword c, uword d)  {
 
 
 // sample a new topic and sentiment for a word
-void model::samplingTrueLDA2(const uword& word, uword& zLeave, uword c, uword d)  {
+void model::samplingLDA(const uword& word, uword& zLeave, uword c, uword d)  {
 
   // uniform random draw
   double u;

@@ -59,7 +59,7 @@ rebuild_cppModel <- function(x, base) {
       if (is.null(x$logLikelihood)) 0 else attr(x$logLikelihood, "components")$logLikelihoodL2,
       # x$histAlpha,
       # x$histGamma
-      stats::median(base$beta) ### caution... will not work if too many lexicon
+      stats::median(base$beta) ### caution... will not work if too many lexicon ## unused outside initialization anyway
     )
   cppModel
 }

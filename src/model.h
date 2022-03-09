@@ -110,8 +110,8 @@ public:
   void iterateLDA(uword start, uword iterations, bool computeLikelihood, Progress& p);
   void iteratel2(uword start, uword iterations, bool computeLikelihood, Progress& p);
 
-  void sampling2(const uword& word, uword& zLeave, uword c, uword d); // sampling of a single word's topic
-  void samplingTrueLDA2(const uword& word, uword& zLeave, uword c, uword d); // sampling of a single word's topic corrected
+  void sampling(const uword& word, uword& zLeave, uword c, uword d); // sampling of a single word's topic
+  void samplingLDA(const uword& word, uword& zLeave, uword c, uword d); // sampling of a single word's topic corrected
 
   void updateAlpha(); // update the value of the Dirichlet parameter alpha based on count matrices
   void updateGamma(); // update the value of the Dirichlet parameter gamma based on count matrices

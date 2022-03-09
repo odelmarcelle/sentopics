@@ -1248,7 +1248,6 @@ days_period <- function(date, period) {
   for (i in seq_along(tmp)) {
     class(tmp[[i]]) <- "Date"
   }
-  # tmp
   as.numeric(difftime(tmp[[1]], tmp[[2]]))
 }
 

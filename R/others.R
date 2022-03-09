@@ -15,7 +15,8 @@
 #'   with [spacyr::spacy_parse()]. Nouns, adjectives and proper nouns are then
 #'   extracted from the parsed speechs to form a `tokens` object.
 #'
-#' @return Depending on the arguments, returns either a data.frame or a [quanteda::tokens] object containing speeches of the ECB.
+#' @return Depending on the arguments, returns either a data.frame or a
+#'   [quanteda::tokens] object containing speeches of the ECB.
 get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, compute_sentiment = TRUE, tokenize_w_POS = FALSE) { # nocov start
   ## CMD check
   pos <- NULL
@@ -123,7 +124,7 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
 #'   in which each element is a press conference.
 #'
 #' @return Depending on the arguments, returns either a data.frame or a
-#'   [quanteda::tokens] object containing speeches of the ECB.
+#'   [quanteda::tokens] object containing press conferences of the ECB.
 get_ECB_press_conferences <- function(years = 1998:2021, data.table = TRUE) {
   
   # R CMD check:
@@ -265,7 +266,7 @@ get_ECB_press_conferences <- function(years = 1998:2021, data.table = TRUE) {
 #'   two [dfm], on for the Monetary Policy and one for the Economic Condition
 #'   categories. If `FALSE`, returns the sum of all word scores per document.
 #'
-#' @details the computation is done on a per-document basis, such as each
+#' @details The computation is done on a per-document basis, such as each
 #'   document is scored with a value between -1 and 1. This is relevant to the
 #'   computation of the denominator of the score.
 #'
@@ -277,12 +278,15 @@ get_ECB_press_conferences <- function(years = 1998:2021, data.table = TRUE) {
 #'   case, the of the paragraph/sentences scores averaged over documents will be
 #'   contained in the (-1,1) interval.
 #'
+#' @return A matrix with two columns, indicating respectively the MP (Monetary
+#'   Policy) and EC (Economic Condition) scores of each document.
+#'
 #' @export
 #' @seealso [PicaultRenault]
 #' @references Picault, M. & Renault, T. (2017). [Words are not all created
 #'   equal: A new measure of ECB
-#'   communication](https://www.sciencedirect.com/science/article/abs/pii/S0261560617301808). *Journal of
-#'   International Money and Finance*, 79, 136--156.
+#'   communication](https://www.sciencedirect.com/science/article/abs/pii/S0261560617301808).
+#'   *Journal of International Money and Finance*, 79, 136--156.
 #' @examples
 #' \donttest{# on documents
 #' docs <- quanteda::corpus_reshape(ECB_press_conferences, "documents")

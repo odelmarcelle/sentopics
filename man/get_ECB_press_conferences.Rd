@@ -14,7 +14,7 @@ in which each element is a press conference.}
 }
 \value{
 Depending on the arguments, returns either a data.frame or a
-\link[quanteda:tokens]{quanteda::tokens} object containing speeches of the ECB.
+\link[quanteda:tokens]{quanteda::tokens} object containing press conferences of the ECB.
 }
 \description{
 This helper function automatically retrieve the full data set of

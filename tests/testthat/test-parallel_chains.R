@@ -41,6 +41,11 @@ if (Sys.getenv("R_COVR") != "true") {
 
   test_that("seed works", {
     generated_sentopicmodel <- sentopicmodel(toks)
+    set.seed(123)
+    sentopicmodel_1 <- grow(generated_sentopicmodel, 2, displayProgress = FALSE, nChains = 1)
+    set.seed(123)
+    sentopicmodel_2 <- grow(generated_sentopicmodel, 2, displayProgress = FALSE, nChains = 1)
+    expect_identical(sentopicmodel_1, sentopicmodel_2)
     sentopicmodel_1 <- grow(generated_sentopicmodel, 2, displayProgress = FALSE, nChains = 1, seed = 123)
     sentopicmodel_2 <- grow(generated_sentopicmodel, 2, displayProgress = FALSE, nChains = 1, seed = 123)
     expect_identical(sentopicmodel_1, sentopicmodel_2)
@@ -59,6 +64,11 @@ if (Sys.getenv("R_COVR") != "true") {
     sentopicmodel_2 <- grow(generated_sentopicmodel, 2, displayProgress = FALSE, nChains = 2, seed = NULL)
     expect_false(identical(sentopicmodel_1, sentopicmodel_2))
 
+    set.seed(123)
+    sentopicmodel_1 <- grow(generated_sentopicmodel, 2, displayProgress = FALSE, nChains = 2, nCores = 2)
+    set.seed(123)
+    sentopicmodel_2 <- grow(generated_sentopicmodel, 2, displayProgress = FALSE, nChains = 2, nCores = 2)
+    expect_identical(sentopicmodel_1, sentopicmodel_2)
     sentopicmodel_1 <- grow(generated_sentopicmodel, 2, displayProgress = FALSE, nChains = 2, nCores = 2, seed = NULL)
     sentopicmodel_2 <- grow(generated_sentopicmodel, 2, displayProgress = FALSE, nChains = 2, nCores = 2, seed = NULL)
     expect_false(identical(sentopicmodel_1, sentopicmodel_2))

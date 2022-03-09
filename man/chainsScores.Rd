@@ -22,12 +22,13 @@ determining a new window size for all measures.}
 than 1.}
 }
 \value{
-a \code{data.table} with some statistics about each chain. For the
+A \code{data.table} with some statistics about each chain. For the
 coherence metrics, the value shown is the mean coherence across all topics
 of a chain
 }
 \description{
-Compute scores of topic models (chains)
+Compute various scores (log likelihood, coherence) for a list of topic
+models.
 }
 \examples{
 model <- LDA(ECB_press_conferences_tokens[1:10])

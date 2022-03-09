@@ -19,7 +19,7 @@
 #' @param w only used when `method = "FREX"`. Determines the weight assigned to
 #'   the frequency score at the expense of the exclusivity score.
 #'
-#' @return the top words of the topic model. Depending on the output chosen, can
+#' @return The top words of the topic model. Depending on the output chosen, can
 #'   result in either a long-style data.frame, a `ggplot2` object or a matrix.
 #'
 #' @import data.table
@@ -226,16 +226,16 @@ plot_topWords <- function(x,
 #' @param NPMIs optional NPMI matrix. If provided, skip the computation of NPMI
 #'   between words, substantially decreasing computing time.
 #'
-#' @return Return a vector or matrix containing the coherence score of each
-#'   topic.
+#' @return A vector or matrix containing the coherence score of each topic.
 #' @details Currently, only C_NPMI and C_V are documented. The implementation
 #'   follows Röder & al. (2015). For C_NPMI, the sliding window is 10 whereas it
 #'   is 110 for C_V.
 #'
 #' @references Röder, M., Both, A., & Hinneburg, A. (2015). [Exploring the Space
-#'   of Topic Coherence Measures](https://dl.acm.org/doi/10.1145/2684822.2685324). In
-#'   *Proceedings of the Eighth ACM International Conference on Web Search and
-#'   Data Mining*, 399-–408.
+#'   of Topic Coherence
+#'   Measures](https://dl.acm.org/doi/10.1145/2684822.2685324). In *Proceedings
+#'   of the Eighth ACM International Conference on Web Search and Data Mining*,
+#'   399-–408.
 #' @export
 coherence <- function(x, nWords = 10, method = c("C_NPMI", "C_V"), window = NULL, NPMIs = NULL) {
   UseMethod("coherence")
@@ -295,7 +295,7 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 #' @param method the method used to measure the distance between chains.
 #' @param ... futher arguments passed to internal distance functions.
 #'
-#' @details the `method` argument determines how are computed distance.
+#' @details The `method` argument determines how are computed distance.
 #' 
 #'  - `euclidean` finds the pairs of topics that minimizes and returns the total
 #'  Euclidean distance.
@@ -312,7 +312,7 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 #'  the set of permutations to the ones that do not change the interpretation of
 #'  the model. Equivalent to `euclidean` for LDA models.
 #'
-#' @return a matrix of distance between the elements of `x`
+#' @return A matrix of distance between the elements of `x`
 #' @examples
 #' model <- LDA(ECB_press_conferences_tokens)
 #' model <- grow(model, 10, nChains = 5)
@@ -346,6 +346,9 @@ chainsDistances <- function(x,
 
 #' Compute scores of topic models (chains)
 #'
+#' Compute various scores (log likelihood, coherence) for a list of topic
+#' models.
+#'
 #' @param x a valid `multiChains` object, obtained through the estimation of a
 #'   topic model using [grow()] and the argument `nChains` greater than `1`.
 #' @param nWords the number of words used to compute coherence. See
@@ -357,7 +360,7 @@ chainsDistances <- function(x,
 #'   default windows by providing an integer or `"boolean"` to this argument,
 #'   determining a new window size for all measures.
 #'
-#' @return a `data.table` with some statistics about each chain. For the
+#' @return A `data.table` with some statistics about each chain. For the
 #'   coherence metrics, the value shown is the mean coherence across all topics
 #'   of a chain
 #'

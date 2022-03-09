@@ -19,6 +19,10 @@ topic model using \code{\link[=grow]{grow()}} and the argument \code{nChains} gr
 
 \item{method}{the method used to measure the distance between chains.}
 }
+\value{
+Invisibly, the coordinates of each topic model resulting from the
+multidimensional scaling.
+}
 \description{
 Plot the results of \code{chainsDistance(x)} using multidimensional
 scaling. See \code{\link[=chainsDistances]{chainsDistances()}} for details on the distance computation
@@ -29,7 +33,6 @@ scaling.
 models <- LDA(ECB_press_conferences_tokens)
 models <- grow(models, 10, nChains = 5)
 plot(models)
-
 }
 \seealso{
 \code{\link[=chainsDistances]{chainsDistances()}} \code{\link[=cmdscale]{cmdscale()}}

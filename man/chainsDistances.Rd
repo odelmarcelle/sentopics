@@ -20,7 +20,7 @@ topic model using \code{\link[=grow]{grow()}} and the argument \code{nChains} gr
 \item{...}{futher arguments passed to internal distance functions.}
 }
 \value{
-a matrix of distance between the elements of \code{x}
+A matrix of distance between the elements of \code{x}
 }
 \description{
 Computes the distance between different estimates of a topic
@@ -30,7 +30,7 @@ the distance between distinct realizations of the estimation process.
 Estimates are referred to as \emph{chains}.
 }
 \details{
-the \code{method} argument determines how are computed distance.
+The \code{method} argument determines how are computed distance.
 \itemize{
 \item \code{euclidean} finds the pairs of topics that minimizes and returns the total
 Euclidean distance.

@@ -17,10 +17,10 @@ as.rJST(x)
 as.JST(x)
 }
 \arguments{
-\item{x}{a \strong{sentopics} model}
+\item{x}{A \strong{sentopics} model}
 }
 \value{
-a \strong{sentopics} model of the relevant class
+A \strong{sentopics} model of the relevant class
 }
 \description{
 Internal conversions between \strong{sentopics} models.

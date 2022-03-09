@@ -15,12 +15,16 @@ compute_PicaultRenault_scores(x, min_ngram = 2, return_dfm = FALSE)
 two \link{dfm}, on for the Monetary Policy and one for the Economic Condition
 categories. If \code{FALSE}, returns the sum of all word scores per document.}
 }
+\value{
+A matrix with two columns, indicating respectively the MP (Monetary
+Policy) and EC (Economic Condition) scores of each document.
+}
 \description{
 Computes Monetary Policy and Economic Condition scores using the
 Picault-Renault lexicon for central bank communcation.
 }
 \details{
-the computation is done on a per-document basis, such as each
+The computation is done on a per-document basis, such as each
 document is scored with a value between -1 and 1. This is relevant to the
 computation of the denominator of the score.
 
@@ -41,8 +45,8 @@ compute_PicaultRenault_scores(docs)
 compute_PicaultRenault_scores(ECB_press_conferences)}
 }
 \references{
-Picault, M. & Renault, T. (2017). \href{https://www.sciencedirect.com/science/article/abs/pii/S0261560617301808}{Words are not all created equal: A new measure of ECB communication}. \emph{Journal of
-International Money and Finance}, 79, 136--156.
+Picault, M. & Renault, T. (2017). \href{https://www.sciencedirect.com/science/article/abs/pii/S0261560617301808}{Words are not all created equal: A new measure of ECB communication}.
+\emph{Journal of International Money and Finance}, 79, 136--156.
 }
 \seealso{
 \link{PicaultRenault}

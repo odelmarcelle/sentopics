@@ -27,7 +27,8 @@ with \code{\link[spacyr:spacy_parse]{spacyr::spacy_parse()}}. Nouns, adjectives 
 extracted from the parsed speechs to form a \code{tokens} object.}
 }
 \value{
-Depending on the arguments, returns either a data.frame or a \link[quanteda:tokens]{quanteda::tokens} object containing speeches of the ECB.
+Depending on the arguments, returns either a data.frame or a
+\link[quanteda:tokens]{quanteda::tokens} object containing speeches of the ECB.
 }
 \description{
 This helper function automatically retrieve the full data set of

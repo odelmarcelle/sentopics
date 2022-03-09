@@ -11,6 +11,9 @@ melt(data, ...)
 
 \item{...}{arguments passed to other methods}
 }
+\value{
+An unkeyed \code{data.table} containing the molten data.
+}
 \description{
 Up to the CRAN release of the 1.14.3 version of \strong{data.table}, the
 \code{\link[data.table:melt.data.table]{data.table::melt()}} function is not a generic. This function aims to

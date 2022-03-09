@@ -23,6 +23,9 @@ functions. Automatically displayed once per session.}
 
 \item{...}{not used}
 }
+\value{
+No return value, called for side effects (printing).
+}
 \description{
 Print methods for \strong{sentopics} models. Once per session (or
 forced by using \code{extended = TRUE}), it lists the most important function

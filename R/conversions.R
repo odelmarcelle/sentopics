@@ -8,9 +8,9 @@
 #'
 #' @title Internal conversions between **sentopics** models.
 #'
-#' @param x a **sentopics** model
+#' @param x A **sentopics** model
 #'
-#' @return a **sentopics** model of the relevant class
+#' @return A **sentopics** model of the relevant class
 #' @export
 as.sentopicmodel <- function(x) {
   UseMethod("as.sentopicmodel")

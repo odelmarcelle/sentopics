@@ -42,7 +42,7 @@ label. It is possible to subset on both topic and sentiment but adding a
 the frequency score at the expense of the exclusivity score.}
 }
 \value{
-the top words of the topic model. Depending on the output chosen, can
+The top words of the topic model. Depending on the output chosen, can
 result in either a long-style data.frame, a \code{ggplot2} object or a matrix.
 }
 \description{

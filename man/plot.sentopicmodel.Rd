@@ -20,6 +20,9 @@ hierarchy (topics for an LDA model).}
 
 \item{...}{not used}
 }
+\value{
+A \code{plotly} sunburst chart.
+}
 \description{
 Summarize and plot a \strong{sentopics} model using a sunburst chart
 from the \link[plotly:plotly]{plotly::plotly} library.

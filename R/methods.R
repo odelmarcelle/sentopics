@@ -24,6 +24,8 @@ sentopics_print_extend <- function(extended = FALSE) {
 #' @param extended if `TRUE`, extends the print to include some helpful related
 #'   functions. Automatically displayed once per session.
 #' @param ... not used
+#' 
+#' @return No return value, called for side effects (printing).
 #'
 #' @export
 print.sentopicmodel <- function(x, extended = FALSE, ...) {
@@ -98,6 +100,8 @@ print.topWords <- function(x, ...) {
 #'   example, setting `layers = 1` will only display the top level of the
 #'   hierarchy (topics for an LDA model).
 #' @param ... not used
+#' 
+#' @return A `plotly` sunburst chart.
 #'
 #' @export
 #' @seealso [topWords()]
@@ -213,11 +217,13 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, ...) {
 #' @param ... not used
 #' @seealso [chainsDistances()] [cmdscale()]
 #'
+#' @return Invisibly, the coordinates of each topic model resulting from the
+#'   multidimensional scaling.
+#'
 #' @examples
 #' models <- LDA(ECB_press_conferences_tokens)
 #' models <- grow(models, 10, nChains = 5)
 #' plot(models)
-#'
 #' @export
 plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosine", "minMax", "naiveEuclidean", "invariantEuclidean")) {
   if (attr(x, "nChains") < 3) stop("At least 3 chains are required for proper plotting.")
@@ -235,6 +241,7 @@ plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosin
   plot(coord[, 1], coord[, 2], type = "n", xlab = "Coordinate 1", ylab = "Coordinate 2", main = paste0("Chains multidimensional scaling of ", deparse(substitute(x))))
   graphics::text(coord[, 1], coord[, 2], rownames(coord), cex = 0.8)
   graphics::abline(h = 0, v = 0, col = "gray75")
+  invisible(coord)
 }
 
 # grow --------------------------------------------------------------------
@@ -312,7 +319,7 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1, nCores = 1, dis
   x <- data.table::copy(x)
 
   if (nChains == 1) {
-    if (!is.null(seed)) set.seed(seed * (x$it + 1)) # else set.seed(sample.int(2^30, 1)) ### if set.seed is not defined internal rng of cpp_model repeat every call
+    if (!is.null(seed)) set.seed(seed * (x$it + 1))
     ## rebuild c++ model
     base <- core(x)
     cpp_model <- rebuild_cppModel(x, base)
@@ -549,6 +556,8 @@ reset <- function(x) {
 #'
 #' @param data an object to melt
 #' @param ... arguments passed to other methods
+#' 
+#' @return An unkeyed `data.table` containing the molten data.
 #' 
 #' @seealso [data.table::melt()], [melt.sentopicmodel()]
 #' @export

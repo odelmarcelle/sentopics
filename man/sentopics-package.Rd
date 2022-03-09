@@ -45,6 +45,11 @@ Useful links:
 Other contributors:
 \itemize{
   \item Samuel Borms \email{samuel.borms@unine.ch} (\href{https://orcid.org/0000-0001-9533-1870}{ORCID}) [contributor]
+  \item Chengua Lin \email{chenghua.lin@abdn.ac.uk} (Original JST implementation) [copyright holder]
+  \item Yulan He \email{yulan.he@warwick.ac.uk} (Original JST implementation) [copyright holder]
+  \item Jose Bernardo (Original JST implementation) [copyright holder]
+  \item David Robinson \email{admiral.david@gmail.com} (Implementation of reorder_within()) [copyright holder]
+  \item Julia Silge \email{julia.silge@gmail.com} (\href{https://orcid.org/0000-0002-3671-836X}{ORCID}) (Implementation of reorder_within()) [copyright holder]
 }
 
 }

@@ -3,8 +3,16 @@ Type: Package
 Title: Tools for Joint Sentiment and Topic Analysis of Textual Data
 Version: 0.6.0
 Date: 2022-03-02
-Authors@R: c(person("Olivier", "Delmarcelle", email = "delmarcelle.olivier@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-4347-070X")),
-  person("Samuel", "Borms", email = "samuel.borms@unine.ch", role = c("ctb"), comment = c(ORCID = "0000-0001-9533-1870")))
+Authors@R: c(
+  person("Olivier", "Delmarcelle", email = "delmarcelle.olivier@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-4347-070X")),
+  person("Samuel", "Borms", email = "samuel.borms@unine.ch", role = c("ctb"), comment = c(ORCID = "0000-0001-9533-1870")),
+  person("Chengua", "Lin", email = "chenghua.lin@abdn.ac.uk", role = "cph", comment = "Original JST implementation"),
+  person("Yulan", "He", email = "yulan.he@warwick.ac.uk", role = "cph", comment = "Original JST implementation"),
+  person("Jose", "Bernardo", role = "cph", comment = "Original JST implementation"),
+  person("David", "Robinson", , "admiral.david@gmail.com", role = "cph", comment = "Implementation of reorder_within()"),
+  person("Julia", "Silge", , "julia.silge@gmail.com", role = "cph",
+           comment = c("Implementation of reorder_within()", ORCID = "0000-0002-3671-836X"))
+  )
 Maintainer: Olivier Delmarcelle <delmarcelle.olivier@gmail.com>
 Description: An R package for joint sentiment and topic analysis of textual data.
 License: GPL (>= 3)

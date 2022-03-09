@@ -180,6 +180,7 @@ distToGenerative <- function(x, generativeVocabulary, plot = FALSE, full = FALSE
 #' )))
 #' sentopics:::vocabFromList(lapply(1:3, function(i) c(paste0("topic",i,"w1"))))
 #' @keywords internal
+#' @noRd
 vocabFromList <- function(list) {
 
   index <- unique(unlist(list, use.names = FALSE))

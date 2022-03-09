@@ -50,7 +50,6 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
 
   if (filter_english) {
     ## Filter on language
-    set.seed(123)
     LANG <- textcat::textcat(ECB_speeches$contents)
     LANG[is.na(LANG)] <- "missing_content"
     ECB_speeches <- ECB_speeches[LANG == "english", ]

@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 
 ## Installation
 
-`sentopics` is currently installable from GitHub.
+`sentopics` is currently available on GitHub.
 
 ``` {r eval = FALSE}
 devtools::install_github("odelmarcelle/sentopics") 
@@ -66,7 +66,7 @@ plot(lda) |> plotly::layout(width = 500, height = 500)
 
 
 
-After properly incorporating date and sentiment medata data (if they are not already present in the `tokens` input), time series functions allows to study the evolution of topic proportions and related sentiment.
+After properly incorporating date and sentiment metadata data (if they are not already present in the `tokens` input), time series functions allows to study the evolution of topic proportions and related sentiment.
 
 ```{r series, message=FALSE, out.width="100%"}
 sentopics_date(lda)  |> head(2)

@@ -6,11 +6,11 @@
 \title{Loughran-McDonald lexicon}
 \format{
 A \link[quanteda:dictionary]{quanteda::dictionary} containing two polarity categories (negative
-and positive) and two valence-shitfing categories (negator and amplifier).
+and positive) and two valence-shifting categories (negator and amplifier).
 }
 \source{
 \url{https://sraf.nd.edu/loughranmcdonald-master-dictionary/} for the
-lexicon and \link[lexicon:hash_valence_shifters]{lexicon::hash_valence_shifters} for the valence shifters
+lexicon and \link[lexicon:hash_valence_shifters]{lexicon::hash_valence_shifters} for the valence shifters.
 }
 \usage{
 LoughranMcDonald
@@ -18,7 +18,7 @@ LoughranMcDonald
 \description{
 The Loughran-McDonald lexicon for financial texts adapted for
 usage in \strong{sentopics}. The lexicon is enhanced with two list of
-valence-shitfting words.
+valence-shifting words.
 }
 \examples{
 JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)

@@ -35,7 +35,7 @@ head(docvars(ECB_press_conferences_tokens))
 
 ## Introduction
 
-`sentopics` implements three types of topic model. The simplest, Latent Dirichelt Allocation (LDA), assumes that textual documents are issued from a generative process involving $K$ topics.
+`sentopics` implements three types of topic model. The simplest, Latent Dirichlet Allocation (LDA), assumes that textual documents are issued from a generative process involving $K$ topics.
 
 A given document $d$ is constituted of a list of words $d = (w_1, \dots, w_N)$, with $N$ being the document's length. Each word $w_i$ originates from a vocabulary consisting of $V$ distinct terms. Then, documents are generated from the following random process:
 
@@ -45,13 +45,13 @@ A given document $d$ is constituted of a list of words $d = (w_1, \dots, w_N)$, 
     1. A latent topic assignment $z_i$ is drawn from the document mixture. $z_i \sim Multinomial(\theta)$
     2. A word $w_i$ is drawn from the topic's vocabulary distribution. $w_i \sim Multinomial(\phi_{z_i})$
   
-In `sentopics` the LDA model is estimated through Gibb's sampling, that iteratively sample the topic assignment $z_i$ of every word of the corpus until reaching a convergence. The topic assignments are sampled from the following distribution: $$ p(z_i = k|w,z^{-i}) \propto
+In `sentopics` the LDA model is estimated through Gibbs sampling, that iteratively sample the topic assignment $z_i$ of every word of the corpus until reaching a convergence. The topic assignments are sampled from the following distribution: $$ p(z_i = k|w,z^{-i}) \propto
 \frac{n_{k,v,.}^{-i} + \beta}{n_{k,.,.}^{-i} + V\beta}
 \frac{n_{k,.,d}^{-i} + \alpha}{n_{.,.,d}^{-i} + K\alpha},$$ where $n_{k,v,d}$ is the count of words at index $v$ of the vocabulary, assigned to topic $k$ and part of document $d$. The replacement of one of the indices $\{k,v,d\}$ by a dot indicates instead the count for all topics, all vocabulary indices or all documents. The superscript $-i$ indicates that the current word position $i$ is left out from the count variables.
 
 ## Estimating LDA models with `sentopic`
 
-The estimation of an LDA model is easily replicated using the `LDA()` and `grow()` function. The first function prepares the `R` object and initialize the assignment of the latent topics. The second function estimates the model using Gibb's sampling for a given number of iterations. Note that `grow()` may be used to iterate the model multiple times without resetting the estimation.
+The estimation of an LDA model is easily replicated using the `LDA()` and `grow()` function. The first function prepares the `R` object and initialize the assignment of the latent topics. The second function estimates the model using Gibbs sampling for a given number of iterations. Note that `grow()` may be used to iterate the model multiple times without resetting the estimation.
 
 ```{r}
 set.seed(123)

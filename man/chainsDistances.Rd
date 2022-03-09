@@ -17,7 +17,7 @@ topic model using \code{\link[=grow]{grow()}} and the argument \code{nChains} gr
 
 \item{method}{the method used to measure the distance between chains.}
 
-\item{...}{futher arguments passed to internal distance functions.}
+\item{...}{further arguments passed to internal distance functions.}
 }
 \value{
 A matrix of distance between the elements of \code{x}
@@ -56,7 +56,7 @@ chainsDistances(model)
 }
 \references{
 Tang, J., Meng, Z., Nguyen, X., Mei, Q., and Zhang, M. (2014).
-\href{https://proceedings.mlr.press/v32/tang14.html}{Understanding the limiting factors of topicmodeling via posterior contraction analysis}. In
+\href{https://proceedings.mlr.press/v32/tang14.html}{Understanding the Limiting Factors of Topic Modeling via Posterior Contraction Analysis}. In
 \emph{Proceedings of the 31st International Conference on Machine Learning}, 32,
 90--198.
 }

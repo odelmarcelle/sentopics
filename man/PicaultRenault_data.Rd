@@ -21,9 +21,9 @@ published after 2000:
 \item The Main Refinancing Rate (MRR) of the ECB set following the press
 conference
 \item The change in the MRR following the press conference
-\item The change in the MMR observed at the previous press conference
+\item The change in the MRR observed at the previous press conference
 \item The Bloomberg consensus on the announced MRR
-\item The Suprise brought by the announcement, computed as the Bloomberg
+\item The Surprise brought by the announcement, computed as the Bloomberg
 consensus minus the MRR following the conference
 \item The EURO STOXX 50 return on the day of the press conference
 \item The EURO STOXX 50 return on the day preceding the announcement

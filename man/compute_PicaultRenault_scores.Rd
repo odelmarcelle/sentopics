@@ -21,7 +21,7 @@ Policy) and EC (Economic Condition) scores of each document.
 }
 \description{
 Computes Monetary Policy and Economic Condition scores using the
-Picault-Renault lexicon for central bank communcation.
+Picault-Renault lexicon for central bank communication.
 }
 \details{
 The computation is done on a per-document basis, such as each

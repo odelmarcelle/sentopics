@@ -72,7 +72,7 @@ NULL
 #'
 #' @description The Loughran-McDonald lexicon for financial texts adapted for
 #'   usage in **sentopics**. The lexicon is enhanced with two list of
-#'   valence-shitfting words.
+#'   valence-shifting words.
 #'
 #' @seealso [JST()], [rJST()]
 #'
@@ -80,10 +80,10 @@ NULL
 #' JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #'
 #' @format A [quanteda::dictionary] containing two polarity categories (negative
-#'   and positive) and two valence-shitfing categories (negator and amplifier).
+#'   and positive) and two valence-shifting categories (negator and amplifier).
 #'
 #' @source \url{https://sraf.nd.edu/loughranmcdonald-master-dictionary/} for the
-#'   lexicon and [lexicon::hash_valence_shifters] for the valence shifters
+#'   lexicon and [lexicon::hash_valence_shifters] for the valence shifters.
 #'
 #' @references Loughran, T. & McDonald, B. (2011). [When Is a Liability Not a
 #'   Liability? Textual Analysis, Dictionaries, and
@@ -94,15 +94,15 @@ NULL
 #' Picault-Renault lexicon
 #'
 #' @description The Picault-Renault lexicon, specialized in the analysis of
-#'   central bank communcation. The lexicon identifies a large number of n-grams
+#'   central bank communication. The lexicon identifies a large number of n-grams
 #'   and gives their probability to belong to six categories:
 #'   
-#'   - Monetary Policy - accomodative
+#'   - Monetary Policy - accommodative
 #'   - Monetary Policy - neutral
 #'   - Monetary Policy - restrictive
 #'   - Economic Condition - negative
 #'   - Economic Condition - neutral
-#'   - Economic Condidtion - positive
+#'   - Economic Condition - positive
 #'
 #' @examples
 #' head(PicaultRenault)
@@ -128,9 +128,9 @@ NULL
 #'   - The Main Refinancing Rate (MRR) of the ECB set following the press
 #'   conference
 #'   - The change in the MRR following the press conference
-#'   - The change in the MMR observed at the previous press conference
+#'   - The change in the MRR observed at the previous press conference
 #'   - The Bloomberg consensus on the announced MRR
-#'   - The Suprise brought by the announcement, computed as the Bloomberg
+#'   - The Surprise brought by the announcement, computed as the Bloomberg
 #'   consensus minus the MRR following the conference
 #'   - The EURO STOXX 50 return on the day of the press conference
 #'   - The EURO STOXX 50 return on the day preceding the announcement

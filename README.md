@@ -12,7 +12,7 @@ coverage](https://codecov.io/gh/odelmarcelle/sentopics/branch/master/graph/badge
 
 ## Installation
 
-`sentopics` is currently installable from GitHub.
+`sentopics` is currently available on GitHub.
 
 ``` r
 devtools::install_github("odelmarcelle/sentopics") 
@@ -116,7 +116,7 @@ plot(lda)
 
 <img src="man/figures/README-plot-lda-1.png" style="display: block; margin: auto;" />
 
-After properly incorporating date and sentiment medata data (if they are
+After properly incorporating date and sentiment metadata data (if they are
 not already present in the `tokens` input), time series functions allows
 to study the evolution of topic proportions and related sentiment.
 

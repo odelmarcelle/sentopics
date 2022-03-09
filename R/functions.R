@@ -293,7 +293,7 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 #' @param x a valid `multiChains` object, obtained through the estimation of a
 #'   topic model using [grow()] and the argument `nChains` greater than `1`.
 #' @param method the method used to measure the distance between chains.
-#' @param ... futher arguments passed to internal distance functions.
+#' @param ... further arguments passed to internal distance functions.
 #'
 #' @details The `method` argument determines how are computed distance.
 #' 
@@ -320,8 +320,8 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 #'
 #' @seealso [plot.multiChains()] [chainsScores()]
 #' @references Tang, J., Meng, Z., Nguyen, X., Mei, Q., and Zhang, M. (2014).
-#'   [Understanding the limiting factors of topicmodeling via posterior
-#'   contraction analysis](https://proceedings.mlr.press/v32/tang14.html). In
+#'   [Understanding the Limiting Factors of Topic Modeling via Posterior
+#'   Contraction Analysis](https://proceedings.mlr.press/v32/tang14.html). In
 #'   *Proceedings of the 31st International Conference on Machine Learning*, 32,
 #'   90--198.
 #' @export

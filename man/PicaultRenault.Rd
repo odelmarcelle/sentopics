@@ -15,15 +15,15 @@ PicaultRenault
 }
 \description{
 The Picault-Renault lexicon, specialized in the analysis of
-central bank communcation. The lexicon identifies a large number of n-grams
+central bank communication. The lexicon identifies a large number of n-grams
 and gives their probability to belong to six categories:
 \itemize{
-\item Monetary Policy - accomodative
+\item Monetary Policy - accommodative
 \item Monetary Policy - neutral
 \item Monetary Policy - restrictive
 \item Economic Condition - negative
 \item Economic Condition - neutral
-\item Economic Condidtion - positive
+\item Economic Condition - positive
 }
 }
 \examples{

@@ -22,9 +22,9 @@ texts using some regex patterns.}
 using \code{\link[sentometrics:compute_sentiment]{sentometrics::compute_sentiment()}} with the the Loughran & McDonald
 lexicon.}
 
-\item{tokenize_w_POS}{if \code{TRUE}, tokenize and apply Part-Of-Speech tagging
+\item{tokenize_w_POS}{if \code{TRUE}, tokenizes and apply Part-Of-Speech tagging
 with \code{\link[spacyr:spacy_parse]{spacyr::spacy_parse()}}. Nouns, adjectives and proper nouns are then
-extracted from the parsed speechs to form a \code{tokens} object.}
+extracted from the parsed speeches to form a \code{tokens} object.}
 }
 \value{
 Depending on the arguments, returns either a data.frame or a

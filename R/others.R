@@ -11,9 +11,9 @@
 #' @param compute_sentiment if `TRUE`, computes the sentiment of each speech
 #'   using [sentometrics::compute_sentiment()] with the the Loughran & McDonald
 #'   lexicon.
-#' @param tokenize_w_POS if `TRUE`, tokenize and apply Part-Of-Speech tagging
+#' @param tokenize_w_POS if `TRUE`, tokenizes and apply Part-Of-Speech tagging
 #'   with [spacyr::spacy_parse()]. Nouns, adjectives and proper nouns are then
-#'   extracted from the parsed speechs to form a `tokens` object.
+#'   extracted from the parsed speeches to form a `tokens` object.
 #'
 #' @return Depending on the arguments, returns either a data.frame or a
 #'   [quanteda::tokens] object containing speeches of the ECB.
@@ -116,7 +116,7 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
 #' Download press conferences from the European Central Bank
 #'
 #' @description This helper function automatically retrieve the full data set of
-#'   press conferences made available by the ECB. Tt implements a number of
+#'   press conferences made available by the ECB. It implements a number of
 #'   pre-processing steps used to remove the Q&A section from the text.
 #'
 #' @param years the years for which press conferences should be retrieved
@@ -258,7 +258,7 @@ get_ECB_press_conferences <- function(years = 1998:2021, data.table = TRUE) {
 #' Compute scores using the Picault-Renault lexicon
 #'
 #' @description Computes Monetary Policy and Economic Condition scores using the
-#'   Picault-Renault lexicon for central bank communcation.
+#'   Picault-Renault lexicon for central bank communication.
 #'
 #' @param x a [quanteda::corpus] object.
 #' @param min_ngram the minimum length of n-grams considered in the computation

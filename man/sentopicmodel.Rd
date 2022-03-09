@@ -40,7 +40,7 @@ sentopicmodel(
 
 \item{initLDA}{integer specifying the number of iterations of the LDA burn-in}
 
-\item{smooth}{integer specyfing the number of iterations of the smoothed burn-in}
+\item{smooth}{integer specifying the number of iterations of the smoothed burn-in}
 }
 \value{
 An S3 list containing the model parameter and the estimated mixture.

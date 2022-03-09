@@ -18,6 +18,6 @@ Depending on the arguments, returns either a data.frame or a
 }
 \description{
 This helper function automatically retrieve the full data set of
-press conferences made available by the ECB. Tt implements a number of
+press conferences made available by the ECB. It implements a number of
 pre-processing steps used to remove the Q&A section from the text.
 }

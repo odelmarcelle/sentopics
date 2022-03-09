@@ -203,7 +203,7 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #' @param L2cycle integer specifying the cycle size between two updates of the hyperparameter L2prior
 #' @param initLDA integer specifying the number of iterations of the LDA burn-in
 #' @param lexicon a `quanteda` dictionary with positive and negative categories
-#' @param smooth integer specyfing the number of iterations of the smoothed burn-in
+#' @param smooth integer specifying the number of iterations of the smoothed burn-in
 #'
 #' @seealso Growing a model: [grow()], extracting top words: [topWords()]
 #' @family topic models

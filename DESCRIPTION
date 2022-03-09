@@ -14,7 +14,14 @@ Authors@R: c(
            comment = c("Implementation of reorder_within()", ORCID = "0000-0002-3671-836X"))
   )
 Maintainer: Olivier Delmarcelle <delmarcelle.olivier@gmail.com>
-Description: An R package for joint sentiment and topic analysis of textual data.
+Description: A framework that joins topic modeling and sentiment analysis of
+  textual data. The package implements a fast Gibbs sampling estimation of
+  Latent Dirichlet Allocation (Griffiths and Steyvers (2004)
+  <doi:10.1073/pnas.0307752101>) and Joint Sentiment/Topic Model (Lin, He,
+  Everson and Ruger (2012) <doi:10.1109/TKDE.2011.48>). It offers a variety of
+  helpers and visualizations to analyze the result of topic modeling. In
+  addition, the framework allows enriching topic models with dates and external
+  measures of sentiment, used to derive time series of topical-sentiment.
 License: GPL (>= 3)
 BugReports: https://github.com/odelmarcelle/sentopics/issues
 URL: https://github.com/odelmarcelle/sentopics

@@ -99,6 +99,7 @@ print.topWords <- function(x, ...) {
 #'   will restrict the output to the `layers` uppermost levels of the chart. For
 #'   example, setting `layers = 1` will only display the top level of the
 #'   hierarchy (topics for an LDA model).
+#' @param sort if `TRUE`, sorts the plotted topics in a decreasing frequency.
 #' @param ... not used
 #' 
 #' @return A `plotly` sunburst chart.
@@ -113,7 +114,7 @@ print.topWords <- function(x, ...) {
 #' # only displays the topic proportions
 #' plot(lda, layers = 1)
 ## TODO: add other methods than probability?
-plot.sentopicmodel <- function(x, nWords = 15, layers = 3, ...) {
+plot.sentopicmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
 
   mis <- missingSuggets(c("plotly", "RColorBrewer"))
   if (length(mis) > 0) stop("Suggested packages are missing for the plot.sentopicmodel function.\n",
@@ -184,14 +185,20 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, ...) {
     data <- data[!grepl("^l1_[0-9]+$", parent)]
     data$parent <- sub("l2_[0-9]+$", "", data$parent)
   }
-  labels <- data$name
+  
+  # reorder data clockwise
+  if (sort)
+    data <- data[order(value)]
+  else
+    data <- data[.N:1, ]
 
     fig <- plotly::plot_ly(
       ids = data$id,
-      labels = labels,
+      labels = data$name,
       parents = data$parent,
       values = data$value,
       type = "sunburst",
+      rotation = "180",
       branchvalues = "total",
       leaf = list(opacity = 1),
       marker = list(colors = data$color),

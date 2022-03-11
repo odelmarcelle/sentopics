@@ -4,7 +4,7 @@
 \alias{plot.sentopicmodel}
 \title{Plot a topic model using Plotly}
 \usage{
-\method{plot}{sentopicmodel}(x, nWords = 15, layers = 3, ...)
+\method{plot}{sentopicmodel}(x, nWords = 15, layers = 3, sort = FALSE, ...)
 }
 \arguments{
 \item{x}{a model created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}} function and
@@ -17,6 +17,8 @@ layer of the plot}
 will restrict the output to the \code{layers} uppermost levels of the chart. For
 example, setting \code{layers = 1} will only display the top level of the
 hierarchy (topics for an LDA model).}
+
+\item{sort}{if \code{TRUE}, sorts the plotted topics in a decreasing frequency.}
 
 \item{...}{not used}
 }

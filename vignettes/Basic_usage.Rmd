@@ -49,7 +49,7 @@ In `sentopics` the LDA model is estimated through Gibbs sampling, that iterative
 \frac{n_{k,v,.}^{-i} + \beta}{n_{k,.,.}^{-i} + V\beta}
 \frac{n_{k,.,d}^{-i} + \alpha}{n_{.,.,d}^{-i} + K\alpha},$$ where $n_{k,v,d}$ is the count of words at index $v$ of the vocabulary, assigned to topic $k$ and part of document $d$. The replacement of one of the indices $\{k,v,d\}$ by a dot indicates instead the count for all topics, all vocabulary indices or all documents. The superscript $-i$ indicates that the current word position $i$ is left out from the count variables.
 
-## Estimating LDA models with `sentopic`
+## Estimating LDA models with `sentopics`
 
 The estimation of an LDA model is easily replicated using the `LDA()` and `grow()` function. The first function prepares the `R` object and initialize the assignment of the latent topics. The second function estimates the model using Gibbs sampling for a given number of iterations. Note that `grow()` may be used to iterate the model multiple times without resetting the estimation.
 

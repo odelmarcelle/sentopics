@@ -19,18 +19,26 @@ knitr::opts_chunk$set(
 # sentopics
 
 <!-- badges: start -->
+[![CRAN Version](https://www.r-pkg.org/badges/version/sentopics)](https://CRAN.R-project.org/package=sentopics)
 [![R-CMD-check](https://github.com/odelmarcelle/sentopics/workflows/R-CMD-check/badge.svg)](https://github.com/odelmarcelle/sentopics/actions)
 [![Codecov test coverage](https://codecov.io/gh/odelmarcelle/sentopics/branch/master/graph/badge.svg?token=V6M82L4ZCX)](https://app.codecov.io/gh/odelmarcelle/sentopics)
 <!-- badges: end -->
 
 ## Installation
 
-`sentopics` is currently available on GitHub.
+A stable version `sentopics` is available on CRAN:
+
+```{r eval = FALSE}
+install.packages("sentopics")
+```
+
+The latest development version can be installed from GitHub:
 
 ``` {r eval = FALSE}
 devtools::install_github("odelmarcelle/sentopics") 
 ```
 
+The development version requires the appropriate tools to compile C++ and Fortran source code.
 
 ## Basic usage
 
@@ -40,7 +48,7 @@ Using a sample of press conferences from the European Central Bank, an LDA model
 library(sentopics)
 print(ECB_press_conferences_tokens, 2)
 set.seed(123)
-lda <- LDA(ECB_press_conferences_tokens, K = 4)
+lda <- LDA(ECB_press_conferences_tokens, K = 3, alpha = .1)
 lda <- grow(lda, 100)
 lda
 ```
@@ -80,7 +88,7 @@ plot_sentiment_breakdown(lda, period = "quarter", rolling_window = 3)
 Feel free to refer to the vignettes of the package for a more extensive introduction to the features of the package. Because the package is not yet on CRAN, you'll have to build the vignettes locally.
 
 ```{r, eval = FALSE}
-devtools::install_github("odelmarcelle/sentopics", build_vignettes = TRUE)
-vignette(package = "sentopics")
+vignette("Basic_usage", package = "sentopics")
+vignette("Topical_time_series", package = "sentopics")
 ```
 

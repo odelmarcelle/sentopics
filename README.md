@@ -5,6 +5,8 @@
 
 <!-- badges: start -->
 
+[![CRAN
+Version](https://www.r-pkg.org/badges/version/sentopics)](https://CRAN.R-project.org/package=sentopics)
 [![R-CMD-check](https://github.com/odelmarcelle/sentopics/workflows/R-CMD-check/badge.svg)](https://github.com/odelmarcelle/sentopics/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/odelmarcelle/sentopics/branch/master/graph/badge.svg?token=V6M82L4ZCX)](https://app.codecov.io/gh/odelmarcelle/sentopics)
@@ -12,11 +14,20 @@ coverage](https://codecov.io/gh/odelmarcelle/sentopics/branch/master/graph/badge
 
 ## Installation
 
-`sentopics` is currently available on GitHub.
+A stable version `sentopics` is available on CRAN:
+
+``` r
+install.packages("sentopics")
+```
+
+The latest development version can be installed from GitHub:
 
 ``` r
 devtools::install_github("odelmarcelle/sentopics") 
 ```
+
+The development version requires the appropriate tools to compile C++
+and Fortran source code.
 
 ## Basic usage
 
@@ -44,10 +55,10 @@ print(ECB_press_conferences_tokens, 2)
 # 
 # [ reached max_ndoc ... 3,858 more documents ]
 set.seed(123)
-lda <- LDA(ECB_press_conferences_tokens, K = 4)
+lda <- LDA(ECB_press_conferences_tokens, K = 3, alpha = .1)
 lda <- grow(lda, 100)
 lda
-# An LDA model with 4 topics. Currently grown by 100 Gibbs sampling iterations.
+# An LDA model with 3 topics. Currently grown by 100 Gibbs sampling iterations.
 # ------------------Useful methods------------------
 # grow      :Iterates the model using Gibbs sampling
 # topics    :Return the most important topic of each document
@@ -64,46 +75,35 @@ or to use some helper functions.
 # The document-topic distributions
 head(lda$theta) 
 #       topic
-# doc_id     topic1    topic2     topic3     topic4
-#    1_1 0.04761905 0.8095238 0.04761905 0.09523810
-#    1_2 0.03703704 0.8888889 0.03703704 0.03703704
-#    1_3 0.10000000 0.7000000 0.10000000 0.10000000
-#    1_4 0.42857143 0.4285714 0.07142857 0.07142857
-#    1_5 0.06666667 0.7333333 0.13333333 0.06666667
-#    1_6 0.11111111 0.6666667 0.11111111 0.11111111
+# doc_id      topic1    topic2      topic3
+#    1_1 0.005780347 0.9884393 0.005780347
+#    1_2 0.004291845 0.9914163 0.004291845
+#    1_3 0.015873016 0.9682540 0.015873016
+#    1_4 0.009708738 0.9805825 0.009708738
+#    1_5 0.008849558 0.9823009 0.008849558
+#    1_6 0.006993007 0.9160839 0.076923077
 # The document-topic in a 'long' format & optionally with meta-data
 head(melt(lda, include_docvars = FALSE))
-#     topic .id       prob
-# 1: topic1 1_1 0.04761905
-# 2: topic1 1_2 0.03703704
-# 3: topic1 1_3 0.10000000
-# 4: topic1 1_4 0.42857143
-# 5: topic1 1_5 0.06666667
-# 6: topic1 1_6 0.11111111
+#     topic .id        prob
+# 1: topic1 1_1 0.005780347
+# 2: topic1 1_2 0.004291845
+# 3: topic1 1_3 0.015873016
+# 4: topic1 1_4 0.009708738
+# 5: topic1 1_5 0.008849558
+# 6: topic1 1_6 0.006993007
 # The most probable words per topic
 topWords(lda, output = "matrix") 
-#       topic1            topic2              topic3           
-#  [1,] "price"           "fiscal"            "monetary"       
-#  [2,] "inflation"       "governing_council" "growth"         
-#  [3,] "development"     "country"           "rate"           
-#  [4,] "pressure"        "policy"            "loan"           
-#  [5,] "inflation_rate"  "euro_area"         "financial"      
-#  [6,] "annual"          "reform"            "interest_rate"  
-#  [7,] "increase"        "structural"        "credit"         
-#  [8,] "projection"      "growth"            "annual"         
-#  [9,] "price_stability" "meeting"           "monetary_policy"
-# [10,] "hicp"            "market"            "bank"           
-#       topic4             
-#  [1,] "euro_area"        
-#  [2,] "growth"           
-#  [3,] "economic"         
-#  [4,] "risk"             
-#  [5,] "quarter"          
-#  [6,] "real"             
-#  [7,] "economy"          
-#  [8,] "market"           
-#  [9,] "economic_activity"
-# [10,] "recovery"
+#       topic1        topic2              topic3           
+#  [1,] "growth"      "governing_council" "euro_area"      
+#  [2,] "annual"      "fiscal"            "economic"       
+#  [3,] "rate"        "euro_area"         "growth"         
+#  [4,] "price"       "country"           "price"          
+#  [5,] "loan"        "growth"            "risk"           
+#  [6,] "monetary"    "policy"            "inflation"      
+#  [7,] "inflation"   "reform"            "development"    
+#  [8,] "euro_area"   "structural"        "price_stability"
+#  [9,] "development" "market"            "quarter"        
+# [10,] "financial"   "bank"              "outlook"
 ```
 
 Two visualization are also implemented: `plot_topWords()` display the
@@ -116,9 +116,10 @@ plot(lda)
 
 <img src="man/figures/README-plot-lda-1.png" style="display: block; margin: auto;" />
 
-After properly incorporating date and sentiment metadata data (if they are
-not already present in the `tokens` input), time series functions allows
-to study the evolution of topic proportions and related sentiment.
+After properly incorporating date and sentiment metadata data (if they
+are not already present in the `tokens` input), time series functions
+allows to study the evolution of topic proportions and related
+sentiment.
 
 ``` r
 sentopics_date(lda)  |> head(2)
@@ -130,9 +131,9 @@ sentopics_sentiment(lda) |> head(2)
 # 1: 1_1 -0.01470588
 # 2: 1_2 -0.02500000
 proportion_topics(lda, period = "month") |> head(2)
-#               topic1    topic2    topic3    topic4
-# 1998-06-01 0.1233053 0.6463265 0.1139985 0.1163698
-# 1998-07-01 0.1262036 0.4980435 0.2047400 0.1710129
+#                topic1    topic2     topic3
+# 1998-06-01 0.04004786 0.9100265 0.04992568
+# 1998-07-01 0.17387955 0.7276814 0.09843903
 plot_sentiment_breakdown(lda, period = "quarter", rolling_window = 3)
 ```
 
@@ -145,6 +146,6 @@ introduction to the features of the package. Because the package is not
 yet on CRAN, you’ll have to build the vignettes locally.
 
 ``` r
-devtools::install_github("odelmarcelle/sentopics", build_vignettes = TRUE)
-vignette(package = "sentopics")
+vignette("Basic_usage", package = "sentopics")
+vignette("Topical_time_series", package = "sentopics")
 ```

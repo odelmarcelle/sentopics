@@ -1,6 +1,7 @@
 #ifndef	MODEL_H
 #define	MODEL_H
 
+#include <memory>  // Fixes failed installation on linux gcc
 #include <RcppArmadillo.h>
 #include <progress.hpp>       // import progress bar functionality
 #include <progress_bar.hpp>   // import progress bar functionality

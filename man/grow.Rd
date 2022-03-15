@@ -8,7 +8,6 @@ grow(
   x,
   iterations = 100,
   nChains = 1,
-  nCores = 1,
   displayProgress = TRUE,
   computeLikelihood = TRUE,
   seed = NULL
@@ -22,9 +21,6 @@ grow(
 \item{nChains}{if set above 1, the model will be grown into multiple chains
 from various starting positions. Latent variables will be re-initialized if
 \code{x} has not been grown before.}
-
-\item{nCores}{if \code{nChains} is greater than 1, this allows to compute the the
-multiple chains in a parallel setting}
 
 \item{displayProgress}{if \code{TRUE}, a progress bar will be displayed indicating
 the progress of the computation. Disabled when \code{nChains} is greater than 1.}
@@ -42,16 +38,27 @@ than 1.
 }
 \description{
 This function is used to estimate a topic model created by
-\code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}}. In essence, this function
-iterates a Gibbs sampler MCMC.
+\code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}}. In essence, this function iterates a Gibbs
+sampler MCMC.
 }
+\section{Parallelism}{
+ When \code{nChains > 1}, the function can take advantage of
+\link[future.apply:future_lapply]{future.apply::future_lapply} (if installed) to spread the computation over
+multiple processes. This requires the specification of a parallel strategy
+using \code{\link[future:plan]{future::plan()}}. See the examples below.
+}
+
 \examples{
 model <- rJST(ECB_press_conferences_tokens)
 grow(model, 10)
+
+# -- Parallel computation --
+require(future.apply)
+future::plan("multisession", workers = 2) # Set up 2 workers
+grow(model, 10, nChains = 2)
+
+future::plan("sequential") # Shut down workers
 }
 \seealso{
 \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}}, \code{\link[=reset]{reset()}}
-}
-\author{
-Olivier Delmarcelle
 }

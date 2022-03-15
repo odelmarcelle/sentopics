@@ -4,7 +4,7 @@
 \alias{chainsScores}
 \title{Compute scores of topic models (chains)}
 \usage{
-chainsScores(x, window = 110, nWords = 10, nCores = 1)
+chainsScores(x, window = 110, nWords = 10)
 }
 \arguments{
 \item{x}{a valid \code{multiChains} object, obtained through the estimation of a
@@ -17,9 +17,6 @@ determining a new window size for all measures.}
 
 \item{nWords}{the number of words used to compute coherence. See
 \code{\link[=coherence]{coherence()}}.}
-
-\item{nCores}{allows for parallel computation by setting a number greater
-than 1.}
 }
 \value{
 A \code{data.table} with some statistics about each chain. For the
@@ -30,11 +27,25 @@ of a chain
 Compute various scores (log likelihood, coherence) for a list of topic
 models.
 }
+\section{Parallelism}{
+ When \code{nChains > 1}, the function can take advantage of
+\link[future.apply:future_lapply]{future.apply::future_lapply} (if installed) to spread the computation over
+multiple processes. This requires the specification of a parallel strategy
+using \code{\link[future:plan]{future::plan()}}. See the examples below.
+}
+
 \examples{
 model <- LDA(ECB_press_conferences_tokens[1:10])
 model <- grow(model, 10, nChains = 5)
 chainsScores(model, window = 5)
 chainsScores(model, window = "boolean")
+
+# -- Parallel computation --
+require(future.apply)
+future::plan("multisession", workers = 2) # Set up 2 workers
+chainsScores(model, window = "boolean")
+
+future::plan("sequential") # Shut down workers
 
 }
 \seealso{

@@ -353,8 +353,6 @@ chainsDistances <- function(x,
 #'   topic model using [grow()] and the argument `nChains` greater than `1`.
 #' @param nWords the number of words used to compute coherence. See
 #'   [coherence()].
-#' @param nCores allows for parallel computation by setting a number greater
-#'   than 1.
 #' @param window optional. If `NULL`, use the default window for each coherence
 #'   metric (10 for C_NPMI and 110 for C_V). It is possible to override these
 #'   default windows by providing an integer or `"boolean"` to this argument,
@@ -364,16 +362,25 @@ chainsDistances <- function(x,
 #'   coherence metrics, the value shown is the mean coherence across all topics
 #'   of a chain
 #'
+#' @inheritSection grow Parallelism
+#'
 #' @examples
 #' model <- LDA(ECB_press_conferences_tokens[1:10])
 #' model <- grow(model, 10, nChains = 5)
 #' chainsScores(model, window = 5)
 #' chainsScores(model, window = "boolean")
+#' 
+#' # -- Parallel computation --
+#' require(future.apply)
+#' future::plan("multisession", workers = 2) # Set up 2 workers
+#' chainsScores(model, window = "boolean")
+#'
+#' future::plan("sequential") # Shut down workers
 #'
 #' @seealso [chainsDistances()] [coherence()]
 #'
 #' @export
-chainsScores <- function(x, window = 110, nWords = 10, nCores = 1) {
+chainsScores <- function(x, window = 110, nWords = 10) {
   if (!inherits(x, "multiChains")) stop("Please provide a correct multiChains object")
 
   ## CMD check
@@ -385,47 +392,33 @@ chainsScores <- function(x, window = 110, nWords = 10, nCores = 1) {
   } else {
     NPMIsW <- NPMIs10 <- computeNPMI(x$tokens, window)
   }
-
-  ### maybe not the most proper way to do this but...
-  oopts <- options("doFuture.foreach.export" = ".export")
   
-  ## multiple chain setup is built based on parallel computation, if no back-end it will behave sequentially
-  doFuture::registerDoFuture()
-  if (nCores > 1) {
-    cl <- parallel::makeCluster(nCores)
-    oplan <- future::plan("cluster", workers = cl)
-    on.exit({
-      future::plan(oplan)
-      parallel::stopCluster(cl)
-      options(oopts)
-    })
+  FUN <- function(x) {
+    score <- data.table::data.table(
+      # name = name,
+      logLikelihood = c(utils::tail(x$logLikelihood, 1)),
+      max_logLikelihood = max(x$logLikelihood)
+    )
+    if (score$logLikelihood == 0) {
+      multLikelihood <- get("multLikelihood",
+                            envir = getNamespace("sentopics"))
+      score$logLikelihood <- multLikelihood(x)[1, 1]
+    }
+    ## Coherence measures
+    score$C_NPMI <- mean(sentopics::coherence(x, nWords, method = "C_NPMI", NPMIs = NPMIs10))
+    score$C_V <- mean(sentopics::coherence(x, nWords, method = "C_V", NPMIs = NPMIsW))
+    score
+  }
+  if (requireNamespace("future.apply", quietly = TRUE)) {
+    environment(FUN) <- globalenv()
+    chainsScores <- future.apply::future_sapply(
+      x, FUN, future.seed = FALSE,
+      future.globals = list(
+        nWords = nWords, NPMIsW = NPMIsW, NPMIs10 = NPMIs10
+      ))
   } else {
-    on.exit(options(oopts))
+    chainsScores <- sapply(x, FUN)
   }
   
-  chainsScores <- foreach::foreach(
-    x = x, name = names(x), .combine = 'rbind',
-    .export = c("NPMIsW", "NPMIs10", "iterations", "nWords"),
-    .packages = "sentopics") %dopar% {
-      
-      score <- data.table::data.table(
-        name = name,
-        logLikelihood = c(utils::tail(x$logLikelihood, 1)),
-        max_logLikelihood = max(x$logLikelihood)
-      )
-      if (score$logLikelihood == 0) {
-        multLikelihood <- get("multLikelihood",
-                                envir = getNamespace("sentopics"))
-        score$logLikelihood <- multLikelihood(x)[1, 1]
-      }
-      
-      ## Coherence measures
-      score$C_NPMI <- mean(coherence(x, nWords, method = "C_NPMI", NPMIs = NPMIs10))
-      score$C_V <- mean(coherence(x, nWords, method = "C_V", NPMIs = NPMIsW))
-      
-      score
-    }
-
-
-  chainsScores
+  t(chainsScores)
 }

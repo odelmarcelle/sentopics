@@ -14,22 +14,23 @@ grow(
 )
 }
 \arguments{
-\item{x}{a model created with the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}} function}
+\item{x}{a model created with the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}} function.}
 
-\item{iterations}{the number of iterations by which the model should be grown}
+\item{iterations}{the number of iterations by which the model should be
+grown.}
 
-\item{nChains}{if set above 1, the model will be grown into multiple chains
+\item{nChains}{if set above 1, the model will be grown into multiple chains.
 from various starting positions. Latent variables will be re-initialized if
 \code{x} has not been grown before.}
 
 \item{displayProgress}{if \code{TRUE}, a progress bar will be displayed indicating
-the progress of the computation. Disabled when \code{nChains} is greater than 1.}
+the progress of the computation. When \code{nChains} is greater than 1, this
+requires the package \pkg{progressr}.}
 
-\item{computeLikelihood}{boolean. If set to FALSE, does not compute the
-likelihood at each iteration. This can slightly decrease the computing
-time.}
+\item{computeLikelihood}{fi set to \code{FALSE}, does not compute the likelihood
+at each iteration. This can slightly decrease the computing time.}
 
-\item{seed}{for reproducibility, a seed can be provided}
+\item{seed}{for reproducibility, a seed can be provided.}
 }
 \value{
 a \code{sentopicmodel} of the relevant model class if \code{nChains} is

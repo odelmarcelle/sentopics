@@ -267,7 +267,7 @@ plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosin
 #'   `x` has not been grown before.
 #' @param displayProgress if `TRUE`, a progress bar will be displayed indicating
 #'   the progress of the computation. When `nChains` is greater than 1, this
-#'   requires the package \pkg{progressr}.
+#'   requires the package \pkg{progressr} and optionally \pkg{progress}.
 #' @param computeLikelihood fi set to `FALSE`, does not compute the likelihood
 #'   at each iteration. This can slightly decrease the computing time.
 #' @param seed for reproducibility, a seed can be provided.
@@ -431,9 +431,7 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1,
                             difftime, units(difftime)),
           amount = 0.001)
         },
-        handlers = progressr::handler_progress(
-          format = ":spin [:bar] :percent :message",
-          width = 60, clear = FALSE))
+        handlers = custom_handler())
     } else {
       chunkProgress <- iterations
       p <- function(...) {}
@@ -545,9 +543,7 @@ grow.multiChains <- function(x, iterations = 100, nChains = NULL,
                           difftime, units(difftime)),
         amount = 0.001)
     },
-    handlers = progressr::handler_progress(
-      format = ":spin [:bar] :percent :message",
-      width = 60, clear = FALSE))
+    handlers = custom_handler())
   } else {
     chunkProgress <- iterations
     p <- function(...) {}

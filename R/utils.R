@@ -763,6 +763,16 @@ reorder_func <- function(x, sep = "___") {
 
 # Experimental ---------------------------------------------------------
 
+custom_handler <- function() {
+  if (requireNamespace("progress", quietly = TRUE)) {
+    progressr::handler_progress(
+      format = ":spin [:bar] :percent :message",
+      width = 60, clear = FALSE)
+  } else {
+    progressr::handler_txtprogressbar(width = 60, clear = FALSE)
+  }
+}
+
 makeVocabulary <- function(toks, dictionary, S) {
   
   ## CMD checks

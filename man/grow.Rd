@@ -25,7 +25,7 @@ from various starting positions. Latent variables will be re-initialized if
 
 \item{displayProgress}{if \code{TRUE}, a progress bar will be displayed indicating
 the progress of the computation. When \code{nChains} is greater than 1, this
-requires the package \pkg{progressr}.}
+requires the package \pkg{progressr} and optionally \pkg{progress}.}
 
 \item{computeLikelihood}{fi set to \code{FALSE}, does not compute the likelihood
 at each iteration. This can slightly decrease the computing time.}

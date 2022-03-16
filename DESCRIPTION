@@ -45,6 +45,7 @@ Suggests:
     future,
     future.apply,
     progressr,
+    progress,
     testthat,
     covr,
     textcat,

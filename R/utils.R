@@ -145,7 +145,7 @@ reorder_sentopicmodel <- function(x) {
            "logLikelihood",
            "initLDA", "smooth", "L1cycle", "L2cycle")]
   x <- x[!sapply(x, is.null)]
-  class(x) <- c("sentopicmodel", "cLDA")
+  class(x) <- c("sentopicmodel")
   attr(x, "reversed") <- reversed
   attr(x, "Sdim") <- Sdim
   attr(x, "labels") <- labels

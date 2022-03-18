@@ -135,4 +135,17 @@ test_that("mergeTopics works", {
   proportion_topics(merged, period = "day")
 })
 
+test_that("rebuild counts from posterior works", {
+  rjst <- rJST(ECB_press_conferences_tokens)
+  rjst <- grow(rjst, 10, displayProgress = FALSE)
+  rjst <- as.sentopicmodel(rjst)
+  expect_equal(rebuild_zd_from_posterior(rjst), rebuild_zd(rjst))
+  expect_equal(rebuild_zw_from_posterior(rjst), rebuild_zw(rjst))
+  
+  lda <- LDA(ECB_press_conferences_tokens)
+  lda <- grow(lda, 10, displayProgress = FALSE)
+  lda <- as.sentopicmodel(lda)
+  expect_equal(rebuild_zd_from_posterior(lda), rebuild_zd(lda))
+  expect_equal(rebuild_zw_from_posterior(lda), rebuild_zw(lda))
+})
 

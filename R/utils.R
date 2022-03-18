@@ -181,12 +181,56 @@ core <- function(x) {
 rebuild_zd <- function(x) {
   wrapper_cpp_rebuild_zd(x$za, x$L1 * x$L2)
 }
+rebuild_L1d_from_posterior <- function(doc.length, L1post, L1prior) {
+  #### L1 frequencies from L1 post and L1 prior
+  L1D <- t(sapply(1:nrow(L1post), function(i) {
+    L1post[i, ] * (doc.length[i] + sum(L1prior)) - c(L1prior)},
+    USE.NAMES = FALSE))
+  L1D
+}
+rebuild_L2d_from_posterior <- function(L1D, L2post, L2prior) {
+  L1 <- ncol(L1D)
+  L2 <- dim(L2post)[1]
+  D <- nrow(L1D)
+  #### L2 frequencies from L1D, L2 post and L2 prior
+  
+  L2post <- L2post
+  dim(L2post) <- c(L1 * L2, D)
+  L2post <- t(L2post)
+  L1D_extended <- rep(t(L1D), each = L2)
+  dim(L1D_extended) <- c(L1 * L2, D)
+  L1D_extended <- t(L1D_extended)
+  L2sum_extended <-
+    rep(tapply(L2prior, rep(1:L1, each = L2), sum), each = L2)
+  L2D <- t(sapply(1:nrow(L2post), function(i) {
+    L2post[i, ] * (L1D_extended[i, ] + L2sum_extended) - c(L2prior)},
+    USE.NAMES = FALSE))
+}
+rebuild_zd_from_posterior <- function(x) {
+  doc.length = lengths(cleanPadding(x$tokens))
+  L1D <- rebuild_L1d_from_posterior(doc.length, x$L1post, x$L1prior)
+  L2D <- rebuild_L2d_from_posterior(L1D, x$L2post, x$L2prior)
+  t(unname(L2D))
+}
+
 rebuild_zw <- function(x, base = core(x), array = FALSE) {
   zw <- wrapper_cpp_rebuild_zw(cleanPadding(base$tokens), x$za, x$L1 * x$L2, nrow(base$vocabulary))
   if (array) array(zw, dim = c(x$L2, x$L1, nrow(base$vocabulary))) else zw
 }
-
-
+rebuild_zw_from_posterior <- function(x) {
+  rebuild_zw_from_posterior2(rebuild_zd_from_posterior(x), x$phi, x$beta)
+}
+rebuild_zw_from_posterior2 <- function(zd, phi, beta) {
+  #### WORD FREQUENCIES FROM PHI
+  zd_sum <- rowSums(zd)
+  Z <- nrow(zd)
+  D <- ncol(zd)
+  dim(phi) <- c(nrow(phi), Z)
+  zw <- t(sapply(1:Z, function(i) {
+    phi[, i] * (zd_sum[i] + sum(beta[i, ])) - c(beta[i, ])},
+    USE.NAMES = FALSE))
+  unname(zw)
+}
 
 
 

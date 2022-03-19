@@ -47,6 +47,7 @@
 mergeTopics <- function(x, merging_list){
   
   if (!inherits(x, c("LDA", "rJST"))) stop("`mergeTopics` is only implemented for LDA and rJST models.")
+  if (isTRUE(attr(x, "approx"))) stop("Not possible for approximated models")
   ## TODO: check that merging list is numeric or character
   if (length(merging_list) < 2) stop("The aggregation list should include at least two new topics.")
   if (is.null(names(merging_list)) | any(is.na(names(merging_list))) ) names(merging_list) <- paste0("theme", 1:length(merging_list))
@@ -77,13 +78,9 @@ mergeTopics <- function(x, merging_list){
 
   newK <- length(merging_list)
 
-  # x$za[[1]]
   reAssign <- rep(1:newK, times = lengths(merging_list))[order(unlist(merging_list, use.names = FALSE))]
   if (is.null(x$S)) S <- 1 else S <- x$S
   reAssignZa <- as.integer(sapply(reAssign, function(y) (y - 1) * S + 1:S))
-  # reAssign
-  # x$za[[1]]
-  # reAssign[x$za[[1]]]
   x$za <- lapply(x$za, function(x) reAssignZa[x])
 
   alpha <- matrix(0, newK, ncol(x$alpha))

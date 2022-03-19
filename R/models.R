@@ -92,6 +92,7 @@ rJST.LDA <- function(x,
                      gamma = 5, ...) {
   
   if (x$it < 1) stop("Requires an estimated LDA model.")
+  if (isTRUE(attr(x, "approx"))) stop("Not possible for approximated models")
   x <- as.sentopicmodel(x)
   x$L2 <- as.numeric(S)
   

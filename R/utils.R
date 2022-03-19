@@ -72,9 +72,13 @@ check_integrity <- function(x, detailed = FALSE, fast = TRUE) {
   if (!identical(dim(x$L2prior), as.integer(c(x$L1 * x$L2, 1)))) stop("Internal error in dimensions of priors.")
   if (!identical(dim(x$beta), as.integer(c(x$L1 * x$L2, length(quanteda::types(x$tokens)))))) stop("Internal error in dimensions of priors.")
 
-  tmp <- unlist(x$za, use.names = FALSE, recursive = FALSE)
-  zaRange <- c(min(tmp), max(tmp))
-  zaFlag <- zaRange[1] >= 1 && zaRange[2] <= (x$L1 * x$L2)
+  if (!is.null(x$za)) {
+    tmp <- unlist(x$za, use.names = FALSE, recursive = FALSE)
+    zaRange <- c(min(tmp), max(tmp))
+    zaFlag <- zaRange[1] >= 1 && zaRange[2] <= (x$L1 * x$L2) 
+  } else {
+    zaFlag <- TRUE
+  }
 
   ## can do twice faster using rcpp if ever needed..
   # //[[Rcpp::export(rng = false)]]
@@ -131,6 +135,7 @@ check_integrity <- function(x, detailed = FALSE, fast = TRUE) {
 }
 
 reorder_sentopicmodel <- function(x) {
+  approx <- isTRUE(attr(x, "approx"))
   x <- as.sentopicmodel(x)
   if (is.null(attr(x, "reversed"))) stop("Object corrupted, missing reversed attribute.")
   reversed <- attr(x, "reversed")
@@ -139,8 +144,7 @@ reorder_sentopicmodel <- function(x) {
   if (!is.null(x$IGNORE_CHECK)) return(x)
   x <- x[c("tokens", "vocabulary", "L1", "L2", "L1prior", "L2prior", "beta",
            "it",
-           "za",
-           # "zw", "zd",
+           if (approx) c("zd", "zw") else "za",
            "L1post", "L2post", "phi",
            "logLikelihood",
            "initLDA", "smooth", "L1cycle", "L2cycle")]
@@ -149,6 +153,7 @@ reorder_sentopicmodel <- function(x) {
   attr(x, "reversed") <- reversed
   attr(x, "Sdim") <- Sdim
   attr(x, "labels") <- labels
+  if (approx) attr(x, "approx") <- approx
   if (!check_integrity(x)) stop("Internal error when reordering the sentopicmodel object.") # this has an impact on subsetting performance.. consider removing or optimizing
   x
 }
@@ -179,6 +184,7 @@ core <- function(x) {
 }
 
 rebuild_zd <- function(x) {
+  if (!is.null(x$zd) & length(x$zd) > 0) return(x$zd)
   wrapper_cpp_rebuild_zd(x$za, x$L1 * x$L2)
 }
 rebuild_L1d_from_posterior <- function(doc.length, L1post, L1prior) {
@@ -214,7 +220,9 @@ rebuild_zd_from_posterior <- function(x) {
 }
 
 rebuild_zw <- function(x, base = core(x), array = FALSE) {
-  zw <- wrapper_cpp_rebuild_zw(cleanPadding(base$tokens), x$za, x$L1 * x$L2, nrow(base$vocabulary))
+  if (!is.null(x$zw) & length(x$zw) > 0) zw <- x$zw
+  else zw <- wrapper_cpp_rebuild_zw(cleanPadding(base$tokens), x$za,
+                                    x$L1 * x$L2, nrow(base$vocabulary))
   if (array) array(zw, dim = c(x$L2, x$L1, nrow(base$vocabulary))) else zw
 }
 rebuild_zw_from_posterior <- function(x) {
@@ -231,7 +239,6 @@ rebuild_zw_from_posterior2 <- function(zd, phi, beta) {
     USE.NAMES = FALSE))
   unname(zw)
 }
-
 
 
 # Posterior computations --------------------------------------------------

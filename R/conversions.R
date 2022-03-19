@@ -1,4 +1,144 @@
 
+# From other packages -----------------------------------------------------
+
+#' Conversions from other packages to LDA
+#'
+#' @description These functions converts estimated models from other topic
+#'   modeling packages to the format used by sentopics.
+#'
+#' @param x an estimated topic model from the \pkg{stm} package.
+#' @param docs for the conversion from \pkg{stm}, the documents used to create
+#'   the object.
+#'
+#' @details The models initially estimated through variational inference suffer
+#'   from restricted support. Hence, it is not possible to rename topics or to
+#'   merge them.
+#'
+#' @rdname as.LDA
+#' @export
+#' @examples
+#' library(stm)
+#' stm <- stm(poliblog5k.docs, poliblog5k.voc, K=25,
+#'            prevalence=~rating, data=poliblog5k.meta,
+#'            max.em.its=2, init.type="Spectral") 
+#' as.LDA(stm, docs = poliblog5k.docs)
+as.LDA <- function(x, ...) {
+  UseMethod("as.LDA")
+}
+#' @rdname as.LDA
+#' @export
+as.LDA.STM <- function(x, docs, ...) {
+  ## TODO: better identification of priors
+  ## mu + sigma for logistic-normal => translate to? using eta instead?
+  ## prior for beta? 0?
+  
+  K <- x$settings$dim$K
+  
+  doc.length <- as.integer(unlist(lapply(docs, function(x) sum(x[2, ]))))
+  theta <- x$theta
+  theta_prior <- rep(0, ncol(theta))
+  
+  zd <- rebuild_L1d_from_posterior(doc.length, theta, theta_prior)
+  zd <- t(zd)
+  
+  ## adjust zd to integer
+  diff <- doc.length - as.integer(colSums(round(zd)))
+  for (i in which(diff != 0)) {
+    while (diff[i] != 0L) {
+      possible <- zd[, i] > (-diff[i] - .5)
+      idx <- which.min( (zd[possible, i] - round(zd[possible, i])*diff[i] ))
+      zd[which(possible)[idx], i] <- zd[which(possible)[idx], i] + 1*sign(diff[i])
+      diff[i] <- as.integer(doc.length[i] - sum(round(zd[, i])))
+    }
+  }
+  zd <- round(zd)
+  storage.mode(zd) <- "integer"
+  stopifnot(isTRUE(all.equal(colSums(zd), doc.length)))
+  
+  
+  phi <- t(exp(x$beta$logbeta[[1]]))
+  beta <- t(phi)
+  beta[] <- .Machine$double.eps
+  
+  ## adjust zw to integer
+  zw <- rebuild_zw_from_posterior2(zd, phi, beta)
+  diff <- x$settings$dim$wcounts$x - as.integer(colSums(round(zw)))
+  for (i in which(diff != 0)) {
+    while (diff[i] != 0L) {
+      possible <- (zw[, i] > (-diff[i] - .5))
+      idx <- which.min( (zw[possible, i] - round(zw[possible, i])*diff[i] ))
+      zw[which(possible)[idx], i] <- zw[which(possible)[idx], i] + 1*sign(diff[i])
+      diff[i] <- as.integer(x$settings$dim$wcounts$x[i] - sum(round(zw[, i])))
+    }
+  }
+  zw <- round(zw)
+  diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
+  ## quickly adjust second dimension
+  while (any(diff2 < 0)) {
+    count <- 1L;
+    while (TRUE) {
+      non_zero <- length(zw[diff2 < 0][zw[diff2 < 0] > count])
+      deduct <- ceiling(abs(min(diff2))/non_zero)
+      if (deduct <= count) break
+      else count <- count + 1
+    }
+    zw[diff2 < 0][zw[diff2 < 0] > count] <- zw[diff2 < 0][zw[diff2 < 0] > count] - deduct 
+    diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
+  }
+  diff <- x$settings$dim$wcounts$x - as.integer(colSums(round(zw)))
+  zw <- zw + r2dtable(1, diff2, diff)[[1]]
+  storage.mode(zw) <- "integer"
+  stopifnot(isTRUE(all.equal(colSums(zw), x$settings$dim$wcounts$x)))
+  stopifnot(isTRUE(all.equal(rowSums(zw), rowSums(zd))))
+  
+  
+  ## Attempt to recreate ZA (not working)
+  # za <- rebuild_za_ARRAY(zd, zw)
+  # za <- lapply(seq_along(docs), function(d) {
+  #   do.call(c,
+  #           lapply(seq_along(x$vocab), function(v) {
+  #             rep(1:K, times = za[v, , d])
+  #           }))
+  # })
+  # 
+  # which(x$vocab=="price")
+  # t(za[786,,]) |> colSums()
+  # zw[, 786]
+  # 
+  # dw <- unname(convert(quanteda::dfm(tokens), "matrix")[, types(tokens)])
+  # storage.mode(dw) <- "integer"
+  
+  ## tokens
+  build_tokens <- get("build_tokens", envir = getNamespace("quanteda"))
+  make_docvars <- get("make_docvars", envir = getNamespace("quanteda"))
+  tokens <- build_tokens(
+    x = lapply(docs, function(doc) rep(doc[1, ], times = doc[2, ])),
+    types = x$vocab,
+    docvars = make_docvars(length(docs)))
+  stopifnot(isTRUE(all.equal(unname(lengths(tokens)), doc.length)))
+
+  vocabulary <- makeVocabulary(tokens, NULL, 1L)
+
+  LDA <- structure(list(
+    tokens = vocabulary$toks,
+    vocabulary = vocabulary$vocabulary,
+    K = K,
+    alpha = as.matrix(rep(0, K)),
+    beta = beta,
+    it = x$convergence$its,
+    zd = zd,
+    zw = zw,
+    theta = theta,
+    phi = phi,
+    logLikelihood = x$convergence$bound
+  ), class = c("LDA", "sentopicmodel"), reversed = TRUE, Sdim = "L2",
+  approx = TRUE)
+  LDA <- as.LDA(reorder_sentopicmodel(LDA))
+
+  LDA
+}
+
+
 
 # To sentopicmodel --------------------------------------------------------
 
@@ -105,14 +245,8 @@ as.sentopicmodel.default <- function(x) {
 
 # From sentopicmodel ------------------------------------------------------
 
-
-#' @rdname sentopics-conversions
 #' @export
-as.LDA <- function(x) {
-  UseMethod("as.LDA")
-}
-#' @export
-as.LDA.sentopicmodel <- function(x) {
+as.LDA.sentopicmodel <- function(x, ...) {
   rename <- stats::setNames(names(x), names(x))
   translate <- stats::setNames(
     c("K", "S", "alpha", "gamma", "theta", "pi", "alphaCycle", "gammaCycle", "logLikelihoodK", "logLikelihoodS"),
@@ -133,7 +267,7 @@ as.LDA.sentopicmodel <- function(x) {
   x
 }
 #' @export
-as.LDA.multiChains <- function(x) {
+as.LDA.multiChains <- function(x, ...) {
   # atrs <- attributes(x)
   # x <- lapply(unclass(x), as.LDA)
   # attributes(x) <- atrs
@@ -141,7 +275,7 @@ as.LDA.multiChains <- function(x) {
   x
 }
 #' @export
-as.LDA.default <- function(x) {
+as.LDA.default <- function(x, ...) {
   stop("Unexpected object passed to as.LDA")
 }
 

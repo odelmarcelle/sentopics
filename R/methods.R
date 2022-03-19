@@ -298,6 +298,7 @@ grow <- function(x, iterations = 100, nChains = 1, displayProgress = TRUE, compu
 }
 #' @export
 grow.LDA <- function(x, iterations = 100, nChains = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL) {
+  if (isTRUE(attr(x, "approx"))) stop("Not possible for approximated models")
   as.LDA(grow(as.sentopicmodel(x),
             iterations = iterations,
             nChains = nChains,

@@ -3,14 +3,11 @@
 \name{sentopics-conversions}
 \alias{sentopics-conversions}
 \alias{as.sentopicmodel}
-\alias{as.LDA}
 \alias{as.rJST}
 \alias{as.JST}
 \title{Internal conversions between \strong{sentopics} models.}
 \usage{
 as.sentopicmodel(x)
-
-as.LDA(x)
 
 as.rJST(x)
 

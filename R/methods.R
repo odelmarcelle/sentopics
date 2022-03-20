@@ -344,6 +344,9 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1,
     reorder_sentopicmodel(x)
   } else if (nChains > 1) {
     
+    ## CMD check
+    chains <- NULL
+    
     base <- core(x)
     core(x) <- NULL
     
@@ -452,6 +455,9 @@ grow.multiChains <- function(x, iterations = 100, nChains = NULL,
                              displayProgress = TRUE, computeLikelihood = TRUE,
                              seed = NULL) {
   start_time <- Sys.time()
+  
+  ## CMD check
+  chains <- NULL
   
   nChains <- attr(x, "nChains")
   base <- attr(x, "base")

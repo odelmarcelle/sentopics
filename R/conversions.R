@@ -9,6 +9,7 @@
 #' @param x an estimated topic model from the \pkg{stm} package.
 #' @param docs for the conversion from \pkg{stm}, the documents used to create
 #'   the object.
+#' @param ... arguments passed to other methods.
 #'
 #' @details The models initially estimated through variational inference suffer
 #'   from restricted support. Hence, it is not possible to rename topics or to
@@ -17,11 +18,13 @@
 #' @rdname as.LDA
 #' @export
 #' @examples
+#' \donttest{
 #' library(stm)
 #' stm <- stm(poliblog5k.docs, poliblog5k.voc, K=25,
 #'            prevalence=~rating, data=poliblog5k.meta,
 #'            max.em.its=2, init.type="Spectral") 
 #' as.LDA(stm, docs = poliblog5k.docs)
+#' }
 as.LDA <- function(x, ...) {
   UseMethod("as.LDA")
 }
@@ -86,7 +89,7 @@ as.LDA.STM <- function(x, docs, ...) {
     diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
   }
   diff <- x$settings$dim$wcounts$x - as.integer(colSums(round(zw)))
-  zw <- zw + r2dtable(1, diff2, diff)[[1]]
+  zw <- zw + stats::r2dtable(1, diff2, diff)[[1]]
   storage.mode(zw) <- "integer"
   stopifnot(isTRUE(all.equal(colSums(zw), x$settings$dim$wcounts$x)))
   stopifnot(isTRUE(all.equal(rowSums(zw), rowSums(zd))))

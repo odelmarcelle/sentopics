@@ -395,7 +395,7 @@ quanteda::as.tokens
 #' @seealso [quanteda::as.tokens()] [quanteda::dfm()]
 #' @export
 #' @examples
-#' library(quanteda)
+#' library("quanteda")
 #' dfm <- dfm(ECB_press_conferences_tokens, tolower = FALSE)
 #' dfm <- dfm_trim(dfm, min_termfreq = 200)
 #' as.tokens(dfm)
@@ -432,13 +432,29 @@ as.tokens.dfm <- function(x, concatenator = NULL, tokens = NULL, ignore_list = N
     # attr(res, "docvars") <- attr(x, "docvars")
     # res
     
+    # R CMD check
+    feature <- frequency <- document <- NULL
+    
     vocab <- colnames(x)
     docs <- rownames(x)
     colnames(x) <- seq_len(ncol(x))
-    docnames(x) <- seq_len(nrow(x))
+    quanteda::docnames(x) <- seq_len(nrow(x))
     tmp <- quanteda::convert(x, to = "tripletlist")
     tmp <- lapply(tmp, as.integer)
     data.table::setDT(tmp)
+
+    missing <- setdiff(seq_len(nrow(x)), unique(tmp$document))
+    
+    if (length(missing) > 0) {
+      tmp <- rbind(
+        tmp,
+        data.table::data.table(
+          document = missing,
+          feature = 1L,
+          frequency = 0L
+        ))
+    }
+    
     toks <- tmp[, list(toks = list(rep(feature, times = frequency))), by = document]
     toks <- toks[order(document)]
     

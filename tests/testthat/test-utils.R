@@ -20,6 +20,12 @@ test_that("as.tokens.dfm works", {
   expect_silent(rJST <- rJST(dfm))
   expect_silent(sentopicmodel <- sentopicmodel(dfm))
   expect_identical(as.tokens(dfm, tokens = toks), toks)
+  
+  dfm <- quanteda::dfm(ECB_press_conferences_tokens)
+  toks <- as.tokens.dfm(dfm)
+  expect_identical(nrow(dfm), length(toks))
+  expect_identical(colnames(dfm), quanteda::types(toks))
+  expect_equal(quanteda::rowSums(dfm), quanteda::ntoken(toks))
 })
 
 

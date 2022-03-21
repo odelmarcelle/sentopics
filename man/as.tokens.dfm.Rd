@@ -47,7 +47,7 @@ a quanteda \link[quanteda:tokens]{quanteda::tokens} object.
 Convert back a dfm to a tokens object
 }
 \examples{
-library(quanteda)
+library("quanteda")
 dfm <- dfm(ECB_press_conferences_tokens, tolower = FALSE)
 dfm <- dfm_trim(dfm, min_termfreq = 200)
 as.tokens(dfm)

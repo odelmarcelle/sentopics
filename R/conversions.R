@@ -423,11 +423,34 @@ as.tokens.dfm <- function(x, concatenator = NULL, tokens = NULL, ignore_list = N
     
     if (min(x) < 0) stop("Dfm input should not contain negative values")
     
+    
     #faster
-    tmp <- quanteda::convert(quanteda::t(x), to = "tripletlist")
-    word <- rep(tmp$document, times = tmp$frequency)
-    ff <- factor(rep(tmp$feature, times = tmp$frequency), rownames(x))
-    res <- as.tokens(split(word, ff))
+    # tmp <- quanteda::convert(quanteda::t(x), to = "tripletlist")
+    # word <- rep(tmp$document, times = tmp$frequency)
+    # ff <- factor(rep(tmp$feature, times = tmp$frequency), rownames(x))
+    # res <- as.tokens(split(word, ff))
+    # attr(res, "docvars") <- attr(x, "docvars")
+    # res
+    
+    vocab <- colnames(x)
+    docs <- rownames(x)
+    colnames(x) <- seq_len(ncol(x))
+    docnames(x) <- seq_len(nrow(x))
+    tmp <- quanteda::convert(x, to = "tripletlist")
+    tmp <- lapply(tmp, as.integer)
+    data.table::setDT(tmp)
+    toks <- tmp[, list(toks = list(rep(feature, times = frequency))), by = document]
+    toks <- toks[order(document)]
+    
+    build_tokens <- get("build_tokens", envir = getNamespace("quanteda"))
+    make_docvars <- get("make_docvars", envir = getNamespace("quanteda"))
+    
+    res <- build_tokens(
+      x = toks$toks,
+      types = vocab,
+      docvars = make_docvars(nrow(toks), docname = docs)
+    )
+    
     attr(res, "docvars") <- attr(x, "docvars")
     res
   }

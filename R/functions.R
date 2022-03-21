@@ -177,7 +177,8 @@ topWords_dt <- function(x,
            phiStats[, L2 := 1L]
          }
   )
-  topWords <- phiStats[order(-value), utils::head(.SD, nWords), by = list(L1, L2)][order(L1, L2)]
+  topWords <- phiStats[order(-value, word), utils::head(.SD, nWords),
+                       by = list(L1, L2)][order(L1, L2)]
   class(topWords) <- c("topWords", class(phiStats))
   attr(topWords, "method") <- method
   topWords

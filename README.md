@@ -37,7 +37,7 @@ LDA model is easily created from a list of tokenized texts. See
 pre-processing functions.
 
 ``` r
-library(sentopics)
+library("sentopics")
 print(ECB_press_conferences_tokens, 2)
 # Tokens consisting of 3,860 documents and 5 docvars.
 # 1_1 :

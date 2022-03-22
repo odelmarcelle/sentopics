@@ -26,7 +26,7 @@ The package is shipped with a sample of press conferences from the European Cent
 The press conferences were obtained from [ECB's website](https://www.ecb.europa.eu/press/key/html/index.en.html). The package also provides an helper function to replicate the creation of the dataset: `get_ECB_press_conferences()`
 
 ```{r}
-library(sentopics)
+library("sentopics")
 data("ECB_press_conferences_tokens")
 print(ECB_press_conferences_tokens, 3)
 head(docvars(ECB_press_conferences_tokens))

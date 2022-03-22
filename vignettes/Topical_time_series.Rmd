@@ -24,9 +24,9 @@ knitr::opts_chunk$set(
 The example dataset shipped with the package already contains two *docvars*: `.date` and `.sentiment`. Using these exact names, these two will be considered as internal dates and internal sentiment by `sentopics` when creating a topic model. Those values may be accessed or modified through the helper functions `sentopics_date()` and `sentopics_sentiment()`.
 
 ```{r message=FALSE}
-library(xts)
-library(data.table)
-library(sentopics)
+library("xts")
+library("data.table")
+library("sentopics")
 data("ECB_press_conferences_tokens")
 head(docvars(ECB_press_conferences_tokens))
 set.seed(123)

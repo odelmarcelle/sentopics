@@ -1,6 +1,6 @@
 
 context("Tests for multiple and parallel chains")
-library(future)
+library("future")
 plan(sequential)
 
 vocab <- generateVocab(nTopics = 5, nSentiments = 3, nWords = 5, nCommonWords = 2)

@@ -45,7 +45,7 @@ The development version requires the appropriate tools to compile C++ and Fortra
 Using a sample of press conferences from the European Central Bank, an LDA model is easily created from a list of tokenized texts. See https://quanteda.io for details on `tokens` input objects and pre-processing functions.
 
 ``` {r}
-library(sentopics)
+library("sentopics")
 print(ECB_press_conferences_tokens, 2)
 set.seed(123)
 lda <- LDA(ECB_press_conferences_tokens, K = 3, alpha = .1)

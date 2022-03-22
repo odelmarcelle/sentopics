@@ -109,7 +109,7 @@ test_that("from topicmodels", {
   # check top words
   expect_equal(
     terms(vem, k = 10),
-    topWords(LDA, output = "matrix"),
+    topWords(LDA, output = "matrix", method = "probability"),
     check.attributes = FALSE
   )
   

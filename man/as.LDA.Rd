@@ -3,31 +3,91 @@
 \name{as.LDA}
 \alias{as.LDA}
 \alias{as.LDA.STM}
+\alias{as.LDA.LDA_Gibbs}
+\alias{as.LDA.LDA_VEM}
+\alias{as.LDA.textmodel_lda}
+\alias{as.LDA_lda}
 \title{Conversions from other packages to LDA}
 \usage{
 as.LDA(x, ...)
 
 \method{as.LDA}{STM}(x, docs, ...)
+
+\method{as.LDA}{LDA_Gibbs}(x, docs, ...)
+
+\method{as.LDA}{LDA_VEM}(x, docs, ...)
+
+\method{as.LDA}{textmodel_lda}(x, ...)
+
+as.LDA_lda(list, docs, alpha, eta)
 }
 \arguments{
-\item{x}{an estimated topic model from the \pkg{stm} package.}
+\item{x}{an estimated topic model from \pkg{stm}, \pkg{topicmodels} or
+\pkg{seededlda}.}
 
-\item{docs}{for the conversion from \pkg{stm}, the documents used to create
-the object.}
+\item{...}{arguments passed to other methods.}
+
+\item{docs}{for some objects, the documents used to initialize the model.}
+
+\item{list}{the list containing an estimated model from \pkg{lda}.}
+
+\item{alpha}{for \pkg{lda} models, the document-topic mixture hyperparameter.
+If missing, the hyperparameter will be set to \code{50/K}.}
+
+\item{eta}{for \pkg{lda} models, the topic-word mixture hyperparameter. Other
+packages refer to this hypeparameter as \emph{beta}. If missing, the
+hyperparameter will be set to \code{0.01}.}
+}
+\value{
+A S3 list of class \code{LDA}, as if it was created and estimated using
+\code{\link[=LDA]{LDA()}} and \code{\link[=grow]{grow()}}.
 }
 \description{
 These functions converts estimated models from other topic
-modeling packages to the format used by sentopics.
+modeling packages to the format used by \pkg{sentopics}.
 }
 \details{
-The models initially estimated through variational inference suffer
-from restricted support. Hence, it is not possible to rename topics or to
-merge them.
+Some models do not store the topic assignment of each word (for
+example, estimated through variational inference). For these, the
+conversion is limited and some functionalities of \pkg{sentopics} will be
+disabled. The list of affected functions is subject to change and currently
+includes \code{\link[=grow]{grow()}}, \code{\link[=mergeTopics]{mergeTopics()}} and \code{\link[=rJST.LDA]{rJST.LDA()}}.
+
+Since models from the \pkg{lda} package are simply lists of outputs, the
+function \code{as.LDA_lda()} is not related to the other methods and should be
+applied directly on lists containing a model.
 }
 \examples{
-library(stm)
+\donttest{
+## stm
+library("stm")
 stm <- stm(poliblog5k.docs, poliblog5k.voc, K=25,
            prevalence=~rating, data=poliblog5k.meta,
-           max.em.its=2, init.type="Spectral") 
+           max.em.its=2, init.type="Spectral")
 as.LDA(stm, docs = poliblog5k.docs)
+
+## lda
+library("lda")
+data("cora.documents")
+data("cora.vocab")
+lda <- lda.collapsed.gibbs.sampler(cora.documents,
+                                   5, ## Num clusters
+                                   cora.vocab,
+                                   100, ## Num iterations
+                                   0.1,
+                                   0.1)
+LDA <- as.LDA_lda(lda, cora.documents, alpha = .1, eta = .1)
+
+## topicmodels
+data("AssociatedPress", package = "topicmodels")
+lda <- topicmodels::LDA(AssociatedPress[1:20,],
+                        control = list(alpha = 0.1), k = 2)
+LDA <- as.LDA(lda, AssociatedPress[1:20,])
+
+## seededlda
+library("seededlda")
+lda <- textmodel_lda(dfm(ECB_press_conferences_tokens),
+                     k = 6, max_iter = 100)
+LDA <- as.LDA(lda)
+}
 }

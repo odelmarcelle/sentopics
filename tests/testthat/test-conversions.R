@@ -157,7 +157,7 @@ test_that("from seededlda", {
   expect_silent(topWords(LDA))
   
   # check top words
-  lda$phi <- lda$phi[, order(colnames(lda$phi))] # force correct order
+  slda$phi <- slda$phi[, order(colnames(slda$phi))] # force correct order
   expect_identical(
     topWords(LDA, output = "matrix", method = "probability"),
     terms(slda)

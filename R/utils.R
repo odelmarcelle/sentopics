@@ -774,11 +774,15 @@ recompileVocabulary <- function(x) {
   x$logLikelihood <- NULL
   x$phi <- x$L2post <- x$L1post <- NULL
 
-  cpp_model <- rebuild_cppModel(x, core(x))
-  cpp_model$initBetaLex(stats::median(x$beta))
+  base <- core(x)
+  cpp_model <- rebuild_cppModel(x, base)
+  beta <- stats::median(x$beta)
+  if (isTRUE(all.equal(beta, 0)))
+    beta <- utils::head(unique(x$beta[x$beta > 0]), 1)
+  if (length(beta) == 0) beta <- 0.01
+  cpp_model$initBetaLex(beta)
   cpp_model$initAssignments()
-  # x <- utils::modifyList(x, extract_cppModel(cpp, core(x)))
-  tmp <- extract_cppModel(cpp_model, core(x))
+  tmp <- extract_cppModel(cpp_model, base)
   x[names(tmp)] <- tmp
 
   x$beta <- cpp_model$beta

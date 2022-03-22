@@ -336,7 +336,7 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1,
   if (nChains == 1) {
     if (!is.null(seed)) set.seed(seed * (x$it + 1))
     ## rebuild c++ model
-    base <- core(x)
+    base <- core(x) ## need to protect base$cleaned from gc
     cpp_model <- rebuild_cppModel(x, base)
     cpp_model$iterate(iterations, displayProgress, computeLikelihood)
     tmp <- extract_cppModel(cpp_model, base)
@@ -592,10 +592,11 @@ reset <- function(x) {
   x$logLikelihood <- NULL
   x$phi <- x$L2post <- x$L1post <- NULL
   
-  cpp_model <- rebuild_cppModel(x, core(x))
+  base <- core(x) ## need to protect base$cleaned from gc
+  cpp_model <- rebuild_cppModel(x, base)
   cpp_model$initAssignments()
   # x <- utils::modifyList(x, extract_cppModel(cpp_model, core(x)))
-  tmp <- extract_cppModel(cpp_model, core(x))
+  tmp <- extract_cppModel(cpp_model, base)
   x[names(tmp)] <- tmp
   
   

@@ -52,6 +52,8 @@ Suggests:
     lda,
     topicmodels,
     seededlda,
+    LDAvis,
+    servr,
     textcat,
     stringr,
     sentometrics,

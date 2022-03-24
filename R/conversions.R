@@ -386,6 +386,54 @@ as.LDA_lda <- function(list, docs, alpha, eta) {
   LDA
 }
 
+
+# To LDAvis ---------------------------------------------------------------
+
+
+#' Visualize a LDA model using \pkg{LDAvis}
+#'
+#' This function call \pkg{LDAvis} to create a dynamic visualization of an
+#' estimated topic model.
+#'
+#' @param x an `LDA` model
+#' @param ... further arguments passed on to [LDAvis::createJSON()] and
+#'   [LDAvis::serVis()].
+#'
+#' @details The CRAN release of \pkg{LDAvis} does not support UTF-8 characters
+#'   and automatically reorder topics. To solve these two issues, please install
+#'   the development version of \pkg{LDAvis} from github
+#'   (`devtools::install_github("cpsievert/LDAvis")`).
+#'
+#' @return Nothing, called for its side effects.
+#' @export
+#'
+#' @examples
+#' lda <- LDA(ECB_press_conferences_tokens)
+#' lda <- grow(lda, 100)
+#' LDAvis(lda)
+LDAvis <- function(x, ...) {
+  mis <- missingSuggets(c("LDAvis", "servr"))
+  if (length(mis) > 0) stop("Suggested packages are missing for the LDAvis function.\n",
+                            "Please install first the following packages: ",
+                            paste0(mis, collapse = ", "),".\n",
+                            "Install command: install.packages(",
+                            paste0("'", mis, "'", collapse = ", "),")" )
+  
+  stopifnot(inherits(x, c("LDA", "sentopicmodel")))
+  zw <- rebuild_zw(as.sentopicmodel(x))
+  zd <- rebuild_zd(as.sentopicmodel(x))
+  json <- LDAvis::createJSON(
+    phi = t(x$phi),
+    theta = x$theta,
+    doc.length = colSums(zd),
+    vocab = x$vocabulary$word,
+    term.frequency = colSums(zw),
+    reorder.topics = FALSE,
+    ...)
+  LDAvis::serVis(json, encoding = "UTF-8", ...)
+}
+
+
 # To sentopicmodel --------------------------------------------------------
 
 #' @name sentopics-conversions

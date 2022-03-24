@@ -38,5 +38,5 @@ plot(lda, nWords = 5)
 plot(lda, layers = 1)
 }
 \seealso{
-\code{\link[=topWords]{topWords()}}
+\code{\link[=topWords]{topWords()}} \code{\link[=LDAvis]{LDAvis()}}
 }

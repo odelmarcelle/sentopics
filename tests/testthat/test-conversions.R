@@ -171,3 +171,16 @@ test_that("from seededlda", {
   )
   
 })
+
+test_that("LDAvis", {
+  skip_if_not_installed("LDAvis")
+  skip_if_not_installed("servr")
+  
+  lda <- LDA(ECB_press_conferences_tokens)
+  lda <- grow(lda, 10, displayProgress = FALSE)
+  if (interactive())
+    expect_message(LDAvis(lda), "To stop the server,")
+  else
+    expect_silent(LDAvis(lda))
+  servr::daemon_stop()
+})

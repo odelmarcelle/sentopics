@@ -105,7 +105,7 @@ print.topWords <- function(x, ...) {
 #' @return A `plotly` sunburst chart.
 #'
 #' @export
-#' @seealso [topWords()]
+#' @seealso [topWords()] [LDAvis()]
 #' @examples 
 #' lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- grow(lda, 100)

@@ -30,3 +30,6 @@ lda <- LDA(ECB_press_conferences_tokens)
 lda <- grow(lda, 100)
 LDAvis(lda)
 }
+\seealso{
+\code{\link[=plot.sentopicmodel]{plot.sentopicmodel()}}
+}

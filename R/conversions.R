@@ -406,6 +406,8 @@ as.LDA_lda <- function(list, docs, alpha, eta) {
 #'
 #' @return Nothing, called for its side effects.
 #' @export
+#' 
+#' @seealso [plot.sentopicmodel()]
 #'
 #' @examples
 #' lda <- LDA(ECB_press_conferences_tokens)

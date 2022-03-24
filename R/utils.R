@@ -221,7 +221,7 @@ rebuild_zd_from_posterior <- function(x) {
 
 rebuild_zw <- function(x, base = core(x), array = FALSE) {
   if (!is.null(x$zw) & length(x$zw) > 0) zw <- x$zw
-  else zw <- wrapper_cpp_rebuild_zw(cleanPadding(base$tokens), x$za,
+  else zw <- wrapper_cpp_rebuild_zw(base$cleaned, x$za,
                                     x$L1 * x$L2, nrow(base$vocabulary))
   if (array) array(zw, dim = c(x$L2, x$L1, nrow(base$vocabulary))) else zw
 }

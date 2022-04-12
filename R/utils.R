@@ -629,7 +629,7 @@ floor_date <- function(x, period = c("day", "month", "quarter", "year")) {
   x <- as.POSIXlt(x)
   switch(period,
          week48 = {
-           d <- as.integer(ceiling(date$mday / 7))
+           d <- as.integer(ceiling(x$mday / 7))
            x$mday <- ifelse(d == 5L, 4L, d) * 7L
          },
          month = x$mday <- rep_len(1, length(x)),

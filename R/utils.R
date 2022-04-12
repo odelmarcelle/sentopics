@@ -415,7 +415,7 @@ invariantEuclideanOptim <- function(multiChains, L1 = multiChains[[1]]$L1,
   FUN_aggregate <- get(match.arg(FUN_aggregate))
   # if (S == 1) stop("invariantEuclidan is undefined for non-JST models.")
   strict <- TRUE
-  if (all(is.na(multiChains$vocabulary$lexicon)) && L2 > 1) {
+  if (all(is.na(multiChains[[1]]$vocabulary$lexicon)) && L2 > 1) {
     message("No lexicon detected, allowing permutations over sentiment labels.")
     strict <- FALSE
   }

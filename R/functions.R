@@ -332,7 +332,9 @@ chainsDistances <- function(x,
   if (!inherits(x, "multiChains")) stop("Please provide a correct multiChains object")
 
   x <- as.sentopicmodel(x)
-
+  # avoid copying base to each chain
+  x <- as.list(x, copy = FALSE)
+    
   method <- match.arg(method)
   switch(method,
          "cosine" = cosineDistances(x),
@@ -393,6 +395,9 @@ chainsScores <- function(x, window = 110, nWords = 10) {
   } else {
     NPMIsW <- NPMIs10 <- computeNPMI(x$tokens, window)
   }
+  
+  # avoid copying base to each chain # could be further optimized
+  x <- as.list(x, copy = FALSE)
   
   FUN <- function(x) {
     score <- data.table::data.table(

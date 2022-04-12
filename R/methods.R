@@ -773,13 +773,24 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
 }
 
 #' @export
-`as.list.multiChains` <- function(x, ...) {
-  res <- list()
+`as.list.multiChains` <- function(x, copy = TRUE, ...) {
+  x <- unclass(x)
   for (i in seq_along(x)) {
-    res[[i]] <- data.table::copy(x[[i]])
+    if (copy) core(x[[i]]) <- data.table::copy(attr(x, "base"))
+    else core(x[[i]]) <- attr(x, "base")
   }
-  names(res) <- names(x)
-  res
+  
+  fun <- get(paste0("as.", attr(x, "containedClass")))
+  x[] <- lapply(x, function(xi) fun(reorder_sentopicmodel(xi)))
+  attr(x, "base") <- NULL
+  x
+  
+  # res <- list()
+  # for (i in seq_along(x)) {
+  #   res[[i]] <- data.table::copy(x[[i]])
+  # }
+  # names(res) <- names(x)
+  # res
 }
 
 

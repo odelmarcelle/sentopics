@@ -4,16 +4,16 @@ vocab <- generateVocab(nTopics = 2, nSentiments = 3, nWords = 5, nCommonWords = 
 toks <- generateDocuments(vocab, nDocs = 10, L1prior = .1, L2prior = .1, nWords = 50, nClass = 1)
 lex <- generatePartialLexicon(toks)
 
-sentopicmodel1 <- sentopicmodel(toks, lex, initLDA = 2, smooth = 0, L1cycle = 1, L2cycle = 1)
-sentopicmodel2 <- sentopicmodel(toks, lex, initLDA = 0, smooth = 2, L1cycle = 1, L2cycle = 1)
-sentopicmodel3 <- sentopicmodel(toks, lex, initLDA = 2, smooth = 2, L1cycle = 1, L2cycle = 1)
+sentopicmodel1 <- sentopicmodel(L1 = 2, L2 = 3, toks, lex, initLDA = 20, smooth = 0, L1cycle = 10, L2cycle = 10)
+sentopicmodel2 <- sentopicmodel(L1 = 2, L2 = 3, toks, lex, initLDA = 0, smooth = 20, L1cycle = 10, L2cycle = 10)
+sentopicmodel3 <- sentopicmodel(L1 = 2, L2 = 3, toks, lex, initLDA = 20, smooth = 20, L1cycle = 10, L2cycle = 10)
 
 test_that("algo variations works", {
-  expect_silent(a <- grow(sentopicmodel1, 3, displayProgress = FALSE))
+  expect_silent(a <- grow(sentopicmodel1, 30, displayProgress = FALSE))
   expect_false(any(c(a$L1prior == 5, a$L2prior == 5)))
-  expect_silent(a <- grow(sentopicmodel2, 3, displayProgress = FALSE))
+  expect_silent(a <- grow(sentopicmodel2, 30, displayProgress = FALSE))
   expect_false(any(c(a$L1prior == 5, a$L2prior == 5)))
-  expect_silent(a <- grow(sentopicmodel3, 3, displayProgress = FALSE))
+  expect_silent(a <- grow(sentopicmodel3, 30, displayProgress = FALSE))
   expect_false(any(c(a$L1prior == 5, a$L2prior == 5)))
 })
 

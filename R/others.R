@@ -120,6 +120,7 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
 #'   pre-processing steps used to remove the Q&A section from the text.
 #'
 #' @param years the years for which press conferences should be retrieved
+#' @param language the language in which press conferences should be retrieved
 #' @param data.table if TRUE, returns a [data.table]. Otherwise, return a list
 #'   in which each element is a press conference.
 #'
@@ -172,12 +173,12 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
     {
       cleaned <- lapply(cleaned, function(html) {
         html <- gsub("&amp;", "&", html, fixed = TRUE)
-        html <- gsub("&nbsp;", " ", html, fixed = TRUE)
-        html <- gsub("&eacute;", "é", html, fixed = TRUE)
-        html <- gsub("&auml;", "ä", html, fixed = TRUE)
-        html <- gsub("&uuml;", "ü", html, fixed = TRUE)
-        html <- gsub("&szlig;", "ß", html,fixed = TRUE)
-        html <- gsub("&oacute;", "ó", html, fixed = TRUE)
+        html <- gsub("&nbsp;", "\u00A0", html, fixed = TRUE)
+        html <- gsub("&eacute;", "\u00C9", html, fixed = TRUE)
+        html <- gsub("&auml;", "\u00E4", html, fixed = TRUE)
+        html <- gsub("&uuml;", "\u00FC", html, fixed = TRUE)
+        html <- gsub("&szlig;", "\u00DF", html,fixed = TRUE)
+        html <- gsub("&oacute;", "\u00F3", html, fixed = TRUE)
       })
       
       check <- lapply(cleaned, function(html)

@@ -4,10 +4,16 @@
 \alias{get_ECB_press_conferences}
 \title{Download press conferences from the European Central Bank}
 \usage{
-get_ECB_press_conferences(years = 1998:2021, data.table = TRUE)
+get_ECB_press_conferences(
+  years = 1998:2021,
+  language = "en",
+  data.table = TRUE
+)
 }
 \arguments{
 \item{years}{the years for which press conferences should be retrieved}
+
+\item{language}{the language in which press conferences should be retrieved}
 
 \item{data.table}{if TRUE, returns a \link{data.table}. Otherwise, return a list
 in which each element is a press conference.}

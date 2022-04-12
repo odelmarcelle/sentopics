@@ -125,7 +125,7 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
 #'
 #' @return Depending on the arguments, returns either a data.frame or a
 #'   [quanteda::tokens] object containing press conferences of the ECB.
-get_ECB_press_conferences <- function(years = 1998:2021, data.table = TRUE) {
+get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.table = TRUE) {
   
   # R CMD check:
   paragraph_id <- doc_id <- sections <- NULL
@@ -142,11 +142,14 @@ get_ECB_press_conferences <- function(years = 1998:2021, data.table = TRUE) {
     unlink(file)
     
     ## Get press conferences
-    LIST <- paste0(
-      "https://www.ecb.europa.eu",
-      regmatches(html, gregexpr(r"(/press.*?\.en\.html)", html, perl = TRUE))[[1]]
-    ) |> unique()
     message(year)
+    LIST <- regmatches(html, gregexpr(sprintf(r"(/press.*?\.%s\.html)", language), html, perl = TRUE))[[1]]
+    if (length(LIST) == 0) return(list())
+    LIST <- paste0("https://www.ecb.europa.eu", LIST) |> unique()
+    # LIST <- paste0(
+    #   "https://www.ecb.europa.eu",
+    #   regmatches(html, gregexpr(sprintf(r"(/press.*?\.%s\.html)", language), html, perl = TRUE))[[1]]
+    # ) |> unique()
     LIST <- lapply(
       stats::setNames(LIST,
                regmatches(LIST, regexpr(r"([0-9]{6})", LIST, perl = TRUE)) |> as.Date(format = "%y%m%d")),
@@ -168,12 +171,18 @@ get_ECB_press_conferences <- function(years = 1998:2021, data.table = TRUE) {
     ## Correct html tags
     {
       cleaned <- lapply(cleaned, function(html) {
-        html <- gsub("&amp;", "&", html, perl = TRUE)
-        gsub("&nbsp;", " ", html, perl = TRUE)
+        html <- gsub("&amp;", "&", html, fixed = TRUE)
+        html <- gsub("&nbsp;", " ", html, fixed = TRUE)
+        html <- gsub("&eacute;", "é", html, fixed = TRUE)
+        html <- gsub("&auml;", "ä", html, fixed = TRUE)
+        html <- gsub("&uuml;", "ü", html, fixed = TRUE)
+        html <- gsub("&szlig;", "ß", html,fixed = TRUE)
+        html <- gsub("&oacute;", "ó", html, fixed = TRUE)
       })
+      
       check <- lapply(cleaned, function(html)
         regmatches(html, gregexpr(r"(&[A-Za-z]*?;)", html, perl = TRUE))[[1]])
-      if ( any(lengths(check) > 0) ) warning("Unknown html entity detected.")
+      if ( any(lengths(check) > 0) ) warning("Unknown html entity detected.: ", check)
     }
     
     lapply(LIST, function(html)

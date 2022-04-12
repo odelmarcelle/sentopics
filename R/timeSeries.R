@@ -603,14 +603,14 @@ sentiment_breakdown <- function(x,
     thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
     breakdown <- eval(substitute(
       proportions[, c(
-        list(date = .date, sentiment = sentiment),
+        list(.id = .id, date = .date, sentiment = sentiment),
         mapply(function(s_i, theta_i) s_i * theta_i,
                theta_i = .SD[, theta], s_i = .SD[, s],
                SIMPLIFY = FALSE))],
       list( s = sCols, theta = thetaCols)))
     # TODO: re-activate once data.table 1.14.3 is released.
     # breakdown <- proportions[, c(
-    #   list(date = .date, sentiment = sentiment),
+    #   list(.id = .id, date = .date, sentiment = sentiment),
     #   mapply(function(s_i, theta_i) s_i * theta_i,
     #          theta_i = .SD[, theta], s_i = .SD[, s],
     #          SIMPLIFY = FALSE)),
@@ -878,14 +878,14 @@ sentiment_topics <- function(x,
     thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
     topical_sent <- eval(substitute(
       proportions[, c(
-        list(date = .date),
+        list(.id = .id, date = .date),
         mapply(function(s_i, theta_i) s_i * theta_i,
                theta_i = .SD[, theta], s_i = .SD[, s],
                SIMPLIFY = FALSE))],
       list( s = sCols, theta = thetaCols)))
     # TODO: re-activate once data.table 1.14.3 is released.
     # topical_sent <- proportions[, c(
-    #   list(date = .date),
+    #   list(.id = .id, date = .date),
     #   mapply(function(s_i, theta_i) s_i * theta_i,
     #          theta_i = .SD[, theta], s_i = .SD[, s],
     #          SIMPLIFY = FALSE)),

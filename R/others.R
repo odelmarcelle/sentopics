@@ -142,7 +142,7 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
     
     ## Get press conferences
     message(year)
-    LIST <- regmatches(html, gregexpr(sprintf(r"(/press.*?\.%s\.html)", language), html, perl = TRUE))[[1]]
+    LIST <- regmatches(html, gregexpr(sprintf("/press.*?\\.%s\\.html", language), html, perl = TRUE))[[1]]
     if (length(LIST) == 0) return(list())
     LIST <- unique(paste0("https://www.ecb.europa.eu", LIST))
     # LIST <- paste0(
@@ -151,7 +151,7 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
     # ) |> unique()
     LIST <- lapply(
       stats::setNames(LIST, as.Date(
-        regmatches(LIST, regexpr(r"([0-9]{6})", LIST, perl = TRUE)), format = "%y%m%d")),
+        regmatches(LIST, regexpr("[0-9]{6}", LIST, perl = TRUE)), format = "%y%m%d")),
       function(url) {
       utils::download.file(
         url,
@@ -180,38 +180,38 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
       })
       
       check <- lapply(cleaned, function(html)
-        regmatches(html, gregexpr(r"(&[A-Za-z]*?;)", html, perl = TRUE))[[1]])
+        regmatches(html, gregexpr("&[A-Za-z]*?;", html, perl = TRUE))[[1]])
       if ( any(lengths(check) > 0) ) warning("Unknown html entity detected.: ", check)
     }
     
     lapply(LIST, function(html)
-      regmatches(html, gregexpr(r"(&[A-Za-z]*?;)", html, perl = TRUE))[[1]])
+      regmatches(html, gregexpr("&[A-Za-z]*?;", html, perl = TRUE))[[1]])
     
     cleaned <- lapply(cleaned, function(html) {
       
       ## Remove address-box at the end of the page
-      html <- regmatches(html, gregexpr(r"(<div class="address-box -top-arrow">(?s).*)", html, perl = TRUE), invert = TRUE)[[1]][1]
+      html <- regmatches(html, gregexpr("<div class=\"address-box -top-arrow\">(?s).*", html, perl = TRUE), invert = TRUE)[[1]][1]
       
       ## First attempt at removing questions
-      html <- sub(r"(<p>[ ]?(<em>)?[ ]?(<strong>)?[ ]?(<em>)?[ ]?"?[ ]?Question[ ]?(\(translation\))?:.*)", "", html, perl = TRUE)
+      html <- sub("<p>[ ]?(<em>)?[ ]?(<strong>)?[ ]?(<em>)?[ ]?\"?[ ]?Question[ ]?(\\(translation\\))?:.*", "", html, perl = TRUE)
       # regmatches(html, gregexpr(r"(<p>(<em>)?(<strong>)?(<em>)?"?[ ]?Question[ ]?(\(translation\))?:)", html, perl = TRUE), invert = FALSE)
       
       ## First attempt but based on last line of statement
-      html <- sub(r"(<p>[ ]?We are now at your disposal for questions.[ ]?</p>\K.*)", "", html, perl = TRUE)
-      html <- sub(r"(<p>[ ]?We are now ready to take your questions.[ ]?</p>\K.*)", "", html, perl = TRUE)
+      html <- sub("<p>[ ]?We are now at your disposal for questions.[ ]?</p>\\K.*", "", html, perl = TRUE)
+      html <- sub("<p>[ ]?We are now ready to take your questions.[ ]?</p>\\K.*", "", html, perl = TRUE)
       
       ## Second attempt at removing questions
-      html <- sub(r"(<h2[A-Za-z "=:]*?>(<strong>)?[ ]?Transcript of the [Qq]uestions.*?</h2>.*)", "", html, perl = TRUE)
+      html <- sub("<h2[A-Za-z \"=:]*?>(<strong>)?[ ]?Transcript of the [Qq]uestions.*?</h2>.*", "", html, perl = TRUE)
       
       ## Third attempt based on specific cases detected with kwic()
-      html <- sub(r"(<p>[ ]?(<strong>)?[ ]?My (first )?question would be.*)", "", html, perl = TRUE)
+      html <- sub("<p>[ ]?(<strong>)?[ ]?My (first )?question would be.*", "", html, perl = TRUE)
       
       
       
       title <- gsub("<.*?>", "", regmatches(html, gregexpr("<h1.*?>(?s).*?</h1>", html, perl = TRUE))[[1]])
       rest <- gsub("<h1.*?>(?s).*?</h1>", "", html, perl = TRUE)
       sections <- lapply(rest, function(html)
-        strsplit(html, r"((<div class="titlepage">)|(\* \* \*))", perl = TRUE)[[1]])[[1]]
+        strsplit(html, "(<div class=\"titlepage\">)|(\\* \\* \\*)", perl = TRUE)[[1]])[[1]]
       sections <- lapply(sections, function(html) {
         list(
           section_title = gsub("<.*?>", "", regmatches(html, gregexpr("<h2.*?>(?s).*?</h2>", html, perl = TRUE))[[1]])[1],

@@ -1245,7 +1245,8 @@ plot_proportion_topics <- function(x,
 days_period <- function(date, period) {
   if (period == "day") return(rep(1, length(date)))
   attributes(date)
-  tmp <- lapply(date, function(x)  rev(seq(x, by = period, length.out = 2)) ) |> data.table::transpose()
+  tmp <- data.table::transpose(
+    lapply(date, function(x)  rev(seq(x, by = period, length.out = 2)) ))
   for (i in seq_along(tmp)) {
     class(tmp[[i]]) <- "Date"
   }

@@ -11,7 +11,7 @@ test_that("prior population works", {
   expect_identical(sentopics_date(jst), data.table(.id = names(toks), .date = as.Date(ECB_press_conferences_tokens$.date)))
 })
 
-jst <- JST(toks, lexicon = LoughranMcDonald) |> grow(1, displayProgress = FALSE)
+jst <- grow(JST(toks, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
 
 
 sentopics_date(jst) <- NULL
@@ -66,21 +66,21 @@ sentopics_date(jst) <- ECB_press_conferences_tokens$.date
 
 test_that("sentiment_series works", {
   
-  jst <- JST(toks, lexicon = LoughranMcDonald) |> grow(1, displayProgress = FALSE)
+  jst <- grow(JST(toks, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
   s1_1 <- sentiment_series(jst)
   sentopics_sentiment(jst, override = TRUE)
   s2 <- sentiment_series(jst)
   expect_false(isTRUE(all.equal(s1_1, s2, check.attributes = FALSE)))
   
   
-  rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald) |> grow(1, displayProgress = FALSE)
+  rjst <- grow(rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
   sentopics_labels(jst) <- list(topic = paste0("superTopic", 1:jst$K))
   s1_2 <- sentiment_series(rjst)
   sentopics_sentiment(rjst, override = TRUE)
   s2 <- sentiment_series(rjst)
   expect_false(isTRUE(all.equal(s1_2, s2, check.attributes = FALSE)))
   
-  lda <- LDA(ECB_press_conferences_tokens) |> grow(1, displayProgress = FALSE)
+  lda <- grow(LDA(ECB_press_conferences_tokens), 1, displayProgress = FALSE)
   s1_3 <- sentiment_series(lda)
   
   expect_identical(s1_1, s1_2)

@@ -100,9 +100,7 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
   if (tokenize_w_POS) {
     spacyr::spacy_initialize(entity = FALSE)
     (parsed <- spacyr::spacy_parse(ECB_speeches$contents,
-                                   entity = FALSE, nounphrase = FALSE)) |>
-      system.time() |>
-      print()
+                                   entity = FALSE, nounphrase = FALSE))
     toks <- quanteda::as.tokens(subset(parsed, pos %in% c("NOUN", "ADJ", "PROPN")), use_lemma = TRUE)
     toks$.date <- as.Date(ECB_speeches$date)
     if (compute_sentiment) toks$.sentiment <- ECB_speeches$sentiment
@@ -146,21 +144,21 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
     message(year)
     LIST <- regmatches(html, gregexpr(sprintf(r"(/press.*?\.%s\.html)", language), html, perl = TRUE))[[1]]
     if (length(LIST) == 0) return(list())
-    LIST <- paste0("https://www.ecb.europa.eu", LIST) |> unique()
+    LIST <- unique(paste0("https://www.ecb.europa.eu", LIST))
     # LIST <- paste0(
     #   "https://www.ecb.europa.eu",
     #   regmatches(html, gregexpr(sprintf(r"(/press.*?\.%s\.html)", language), html, perl = TRUE))[[1]]
     # ) |> unique()
     LIST <- lapply(
-      stats::setNames(LIST,
-               regmatches(LIST, regexpr(r"([0-9]{6})", LIST, perl = TRUE)) |> as.Date(format = "%y%m%d")),
+      stats::setNames(LIST, as.Date(
+        regmatches(LIST, regexpr(r"([0-9]{6})", LIST, perl = TRUE)), format = "%y%m%d")),
       function(url) {
       utils::download.file(
         url,
         file <- tempfile(),
         quiet = TRUE)
       # html <- readChar(file, file.info(file)$size)
-      html <- readLines(file, encoding = "UTF-8", warn = FALSE) |> paste0(collapse = "")
+      html <- paste0(readLines(file, encoding = "UTF-8", warn = FALSE), collapse = "")
       unlink(file)
       html
     })
@@ -307,10 +305,10 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
 compute_PicaultRenault_scores <- function(x, min_ngram = 2, return_dfm = FALSE) {
   PicaultRenault <- PicaultRenault[PicaultRenault$ngram >= min_ngram, ]
   x <- quanteda::tokens(x, remove_numbers = TRUE, remove_punct = TRUE,
-                        remove_symbols = TRUE, remove_separators = FALSE) |>
-    quanteda::tokens_remove(" ") |> 
-    quanteda::tokens_wordstem() |> 
-    quanteda::tokens_tolower()
+                        remove_symbols = TRUE, remove_separators = FALSE)
+  x <- quanteda::tokens_remove(x, " ") 
+  x <- quanteda::tokens_wordstem(x) 
+  x <- quanteda::tokens_tolower(x)
   
   x <- quanteda::tokens_compound(
     x,
@@ -330,7 +328,7 @@ compute_PicaultRenault_scores <- function(x, min_ngram = 2, return_dfm = FALSE) 
   MP <- quanteda::as.dfm(weighted_dfms$mp_rest - weighted_dfms$mp_acco)
   # MP <- MP/sum(Reduce(`+`, weighted_dfms[c("mp_acco", "mp_neut", "mp_rest")]))
   denom <- as.matrix(Reduce(`+`, weighted_dfms[c("mp_acco", "mp_neut", "mp_rest")]))
-  denom <- rowSums(denom) |> stats::aggregate(mean, by = list(doc = quanteda::docid(dfm)))
+  denom <- stats::aggregate(rowSums(denom), mean, by = list(doc = quanteda::docid(dfm)))
   ## Prevents 0 denominator
   denom$x[denom$x < sqrt(.Machine$double.eps)] <- sqrt(.Machine$double.eps)
   MP <- as.matrix(MP)
@@ -342,7 +340,7 @@ compute_PicaultRenault_scores <- function(x, min_ngram = 2, return_dfm = FALSE) 
   
   EC <- quanteda::as.dfm(weighted_dfms$ec_posi - weighted_dfms$ec_nega)
   denom <- as.matrix(Reduce(`+`, weighted_dfms[c("ec_nega", "ec_neut", "ec_posi")]))
-  denom <- rowSums(denom) |> stats::aggregate(mean, by = list(doc = quanteda::docid(dfm)))
+  denom <- stats::aggregate(rowSums(denom), mean, by = list(doc = quanteda::docid(dfm)))
   ## Prevents 0 denominator
   denom$x[denom$x < sqrt(.Machine$double.eps)] <- sqrt(.Machine$double.eps)
   EC <- as.matrix(EC)

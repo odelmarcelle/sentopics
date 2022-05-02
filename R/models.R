@@ -137,7 +137,7 @@ rJST.LDA <- function(x,
   for (i in 1:nrow(x$vocabulary)) {
     if (!is.na(x$vocabulary$lexicon[i])) {
       zero <- setdiff(1:x$L2, as.integer(x$vocabulary$lexicon[i]))
-      zeros <- sapply(zero, function(j) j + (1:x$L1 - 1) * x$L2, USE.NAMES = FALSE) |> c()
+      zeros <- c(sapply(zero, function(j) j + (1:x$L1 - 1) * x$L2, USE.NAMES = FALSE))
       beta[zeros, i] <- 0
     }
   }

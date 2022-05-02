@@ -80,7 +80,7 @@ test_that("test convergence", {
 
 test_that("from LDA works", {
   toks <- ECB_press_conferences_tokens[1:10]
-  LDA <- LDA(toks) |> grow(10, displayProgress = FALSE)
+  LDA <- grow(LDA(toks), 10, displayProgress = FALSE)
   rJST <- rJST(LDA, lexicon = LoughranMcDonald)
   
   expect_identical(LDA$theta, rJST$theta)

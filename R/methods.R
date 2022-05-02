@@ -364,20 +364,22 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1,
       cpp_model <- rebuild_cppModel(x, base)
       ## generate different initial assignment for each chain
       if (x$it == 0 & i > 1) cpp_model$initAssignments()
-      
-      for (chunk in c(rep(chunkProgress, iterations %/% chunkProgress),
-                      iterations %% chunkProgress)) {
-        cpp_model$iterate(chunk, FALSE, computeLikelihood)
-        
-        report_processed <- report_processed + chunk
-        if ((Sys.time() - report_time) > 1) { # not too often
-          difftime <- difftime(Sys.time(), start_time)
-          p(amount = report_processed,
-            message = sprintf("Elapsed: %.2f %s", difftime, units(difftime)))
-          report_time <- Sys.time()
-          report_processed <- 0L
+      if (iterations > 0) {
+        for (chunk in c(rep(chunkProgress, iterations %/% chunkProgress),
+                        iterations %% chunkProgress)) {
+          cpp_model$iterate(chunk, FALSE, computeLikelihood)
+          
+          report_processed <- report_processed + chunk
+          if ((Sys.time() - report_time) > 1) { # not too often
+            difftime <- difftime(Sys.time(), start_time)
+            p(amount = report_processed,
+              message = sprintf("Elapsed: %.2f %s", difftime, units(difftime)))
+            report_time <- Sys.time()
+            report_processed <- 0L
+          }
         }
       }
+
       if (report_processed > 0L) { # if remaining update
         difftime <- difftime(Sys.time(), start_time)
         p(amount = report_processed,

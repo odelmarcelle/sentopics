@@ -58,7 +58,7 @@ jobs:
             sentometrics=?ignore-before-r=3.6.0
             stm=?ignore-before-r=3.6.0
             topicmodels=?ignore-before-r=3.6.0
-          needs: check, PhantomJS
+          needs: check
 
       - uses: r-lib/actions/check-r-package@v2
         with:

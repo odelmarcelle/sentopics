@@ -52,7 +52,7 @@ lda <- LDA(ECB_press_conferences_tokens)
 lda <- grow(lda, 100)}
 }
 \references{
-Blei, D.M., Ng, A.Y. and Jordan, M.I. (2003). \href{https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf}{Latent Dirichlet Allocation}.
+Blei, D.M., Ng, A.Y. and Jordan, M.I. (2003). \href{http://www.cs.columbia.edu/~blei/papers/BleiNgJordan2003.pdf}{Latent Dirichlet Allocation}.
 \emph{Journal of Machine Learning Research}, 3, 993--1022.
 }
 \seealso{

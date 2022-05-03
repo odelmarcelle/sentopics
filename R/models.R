@@ -5,7 +5,7 @@
 #' @description This function initialize a Latent Dirichlet Allocation model.
 #'
 #' @references Blei, D.M., Ng, A.Y. and Jordan, M.I. (2003). [Latent Dirichlet
-#'   Allocation](https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf).
+#'   Allocation](http://www.cs.columbia.edu/~blei/papers/BleiNgJordan2003.pdf).
 #'   *Journal of Machine Learning Research*, 3, 993--1022.
 #'
 #' @inherit rJST

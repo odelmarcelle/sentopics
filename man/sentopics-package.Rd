@@ -25,7 +25,7 @@ Please refer to the vignettes for a comprehensive introduction to the
 package functions.
 \itemize{
 \item \href{../doc/Basic_usage.html}{Basic usage}: Introduction to topic model estimation with \strong{sentopics}
-\item \href{../doc/Basic_usage.html}{Topical time series}: Integrate topic analysis with sentiment analysis along a time dimension
+\item \href{../doc/Topical_time_series.html}{Topical time series}: Integrate topic analysis with sentiment analysis along a time dimension
 }
 
 For further details, you may browse the package \href{../html/00Index.html}{documentation}.

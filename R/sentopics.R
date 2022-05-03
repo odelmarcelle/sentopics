@@ -19,7 +19,7 @@ NULL
 #'   package functions.
 #'   
 #'   - [Basic usage](../doc/Basic_usage.html): Introduction to topic model estimation with **sentopics**
-#'   - [Topical time series](../doc/Basic_usage.html): Integrate topic analysis with sentiment analysis along a time dimension
+#'   - [Topical time series](../doc/Topical_time_series.html): Integrate topic analysis with sentiment analysis along a time dimension
 #'   
 #'   For further details, you may browse the package [documentation](../html/00Index.html).
 #'

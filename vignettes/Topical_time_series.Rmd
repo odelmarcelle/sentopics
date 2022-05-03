@@ -46,7 +46,7 @@ plot(xts_sent)
 
 Estimating the topic model will allow enriching this sentiment series with topical content. The model should be estimated until it returns satisfactory topics. Labeling the topics facilitates the subsequent analysis.
 
-```{r}
+```{r eval = FALSE}
 lda <- grow(lda, 1000)
 sentopics_labels(lda) <- list(
   topic = c(
@@ -57,6 +57,24 @@ sentopics_labels(lda) <- list(
   )
 )
 plot(lda)
+```
+
+
+```{r echo = FALSE}
+lda <- grow(lda, 1000)
+sentopics_labels(lda) <- list(
+  topic = c(
+    "Economic growth & Inflation", "Banking", "Payment services",
+    "European single market", "Monetary policy & Negative rate",
+    "Monetary policy & Price stability", "Others", "Banking supervision",
+    "Financial markets"
+  )
+)
+suppressWarnings({
+  plotly::save_image(plot(lda),file = file <- normalizePath(
+  tempfile(fileext = ".svg"), winslash = "/"))
+knitr::include_graphics(file)
+})
 ```
 
 The estimated topic model adds a layer of topical proportions to the existing documents. This appears clearly when using `melt()` on the model. Leveraging on the topic and sentiment information at the document level we can compute the share of sentiment that belong to a given topic.

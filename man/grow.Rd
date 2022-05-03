@@ -27,7 +27,7 @@ from various starting positions. Latent variables will be re-initialized if
 the progress of the computation. When \code{nChains} is greater than 1, this
 requires the package \pkg{progressr} and optionally \pkg{progress}.}
 
-\item{computeLikelihood}{fi set to \code{FALSE}, does not compute the likelihood
+\item{computeLikelihood}{if set to \code{FALSE}, does not compute the likelihood
 at each iteration. This can slightly decrease the computing time.}
 
 \item{seed}{for reproducibility, a seed can be provided.}

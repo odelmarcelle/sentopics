@@ -268,7 +268,7 @@ plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosin
 #' @param displayProgress if `TRUE`, a progress bar will be displayed indicating
 #'   the progress of the computation. When `nChains` is greater than 1, this
 #'   requires the package \pkg{progressr} and optionally \pkg{progress}.
-#' @param computeLikelihood fi set to `FALSE`, does not compute the likelihood
+#' @param computeLikelihood if set to `FALSE`, does not compute the likelihood
 #'   at each iteration. This can slightly decrease the computing time.
 #' @param seed for reproducibility, a seed can be provided.
 #'

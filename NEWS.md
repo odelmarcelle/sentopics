@@ -2,7 +2,7 @@
 
 * Improved dependency to older version of R
 * Added conversions from other packages (**lda**, **topicmodels** and **stm**)
-* Changed the parallel backend from **doFuture** to **future.apply** (hence removing the `nCores` argument from `grow()`)
+* Changed the parallel back-end from **doFuture** to **future.apply** (hence removing the `nCores` argument from `grow()`)
 * Added a function `LDAvis()` that prepare a dynamic visualization of LDA models using the **LDAvis** package
 * Reduced vignettes size
 * Bug fix: Fixed an error in `as.tokens.dfm()`

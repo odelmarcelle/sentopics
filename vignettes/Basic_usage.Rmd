@@ -110,12 +110,14 @@ Provided that the `plotly` package is installed, one can also directly use `plot
 plot(lda)
 ```
 
-```{r echo=FALSE, warning=FALSE}
+```{r, eval=FALSE, include=FALSE}
 suppressWarnings({
-  plotly::save_image(plot(lda),file = file <- normalizePath(
-  tempfile(fileext = ".svg"), winslash = "/"))
-knitr::include_graphics(file)
+  plotly::save_image(plot(lda), file = "plotly1.svg")
 })
+```
+
+```{r include=FALSE}
+knitr::include_graphics("plotly1.svg")
 ```
 
 

@@ -59,8 +59,7 @@ sentopics_labels(lda) <- list(
 plot(lda)
 ```
 
-
-```{r echo = FALSE}
+```{r include=FALSE}
 lda <- grow(lda, 1000)
 sentopics_labels(lda) <- list(
   topic = c(
@@ -70,11 +69,17 @@ sentopics_labels(lda) <- list(
     "Financial markets"
   )
 )
+```
+
+```{r eval = FALSE, include=FALSE}
 suppressWarnings({
-  plotly::save_image(plot(lda),file = file <- normalizePath(
-  tempfile(fileext = ".svg"), winslash = "/"))
-knitr::include_graphics(file)
+  plotly::save_image(plot(lda), file = "plotly2.svg")
 })
+```
+
+
+```{r echo = FALSE}
+knitr::include_graphics("plotly2.svg")
 ```
 
 The estimated topic model adds a layer of topical proportions to the existing documents. This appears clearly when using `melt()` on the model. Leveraging on the topic and sentiment information at the document level we can compute the share of sentiment that belong to a given topic.

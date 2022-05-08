@@ -170,3 +170,6 @@ test_that("plot methods work", {
   expect_silent(plot(generated_sentopicmodel))
 
 })
+
+## fix detritus
+plan(sequential)

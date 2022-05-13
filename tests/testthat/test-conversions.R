@@ -11,28 +11,28 @@ test_that("from STM", {
   # set.seed(02138)
   stm <- stm(out$documents, out$vocab, 3, verbose = FALSE,
                   prevalence = ~treatment + s(pid_rep), data = out$meta)
-  
+
   lda <- as.LDA(stm, out$documents)
-  
+
   expect_true(check_integrity(lda))
   expect_silent(topWords(lda))
-  
+
   # check top words
   expect_identical(
     unname(topWords(lda, 7, out = "matrix", method = "probability")),
     t(labelTopics(stm)$prob)
   )
-  
+
   # check top documents
   expect_identical(
     unname(apply(lda$theta, 2, function(x) head(order(-x)))),
     apply(stm$theta, 2, function(x) head(order(-x)))
   )
-  
+
   expect_error(grow(lda), "Not possible for approximated")
   expect_error(mergeTopics(lda, as.list(1:3)), "Not possible for approximated")
   expect_error(rJST(lda), "Not possible for approximated")
-  
+
   expect_silent(sentopics_sentiment(lda) <- rnorm(length(lda$tokens)))
   expect_error(sentopics_labels(lda) <- list(topic = 1:3), "Not possible for approximated")
 })
@@ -41,7 +41,7 @@ test_that("from STM", {
 test_that("from lda", {
   skip_if_not_installed("lda")
   library("lda")
-  K <- 10 ## Num clusters
+  K <- 5 ## Num clusters
   data("cora.documents")
   data("cora.vocab")
   lda <- lda.collapsed.gibbs.sampler(cora.documents,
@@ -50,14 +50,14 @@ test_that("from lda", {
                                         100, ## Num iterations
                                         0.1,
                                         0.1)
-  
+
   LDA <- as.LDA_lda(lda, cora.documents, alpha = .1, eta = .1)
-  
+
   expect_equal(unname(lda$topics), rebuild_zw(as.sentopicmodel(LDA)))
   expect_equal(unname(lda$document_sums), rebuild_zd(as.sentopicmodel(LDA)))
   expect_equal(median(LDA$alpha), 0.1)
   expect_equal(median(LDA$beta), 0.1)
-  
+
   # check top words
   topics <- lda$topics[, order(colnames(lda$topics))] # force correct order
   expect_equal(
@@ -80,39 +80,39 @@ test_that("from topicmodels", {
   data("AssociatedPress", package = "topicmodels")
   lda <- topicmodels::LDA(AssociatedPress, method = "Gibbs",
                           control = list(alpha = 0.1, iter = 100), k = 5)
-  
+
   LDA <- as.LDA(lda, docs = AssociatedPress)
-  
+
   # check posterior
   expect_equal(unname(LDA$phi[order(LDA$vocabulary$word), ]), exp(t(lda@beta)))
   expect_equal(unname(LDA$theta), lda@gamma)
-  
+
   # check top words
   expect_equal(
     terms(lda, k = 10),
     topWords(LDA, output = "matrix"),
     check.attributes = FALSE
   )
-  
+
   vem <- topicmodels::LDA(AssociatedPress, method = "VEM",
                           control = list(
                             alpha = 0.1,
                             var = list(iter.max = 10, tol = 0.01),
                             em = list(iter.max = 10, tol = 0.01)), k = 5)
-  
+
   LDA <- as.LDA(vem, docs = AssociatedPress)
-  
+
   # check posterior
   expect_equal(unname(LDA$phi[order(LDA$vocabulary$word), ]), exp(t(vem@beta)))
   expect_equal(unname(LDA$theta), vem@gamma)
-  
+
   # check top words
   expect_equal(
     terms(vem, k = 10),
     topWords(LDA, output = "matrix", method = "probability"),
     check.attributes = FALSE
   )
-  
+
 })
 
 
@@ -122,25 +122,25 @@ test_that("from seededlda", {
   lda <- textmodel_lda(dfm(ECB_press_conferences_tokens),
                        k = 6, max_iter = 100)
   LDA <- as.LDA(lda)
-  
+
   expect_true(check_integrity(LDA))
   expect_silent(topWords(LDA))
-  
+
   # check top words
   lda$phi <- lda$phi[, order(colnames(lda$phi))] # force correct order
   expect_identical(
     topWords(LDA, output = "matrix", method = "probability"),
     terms(lda)
   )
-  
+
   # check top documents
   expect_equal(
     apply(LDA$theta, 2, function(x) head(order(-x))),
     apply(lda$theta, 2, function(x) head(order(-x))),
     check.attributes = FALSE
   )
-  
-  
+
+
   dict <- quanteda::dictionary(list(
     inflation = c("inflation", "price", "hicp"),
     council = c("governing_council", "staff", "ecb"),
@@ -152,30 +152,30 @@ test_that("from seededlda", {
                               dict, residual = TRUE,
                               k = 6, max_iter = 100)
   LDA <- as.LDA(slda)
-  
+
   expect_true(check_integrity(LDA))
   expect_silent(topWords(LDA))
-  
+
   # check top words
   slda$phi <- slda$phi[, order(colnames(slda$phi))] # force correct order
   expect_identical(
     topWords(LDA, output = "matrix", method = "probability"),
     terms(slda)
   )
-  
+
   # check top documents
   expect_equal(
     apply(LDA$theta, 2, function(x) head(order(-x))),
     apply(slda$theta, 2, function(x) head(order(-x))),
     check.attributes = FALSE
   )
-  
+
 })
 
 test_that("LDAvis", {
   skip_if_not_installed("LDAvis")
   skip_if_not_installed("servr")
-  
+
   lda <- LDA(ECB_press_conferences_tokens)
   lda <- grow(lda, 10, displayProgress = FALSE)
   if (interactive())

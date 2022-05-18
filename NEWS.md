@@ -1,3 +1,7 @@
+# sentopics 0.7.1
+
+* Small change of a test sometimes failing on other platforms.
+
 # sentopics 0.7.0
 
 * Improved dependency to older version of R

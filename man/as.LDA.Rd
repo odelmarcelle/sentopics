@@ -79,18 +79,27 @@ lda <- lda.collapsed.gibbs.sampler(cora.documents,
                                    100, ## Num iterations
                                    0.1,
                                    0.1)
-LDA <- as.LDA_lda(lda, cora.documents, alpha = .1, eta = .1)
+LDA <- as.LDA_lda(lda, docs = cora.documents, alpha = .1, eta = .1)
 
 ## topicmodels
 data("AssociatedPress", package = "topicmodels")
 lda <- topicmodels::LDA(AssociatedPress[1:20,],
                         control = list(alpha = 0.1), k = 2)
-LDA <- as.LDA(lda, AssociatedPress[1:20,])
+LDA <- as.LDA(lda, docs = AssociatedPress[1:20,])
 
 ## seededlda
 library("seededlda")
 lda <- textmodel_lda(dfm(ECB_press_conferences_tokens),
                      k = 6, max_iter = 100)
 LDA <- as.LDA(lda)
+
+## keyATM
+library("keyATM")
+data(keyATM_data_bills, package = "keyATM")
+keyATM_docs <- keyATM_read(keyATM_data_bills$doc_dfm)
+out <- keyATM(docs = keyATM_docs, model = "base",
+              no_keyword_topics = 5,
+              keywords = keyATM_data_bills$keywords)
+LDA <- as.LDA(out, docs = keyATM_docs)
 }
 }

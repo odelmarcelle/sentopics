@@ -177,6 +177,9 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
         html <- gsub("&uuml;", "\u00FC", html, fixed = TRUE)
         html <- gsub("&szlig;", "\u00DF", html,fixed = TRUE)
         html <- gsub("&oacute;", "\u00F3", html, fixed = TRUE)
+        html <- gsub("&egrave;", "\u00E8", html, fixed = TRUE)
+        html <- gsub("&ccedil;", "\u00E7", html, fixed = TRUE)
+        html <- gsub("&atilde;", "\u00E3", html, fixed = TRUE)
       })
       
       check <- lapply(cleaned, function(html)
@@ -254,8 +257,8 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
   res <- mapply(function(x, date) {x$date <- date; x}, x = res, date = names(res), SIMPLIFY = FALSE)
   names(res) <- seq_along(res)
   if (data.table) {
-    res <- rbindlist(res, idcol = "doc_id")
-    res <- res[, c({tmp <- rbindlist(sections); tmp[, paragraph_id := paste0(doc_id, "_", .I)]; tmp}), by = c("date", "doc_id", "title") ]
+    res <- data.table::rbindlist(res, idcol = "doc_id")
+    res <- res[, c({tmp <- data.table::rbindlist(sections); tmp[, paragraph_id := paste0(doc_id, "_", .I)]; tmp}), by = c("date", "doc_id", "title") ]
     # res[grepl("Transcript", section_title)] |> View()
   }
   res

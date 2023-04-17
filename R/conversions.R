@@ -408,7 +408,7 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
   beta <- x$phi
   beta[] <- x$priors$beta
   
-  alpha <- as.matrix(rep(tail(x$values_iter$alpha_iter$alpha, 1), K))
+  alpha <- as.matrix(rep(utils::tail(x$values_iter$alpha_iter$alpha, 1), K))
   
   
   tokens <- quanteda::as.tokens(docs$W_raw)

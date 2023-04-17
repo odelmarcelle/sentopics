@@ -52,6 +52,7 @@ Suggests:
     lda,
     topicmodels,
     seededlda,
+    keyATM,
     LDAvis,
     servr,
     textcat,

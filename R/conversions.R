@@ -387,6 +387,115 @@ as.LDA_lda <- function(list, docs, alpha, eta) {
 }
 
 
+
+#' @rdname as.LDA
+#' @export
+as.LDA.keyATM_output <- function(x, docs, ...) {
+  K = x$keyword_k + x$no_keyword_topics
+  
+  
+  labels <- colnames(x$theta)
+  
+  beta <- x$phi
+  beta[] <- x$priors$beta
+  
+  alpha <- as.matrix(rep(tail(x$values_iter$alpha_iter$alpha, 1), K))
+  
+  
+  tokens <- quanteda::as.tokens(docs$W_raw)
+  vocabulary <- makeVocabulary(tokens, NULL, 1L)
+  
+  zd <- rebuild_L1d_from_posterior(lengths(cleanPadding(tokens)), x$theta, alpha)
+  zd <- unname(t(zd))
+  doc.length <- lengths(tokens, use.names = FALSE)
+  
+  ## adjust zd to integer
+  diff <- doc.length - as.integer(colSums(round(zd)))
+  for (i in which(diff != 0)) {
+    while (diff[i] != 0L) {
+      possible <- zd[, i] > (-diff[i] - .5)
+      idx <- which.min( (zd[possible, i] - round(zd[possible, i])*diff[i] ))
+      zd[which(possible)[idx], i] <- zd[which(possible)[idx], i] + 1*sign(diff[i])
+      diff[i] <- as.integer(doc.length[i] - sum(round(zd[, i])))
+    }
+  }
+  zd <- round(zd)
+  diff2 <- as.integer(x$topic_counts - rowSums(zd))
+  ## quickly adjust second dimension
+  while (any(diff2 < 0)) {
+    count <- 1L;
+    while (TRUE) {
+      non_zero <- length(zd[diff2 < 0][zd[diff2 < 0] > count])
+      deduct <- ceiling(abs(min(diff2))/non_zero)
+      if (deduct <= count) break
+      else count <- count + 1
+    }
+    zd[diff2 < 0][zd[diff2 < 0] > count] <- zd[diff2 < 0][zd[diff2 < 0] > count] - deduct 
+    diff2 <- as.integer(x$topic_counts - rowSums(zd))
+  }
+  diff <- doc.length - as.integer(colSums(round(zd)))
+  zd <- zd + stats::r2dtable(1, diff2, diff)[[1]]
+  storage.mode(zd) <- "integer"
+  stopifnot(isTRUE(all.equal(colSums(zd), doc.length)))
+  stopifnot(isTRUE(all.equal(rowSums(zd), x$topic_counts)))
+  
+  
+  
+  phi <- t(x$phi)
+  
+  ## adjust zw to integer
+  dfm <- quanteda::dfm(tokens)
+  zw <- rebuild_zw_from_posterior2(zd, phi, beta)
+  diff <- as.integer(quanteda::colSums(dfm) - colSums(round(zw)))
+  for (i in which(diff != 0)) {
+    while (diff[i] != 0L) {
+      possible <- (zw[, i] > (-diff[i] - .5))
+      idx <- which.min( (zw[possible, i] - round(zw[possible, i])*diff[i] ))
+      zw[which(possible)[idx], i] <- zw[which(possible)[idx], i] + 1*sign(diff[i])
+      diff[i] <- as.integer(sum(dfm[, i]) - sum(round(zw[, i])))
+    }
+  }
+  zw <- round(zw)
+  diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
+  ## quickly adjust second dimension
+  while (any(diff2 < 0)) {
+    count <- 1L;
+    while (TRUE) {
+      non_zero <- length(zw[diff2 < 0][zw[diff2 < 0] > count])
+      deduct <- ceiling(abs(min(diff2))/non_zero)
+      if (deduct <= count) break
+      else count <- count + 1
+    }
+    zw[diff2 < 0][zw[diff2 < 0] > count] <- zw[diff2 < 0][zw[diff2 < 0] > count] - deduct 
+    diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
+  }
+  diff <- as.integer(quanteda::colSums(dfm)) - as.integer(colSums(round(zw)))
+  zw <- zw + stats::r2dtable(1, diff2, diff)[[1]]
+  storage.mode(zw) <- "integer"
+  stopifnot(isTRUE(all.equal(colSums(zw), unname(quanteda::colSums(dfm)))))
+  stopifnot(isTRUE(all.equal(rowSums(zw), rowSums(zd))))
+  
+  LDA <- structure(list(
+    tokens = vocabulary$toks,
+    vocabulary = vocabulary$vocabulary,
+    K = K,
+    alpha = alpha,
+    beta = beta,
+    it = x$options$iterations,
+    theta = x$theta,
+    phi = phi,
+    zd = zd,
+    zw = zw,
+    logLikelihood = NULL
+  ), class = c("LDA", "sentopicmodel"), reversed = TRUE, Sdim = "L2",
+  approx = TRUE, labels = list(L1 = colnames(x$theta)))
+  LDA <- as.LDA(reorder_sentopicmodel(LDA))
+  
+  LDA
+}
+
+
+
 # To LDAvis ---------------------------------------------------------------
 
 

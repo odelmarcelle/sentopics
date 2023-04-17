@@ -172,6 +172,46 @@ test_that("from seededlda", {
 
 })
 
+
+test_that("from keyATM", {
+  skip_if_not_installed("keyATM")
+  library("keyATM")
+  library("quanteda")
+  
+  
+  data(keyATM_data_bills)
+  bills_keywords <- keyATM_data_bills$keywords
+  bills_dfm <- keyATM_data_bills$doc_dfm  # quanteda dfm object
+  keyATM_docs <- keyATM_read(bills_dfm)
+  
+  # keyATM Base
+  out <- keyATM(
+    docs = keyATM_docs,
+    model = "base",
+    no_keyword_topics = 5,
+    keywords = bills_keywords,
+    options = list(iterations = 100)
+  )
+  LDA <- as.LDA(out, keyATM_docs)
+  
+  expect_true(check_integrity(LDA))
+  expect_silent(topWords(LDA))
+  
+  # check top words
+  out$phi <- out$phi[, order(colnames(out$phi))] # force correct order
+  expect_identical(
+    topWords(LDA, output = "matrix", method = "probability"),
+    as.matrix(top_words(out, show_keyword = FALSE))
+  )
+  
+  # check top documents
+  expect_equal(
+    apply(LDA$theta, 2, function(x) head(order(-x))),
+    apply(out$theta, 2, function(x) head(order(-x))),
+    check.attributes = FALSE
+  )
+})
+
 test_that("LDAvis", {
   skip_if_not_installed("LDAvis")
   skip_if_not_installed("servr")

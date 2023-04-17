@@ -7,6 +7,7 @@
 \alias{as.LDA.LDA_VEM}
 \alias{as.LDA.textmodel_lda}
 \alias{as.LDA_lda}
+\alias{as.LDA.keyATM_output}
 \title{Conversions from other packages to LDA}
 \usage{
 as.LDA(x, ...)
@@ -20,6 +21,8 @@ as.LDA(x, ...)
 \method{as.LDA}{textmodel_lda}(x, ...)
 
 as.LDA_lda(list, docs, alpha, eta)
+
+\method{as.LDA}{keyATM_output}(x, docs, ...)
 }
 \arguments{
 \item{x}{an estimated topic model from \pkg{stm}, \pkg{topicmodels} or

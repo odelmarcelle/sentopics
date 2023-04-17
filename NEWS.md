@@ -1,3 +1,7 @@
+# sentopics 0.7.2
+
+* Added `as.LDA()` method for outputs from the **keyATM** package.
+
 # sentopics 0.7.1
 
 * Small change of a test sometimes failing on other platforms.

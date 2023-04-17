@@ -178,7 +178,6 @@ test_that("from keyATM", {
   library("keyATM")
   library("quanteda")
   
-  
   data(keyATM_data_bills)
   bills_keywords <- keyATM_data_bills$keywords
   bills_dfm <- keyATM_data_bills$doc_dfm  # quanteda dfm object

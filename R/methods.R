@@ -612,11 +612,11 @@ reset <- function(x) {
 
 #' Replacement generic for [data.table::melt()]
 #'
-#' Up to the CRAN release of the 1.14.3 version of **data.table**, the
+#' As of the CRAN release of the 1.14.8 version of **data.table**, the
 #' [data.table::melt()] function is not a generic. This function aims to
 #' temporary provide a generic to this function, so that [melt.sentopicmodel()]
 #' can be effectively dispatched when used. Expect this function to disappear
-#' shortly after the release of **data.table** 1.14.3.
+#' shortly after the release of **data.table** 1.14.9.
 #'
 #' @param data an object to melt
 #' @param ... arguments passed to other methods
@@ -629,7 +629,7 @@ melt <- function(data, ...) {
   UseMethod("melt")
 }
 
-# TODO: re-activate once data.table 1.14.3 is released.
+# TODO: re-activate once data.table 1.14.9 is released.
 # #' @importFrom data.table melt
 # #' @export
 # data.table::melt
@@ -716,6 +716,9 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
     data.table::setcolorder(mixtureStats, c(colnames(mixtureStats)[2:4], ".id"))
   }
   mixtureStats[]
+}
+melt.default <- function(data, ...) {
+  data.table::melt(data, ...)
 }
 
 # Accessors ---------------------------------------------------------------

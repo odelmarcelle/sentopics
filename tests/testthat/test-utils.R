@@ -26,6 +26,20 @@ test_that("as.tokens.dfm works", {
   expect_identical(nrow(dfm), length(toks))
   expect_identical(colnames(dfm), quanteda::types(toks))
   expect_equal(quanteda::rowSums(dfm), quanteda::ntoken(toks))
+  
+  toks <- tokens(c(
+    "This text will be broken down into pieces with the `tokens` function",
+    "The function was re-exported from the quanteda package."))
+  
+  dfm <- quanteda::dfm(toks) |> 
+    quanteda::dfm_remove(quanteda::stopwords("en")) |> 
+    quanteda::dfm_trim(max_termfreq = 1)
+  
+  toks_recomposed <- as.tokens(dfm, tokens = toks)
+  toks_processed <-
+    quanteda::tokens_remove(toks, c(quanteda::stopwords("en"), "function", "`"), padding = TRUE)
+  
+  expect_identical(toks_recomposed, toks_processed)
 })
 
 

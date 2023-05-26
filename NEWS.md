@@ -1,6 +1,7 @@
 # sentopics 0.7.2
 
 * Added `as.LDA()` method for outputs from the **keyATM** package.
+* Fixed conflict with `data.table::melt()` when **data.table** was loaded prior to **sentopics**
 
 # sentopics 0.7.1
 

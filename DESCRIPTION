@@ -67,5 +67,4 @@ RcppModules: model_module
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 LazyData: true
-SystemRequirements: C++11
 VignetteBuilder: knitr

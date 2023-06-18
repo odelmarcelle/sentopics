@@ -3,10 +3,10 @@
 
 sentopics_print_extend <- function(extended = FALSE) {
   methods = c("grow", "topics", "topWords", "plot")
-  explain <- c("Iterates the model using Gibbs sampling",
+  explain <- c("Estimate the model using Gibbs sampling",
                "Return the most important topic of each document",
                "Return a data.table with the top words of each topic/sentiment",
-               "A sunburst chart representing the estimated mixtures")
+               "Plot a sunburst chart representing the estimated mixtures")
   cat("------------------Useful methods------------------\n")
   cat(sprintf("%-10s:%s", methods, explain), sep = "\n")
   if (!extended) cat("This helpful message is displayed once per session, unless calling `print(x, extended = TRUE)`\n")

@@ -33,6 +33,7 @@ test_that("functions works", {
   expect_silent(m <- melt(rJST))
   expect_s3_class(m, "data.table")
   # expect_equal(ncol(m), 6)
+  skip_if_not_installed("plotly")
   expect_silent(p <- plot(rJST))
   expect_s3_class(p, "plotly")
   expect_silent(print(p))
@@ -82,7 +83,7 @@ test_that("from LDA works", {
   toks <- ECB_press_conferences_tokens[1:10]
   LDA <- grow(LDA(toks), 10, displayProgress = FALSE)
   rJST <- rJST(LDA, lexicon = LoughranMcDonald)
-  
+
   expect_identical(LDA$theta, rJST$theta)
   expect_equal(unlist(LDA$za, use.names = FALSE),
                (unlist(rJST$za, use.names = FALSE) - 1) %/% rJST$S + 1)

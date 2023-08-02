@@ -28,6 +28,7 @@ test_that("functions works", {
   expect_silent(m <- melt(LDA))
   expect_s3_class(m, "data.table")
   # expect_equal(ncol(m), 6)
+  skip_if_not_installed("plotly")
   expect_silent(p <- plot(LDA))
   expect_s3_class(p, "plotly")
   expect_silent(print(p))

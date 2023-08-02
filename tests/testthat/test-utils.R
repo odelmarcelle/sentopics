@@ -20,25 +20,25 @@ test_that("as.tokens.dfm works", {
   expect_silent(rJST <- rJST(dfm))
   expect_silent(sentopicmodel <- sentopicmodel(dfm))
   expect_identical(as.tokens(dfm, tokens = toks), toks)
-  
+
   dfm <- quanteda::dfm(ECB_press_conferences_tokens)
   toks <- as.tokens.dfm(dfm)
   expect_identical(nrow(dfm), length(toks))
   expect_identical(colnames(dfm), quanteda::types(toks))
   expect_equal(quanteda::rowSums(dfm), quanteda::ntoken(toks))
-  
+
   toks <- tokens(c(
     "This text will be broken down into pieces with the `tokens` function",
     "The function was re-exported from the quanteda package."))
-  
-  dfm <- quanteda::dfm(toks) |> 
-    quanteda::dfm_remove(quanteda::stopwords("en")) |> 
+
+  dfm <- quanteda::dfm(toks) |>
+    quanteda::dfm_remove(quanteda::stopwords("en")) |>
     quanteda::dfm_trim(max_termfreq = 1)
-  
+
   toks_recomposed <- as.tokens(dfm, tokens = toks)
   toks_processed <-
     quanteda::tokens_remove(toks, c(quanteda::stopwords("en"), "function", "`"), padding = TRUE)
-  
+
   expect_identical(toks_recomposed, toks_processed)
 })
 
@@ -52,6 +52,7 @@ test_that("melt works", {
 })
 
 test_that("sunburst works", {
+  skip_if_not_installed("plotly")
   toks <- ECB_press_conferences_tokens[1:10]
   model <- sentopicmodel(toks)
   model <- grow(model, 10, displayProgress = FALSE)
@@ -115,34 +116,35 @@ test_that("mergeTopics works", {
   sentopics_labels(merged)
   sentopics_labels(merged) <- NULL
   expect_identical(merged, model)
-  
+
   model <- grow(model, 2, displayProgress = FALSE)
   merged <- mergeTopics(model, as.list(1:5))
   sentopics_labels(merged)
   sentopics_labels(merged) <- NULL
   expect_identical(merged, model)
-  
+
   merged <- mergeTopics(model, list(1:4, 5))
   topWords(merged)
+  skip_if_not_installed("plotly")
   plot(merged)
   sentiment_series(model, period = "day")
   sentiment_breakdown(merged, period = "day")
   sentiment_topics(merged, period = "day")
   proportion_topics(merged, period = "day")
-  
+
   toks <- ECB_press_conferences_tokens[1:50]
   model <- rJST(toks, lexicon = LoughranMcDonald)
   merged <- mergeTopics(model, as.list(1:5))
   sentopics_labels(merged)
   sentopics_labels(merged) <- NULL
   expect_identical(merged, model)
-  
+
   model <- grow(model, 2, displayProgress = FALSE)
   merged <- mergeTopics(model, as.list(1:5))
   sentopics_labels(merged)
   sentopics_labels(merged) <- NULL
   expect_identical(merged, model)
-  
+
   sentopics_sentiment(model) <- NULL
   sentopics_sentiment(model, override = TRUE)
   merged <- mergeTopics(model, list(1:4, 5))
@@ -161,7 +163,7 @@ test_that("rebuild counts from posterior works", {
   rjst <- as.sentopicmodel(rjst)
   expect_equal(rebuild_zd_from_posterior(rjst), rebuild_zd(rjst))
   expect_equal(rebuild_zw_from_posterior(rjst), rebuild_zw(rjst))
-  
+
   lda <- LDA(ECB_press_conferences_tokens)
   lda <- grow(lda, 10, displayProgress = FALSE)
   lda <- as.sentopicmodel(lda)

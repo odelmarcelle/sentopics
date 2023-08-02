@@ -2,11 +2,11 @@
 # print -------------------------------------------------------------------
 
 sentopics_print_extend <- function(extended = FALSE) {
-  methods = c("fit", "topics", "topWords", "plot")
-  explain <- c("Iterates the model using Gibbs sampling",
+  methods = c("grow", "topics", "topWords", "plot")
+  explain <- c("Estimate the model using Gibbs sampling",
                "Return the most important topic of each document",
                "Return a data.table with the top words of each topic/sentiment",
-               "A sunburst chart representing the estimated mixtures")
+               "Plot a sunburst chart representing the estimated mixtures")
   cat("------------------Useful methods------------------\n")
   cat(sprintf("%-10s:%s", methods, explain), sep = "\n")
   if (!extended) cat("This message is displayed once per session, unless calling `print(x, extended = TRUE)`\n")
@@ -24,7 +24,7 @@ sentopics_print_extend <- function(extended = FALSE) {
 #' @param extended if `TRUE`, extends the print to include some helpful related
 #'   functions. Automatically displayed once per session.
 #' @param ... not used
-#' 
+#'
 #' @return No return value, called for side effects (printing).
 #'
 #' @export
@@ -101,16 +101,16 @@ print.topWords <- function(x, ...) {
 #'   hierarchy (topics for an LDA model).
 #' @param sort if `TRUE`, sorts the plotted topics in a decreasing frequency.
 #' @param ... not used
-#' 
+#'
 #' @return A `plotly` sunburst chart.
 #'
 #' @export
 #' @seealso [topWords()] [LDAvis()]
-#' @examples 
+#' @examples
 #' lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- fit(lda, 100)
 #' plot(lda, nWords = 5)
-#' 
+#'
 #' # only displays the topic proportions
 #' plot(lda, layers = 1)
 ## TODO: add other methods than probability?
@@ -185,7 +185,7 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
     data <- data[!grepl("^l1_[0-9]+$", parent)]
     data$parent <- sub("l2_[0-9]+$", "", data$parent)
   }
-  
+
   # reorder data clockwise
   if (sort)
     data <- data[order(value)]
@@ -350,10 +350,10 @@ fit.sentopicmodel <- function(x, iterations = 100, nChains = 1,
                                displayProgress = TRUE, computeLikelihood = TRUE,
                                seed = NULL) {
   start_time <- Sys.time()
-  
+
   ## force deep copy
   x <- data.table::copy(x)
-  
+
   if (nChains == 1) {
     if (!is.null(seed)) set.seed(seed * (x$it + 1))
     ## rebuild c++ model
@@ -364,19 +364,19 @@ fit.sentopicmodel <- function(x, iterations = 100, nChains = 1,
     x[names(tmp)] <- tmp
     reorder_sentopicmodel(x)
   } else if (nChains > 1) {
-    
+
     ## CMD check
     chains <- NULL
-    
+
     base <- core(x)
     core(x) <- NULL
-    
+
     if (!is.null(seed)) seed <- seed * (x$it + 1)
-  
+
     FUN <- function(i) {
       report_time <- Sys.time()
       report_processed <- 0L
-      
+
       ## need to duplicate memory location of x$za. Otherwise, all chains
       ## share the same memory location
       x$za <- data.table::copy(x$za)
@@ -389,7 +389,7 @@ fit.sentopicmodel <- function(x, iterations = 100, nChains = 1,
         for (chunk in c(rep(chunkProgress, iterations %/% chunkProgress),
                         iterations %% chunkProgress)) {
           cpp_model$iterate(chunk, FALSE, computeLikelihood)
-          
+
           report_processed <- report_processed + chunk
           if ((Sys.time() - report_time) > 1) { # not too often
             difftime <- difftime(Sys.time(), start_time)
@@ -406,14 +406,14 @@ fit.sentopicmodel <- function(x, iterations = 100, nChains = 1,
         p(amount = report_processed,
           message = sprintf("Elapsed: %.2f %s", difftime, units(difftime)))
       }
-      
+
       extract_cppModel <- get("extract_cppModel",
                               envir = getNamespace("sentopics"))
       tmp <- extract_cppModel(cpp_model, base)
       x[names(tmp)] <- tmp
       x
     }
-    
+
     expr <- quote({
       if (requireNamespace("future.apply", quietly = TRUE)) {
         if (is.null(seed)) seed <- TRUE
@@ -429,24 +429,24 @@ fit.sentopicmodel <- function(x, iterations = 100, nChains = 1,
           if (!inherits(class(future::plan()), "sequential"))
             message("It seems that a parallel setup is registered, but `future.apply` is not installed. Did you omit installing it? Proceeding sequential computation...")
         }
-        ## TODO: align RNGs? 
+        ## TODO: align RNGs?
         if (!is.null(seed)) set.seed(seed)
         chains <- lapply(1:nChains, FUN)
       }
-      
+
       names(chains) <- paste0("chain", 1:nChains)
       class(chains) <- "multiChains"
       attr(chains, "nChains") <- nChains
       attr(chains, "base") <- base
       attr(chains, "containedClass") <- "sentopicmodel"
     })
-    
+
     if (displayProgress & !requireNamespace("progressr", quietly = TRUE)) {
       message("The `progressr` package is required to track progress of multiple chains.")
       displayProgress <- FALSE
     }
-      
-    if (displayProgress) { 
+
+    if (displayProgress) {
       ## determine how often the progress bar is refreshed (too high refresh rate can negatively affect performance)
       # chunkProgress <- min(max((iterations * nChains) %/% 10, 10), 1000, iterations)
       chunkProgress <- min(100, iterations)
@@ -465,7 +465,7 @@ fit.sentopicmodel <- function(x, iterations = 100, nChains = 1,
       environment(p) <- globalenv()
       eval(expr)
     }
-    
+
     chains
   } else {
     stop("Incorrect number of chains specified.")
@@ -478,36 +478,36 @@ fit.multiChains <- function(x, iterations = 100, nChains = NULL,
                              displayProgress = TRUE, computeLikelihood = TRUE,
                              seed = NULL) {
   start_time <- Sys.time()
-  
+
   ## CMD check
   chains <- NULL
-  
+
   nChains <- attr(x, "nChains")
   base <- attr(x, "base")
   containedClass <- attr(x, "containedClass")
-  
+
   x <- unclass(x) ## unclass to prevent usage of `[[.multiChains`
   x <- lapply(x, as.sentopicmodel) ## return to sentopicmodel objects
-  
+
   ## erase posterior in each chain to limit memory transfers
   for (i in seq_along(x)) {
     x[[i]][["L1post"]] <- x[[i]][["L2post"]] <- x[[i]][["phi"]] <- NULL
   }
-  
+
   if (!is.null(seed)) seed <- seed * (x[[1]]$it + 1)
-  
+
   FUN <- function(x) {
     report_time <- Sys.time()
     report_processed <- 0L
-    
+
     rebuild_cppModel <- get("rebuild_cppModel",
                             envir = getNamespace("sentopics"))
     cpp_model <- rebuild_cppModel(x, base)
-    
+
     for (chunk in c(rep(chunkProgress, iterations %/% chunkProgress),
                     iterations %% chunkProgress)) {
       cpp_model$iterate(chunk, FALSE, computeLikelihood)
-      
+
       report_processed <- report_processed + chunk
       if ((Sys.time() - report_time) > 1) { # not too often
         difftime <- difftime(Sys.time(), start_time)
@@ -522,14 +522,14 @@ fit.multiChains <- function(x, iterations = 100, nChains = NULL,
       p(amount = report_processed,
         message = sprintf("Elapsed: %.2f %s", difftime, units(difftime)))
     }
-    
+
     extract_cppModel <- get("extract_cppModel",
                             envir = getNamespace("sentopics"))
     tmp <- extract_cppModel(cpp_model, base)
     x[names(tmp)] <- tmp
     x
   }
-  
+
   expr <- quote({
     if (requireNamespace("future.apply", quietly = TRUE)) {
       if (is.null(seed)) seed <- TRUE
@@ -545,23 +545,23 @@ fit.multiChains <- function(x, iterations = 100, nChains = NULL,
         if (!inherits(class(future::plan()), "sequential"))
           message("It seems that a parallel setup is registered, but `future.apply` is not installed. Did you omit installing it? Proceeding sequential computation...")
       }
-      ## TODO: align RNGs? 
+      ## TODO: align RNGs?
       if (!is.null(seed)) set.seed(seed)
       chains <- lapply(x, FUN)
     }
-    
+
     class(chains) <- "multiChains"
     attr(chains, "nChains") <- nChains
     attr(chains, "base") <- base
     attr(chains, "containedClass") <- containedClass
   })
-  
+
   if (displayProgress & !requireNamespace("progressr", quietly = TRUE)) {
     message("The `progressr` package is required to track progress of multiple chains.")
     displayProgress <- FALSE
   }
-  
-  if (displayProgress) { 
+
+  if (displayProgress) {
     ## determine how often the progress bar is refreshed (too high refresh rate can negatively affect performance)
     # chunkProgress <- min(max((iterations * nChains) %/% 10, 10), 1000, iterations)
     chunkProgress <- min(100, iterations)
@@ -580,7 +580,7 @@ fit.multiChains <- function(x, iterations = 100, nChains = NULL,
     environment(p) <- globalenv()
     eval(expr)
   }
-  
+
   chains
 }
 
@@ -629,24 +629,24 @@ grow.multiChains <- fit.multiChains
 #' model <- fit(model, 10)
 #' reset(model)
 reset <- function(x) {
-  
+
   ## make copy or assignment are reset by reference
   x$za <- data.table::copy(x$za)
-  
+
   class <- class(x)[1]
   x <- as.sentopicmodel(x)
   x$it <- 0
   x$logLikelihood <- NULL
   x$phi <- x$L2post <- x$L1post <- NULL
-  
+
   base <- core(x) ## need to protect base$cleaned from gc
   cpp_model <- rebuild_cppModel(x, base)
   cpp_model$initAssignments()
   # x <- utils::modifyList(x, extract_cppModel(cpp_model, core(x)))
   tmp <- extract_cppModel(cpp_model, base)
   x[names(tmp)] <- tmp
-  
-  
+
+
   fun <- get(paste0("as.", class))
   fun(reorder_sentopicmodel(x))
 }
@@ -665,15 +665,18 @@ reset <- function(x) {
 #'
 #' @param data an object to melt
 #' @param ... arguments passed to other methods
-#' 
+#'
 #' @return An unkeyed `data.table` containing the molten data.
-#' 
+#'
 #' @seealso [data.table::melt()], [melt.sentopicmodel()]
 #' @export
 melt <- function(data, ...) {
   UseMethod("melt")
 }
-
+#' @export
+melt.default <- function(data, ...) {
+  data.table::melt(data, ...)
+}
 # TODO: re-activate once data.table 1.14.9 is released.
 # #' @importFrom data.table melt
 # #' @export
@@ -762,9 +765,6 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
   }
   mixtureStats[]
 }
-melt.default <- function(data, ...) {
-  data.table::melt(data, ...)
-}
 
 # Accessors ---------------------------------------------------------------
 
@@ -774,7 +774,7 @@ melt.default <- function(data, ...) {
 
   base <- attr(x, "base")
   containedClass <- attr(x, "containedClass")
-  
+
   x <- NextMethod()
   core(x) <- base
 
@@ -829,12 +829,12 @@ melt.default <- function(data, ...) {
     if (copy) core(x[[i]]) <- data.table::copy(attr(x, "base"))
     else core(x[[i]]) <- attr(x, "base")
   }
-  
+
   fun <- get(paste0("as.", attr(x, "containedClass")))
   x[] <- lapply(x, function(xi) fun(reorder_sentopicmodel(xi)))
   attr(x, "base") <- NULL
   x
-  
+
   # res <- list()
   # for (i in seq_along(x)) {
   #   res[[i]] <- data.table::copy(x[[i]])

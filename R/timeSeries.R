@@ -87,9 +87,9 @@ sentopics_sentiment <- function(x,
                       include_docvars = FALSE) {
   ## CMD check
   .id <- positive <- negative <- topic <- L1_prob <- NULL
-  
+
   docvars <- attr(x$tokens, "docvars")
-  
+
   if (!override & ".sentiment" %in% names(docvars)) {
     if (!quiet & !inherits(x, "LDA")) message("'.sentiment' docvars found. Returning these values. To re-compute sentiment, please set `override = TRUE`.")
     if (include_docvars) {
@@ -117,7 +117,7 @@ sentopics_sentiment <- function(x,
 
   if (inherits(x, "LDA")) stop("Impossible to compute sentiment for an LDA model. Please input first a '.sentiment' docvars by either\n\t1: ensuring the presence of a '.sentiment' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_sentiment(x) <- value` to register a vector of sentiment values in the topic model object.")
   if (any(!c("positive", "negative") %in% levels(x$vocabulary$lexicon))) stop("Sentiment computation requires defined positive and negative sentiment. Ensure that a lexicon containing negative and positive categories was provided when creating the model or input a '.sentiment' docvars by either\n\t1: ensuring the presence of a '.sentiment' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_sentiment(x) <- value` to register a vector of sentiment values in the topic model object.")
-  
+
   method <- match.arg(method)
   melted <- melt(x, include_docvars = FALSE)
   ## store order to reverse dcast ordering
@@ -143,13 +143,13 @@ sentopics_sentiment <- function(x,
     res <- dcast(melted[, list("L1_prob" = mean(L1_prob)), by = c("sent", ".id")],
           .id ~ sent, value.var = "L1_prob")
     res <- fn(res)
-    
+
     ## recover initial ordering
     setkey(res, NULL)
     # res <- res[order(ord)]
     res <- res[match(unique(melted$.id), .id)]
     stopifnot(identical(res$.id, names(x$tokens)))
-    
+
     docvars$`.sentiment` <- res$`.sentiment`
     data.table::setattr(x$tokens, "docvars", docvars)
     message("Sentiment computed and assigned internally")
@@ -162,23 +162,23 @@ sentopics_sentiment <- function(x,
       })
     res <- data.table::rbindlist(LIST, idcol = "topic")
     res <- dcast(res, .id ~ topic, value.var = ".sentiment")
-    
+
     ## recover initial ordering
     setkey(res, NULL)
     # res <- res[order(ord)]
     res <- res[match(unique(melted$.id), .id)]
     stopifnot(identical(res$.id, names(x$tokens)))
-    
+
     res$.sentiment <- rowSums(as.matrix(res, rownames = ".id") * x$theta)
     data.table::setcolorder(res, c(".id", ".sentiment"))
-    
+
     docvars <- utils::modifyList(docvars, res[, -".id"])
     data.table::setattr(x$tokens, "docvars", docvars)
     message("Sentiment computed and assigned internally")
   }
   ## to recompute at the end of mergeTopics, need this attribute
   data.table::setattr(x, "sentiment_not_external", TRUE)
-  
+
   if (include_docvars) { res <- cbind(res, docvars(x$tokens)) }
 
   res[]
@@ -191,7 +191,7 @@ sentopics_sentiment <- function(x,
 `sentopics_sentiment<-` <- function(x, value) {
   if (!inherits(x, "sentopicmodel")) stop("Replacement of internal sentiment is only possible for topic models of package `sentopics`")
   if (anyNA(value)) stop("NA sentiment not allowed.")
-  
+
   docvars <- attr(x$tokens, "docvars")
   if (".sentiment" %in% names(docvars) & !is.null(value)) {
     message("Replacing existing '.sentiment' docvars")
@@ -206,10 +206,10 @@ sentopics_sentiment <- function(x,
         eval(substitute(x$tokens$y <- NULL, list(y = i)))
         # eval(data.table::substitute2(x$tokens$y <- NULL, list(y = i)))
       }
-    } 
+    }
   }
   attr(x, "sentiment_not_external") <- NULL
-  
+
   x
 }
 
@@ -223,11 +223,11 @@ sentopics_sentiment <- function(x,
 #'   using `sentopics_date(x) <- value` or by storing a '.date' docvars in
 #'   the [tokens] object used to create the model.
 #' @export
-#' 
+#'
 #' @note The internal date is stored internally in the *docvars* of the topic
 #'   model. This means that dates may also be accessed through the [docvars()]
 #'   function, although this is discouraged.
-#'   
+#'
 #' @return a data.frame with the stored date per document.
 #' @examples
 #' # example dataset already contains ".date" docvar
@@ -256,7 +256,7 @@ sentopics_date <- function(x, include_docvars = FALSE) {
 `sentopics_date<-` <- function(x, value) {
   if (!inherits(x, "sentopicmodel")) stop("Replacement of internal date is only possible for topic models of package `sentopics`")
   if (anyNA(value)) stop("NA date not allowed.")
-  
+
   docvars <- attr(x$tokens, "docvars")
   if (".date" %in% names(docvars) & !is.null(value)) {
     message("Replacing existing '.date' docvars")
@@ -356,7 +356,7 @@ sentopics_labels <- function(x, flat = TRUE) {
     names(docvars)[idx] <- paste0(".s_", value$topic)
     attr(x$tokens, "docvars") <- docvars
   }
-  
+
 
   x
 }
@@ -386,13 +386,13 @@ sentopics_labels <- function(x, flat = TRUE) {
 #'
 #' # JST and rJST models can use computed sentiment from the sentiment layer,
 #' # but the model must be estimated first.
-#' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald) 
+#' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' sentiment_series(rjst)
-#' 
+#'
 #' sentopics_sentiment(rjst) <- NULL ## remove existing sentiment
 #' rjst <- fit(rjst, 10) ## estimating the model is then needed
 #' sentiment_series(rjst)
-#' 
+#'
 #' # note the presence of both raw and scaled sentiment values
 #' # in the initial object
 #' sentopics_sentiment(lda)
@@ -469,7 +469,7 @@ sentiment_series <- function(x,
     {
       docvars <- attr(x$tokens, "docvars")
       docvars$`.sentiment_scaled` <- (docvars$`.sentiment` - params["mu"]) / params["sigma"]
-      
+
       ## dealing with multiple values for rJST
       idx <- grepl("^\\.s_", names(docvars), perl = TRUE) &
         !grepl("_scaled$", names(docvars), perl = TRUE)
@@ -479,7 +479,7 @@ sentiment_series <- function(x,
           docvars[[paste0(s, "_scaled")]] <- (docvars[[s]] - params["mu"]) / params["sigma"]
         }
       }
-      
+
       ## putting back the results in docvars
       data.table::setattr(x$tokens, "docvars", docvars)
     }
@@ -545,7 +545,7 @@ sentiment_breakdown <- function(x,
     prob <- NULL
 
   if (!inherits(x, c("LDA", "rJST"))) stop("`sentiment_breakdown` is only implemented for LDA and rJST models.")
-  
+
   period <- match.arg(period)
   plot <- as.character(plot)
   plot <- match.arg(plot)
@@ -561,7 +561,7 @@ sentiment_breakdown <- function(x,
                             paste0(mis, collapse = ", "),".\n",
                             "Install command: install.packages(",
                             paste0("'", mis, "'", collapse = ", "),")" )
-  
+
   # proportions <- dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
   proportions <- dcast(melt(x)[, list(prob = sum(prob)), by = c("topic", ".id")],
                        .id ~ topic, value.var = "prob")
@@ -584,8 +584,8 @@ sentiment_breakdown <- function(x,
     # tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
      names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
   }
-  
-  
+
+
   proportions <- merge(
     merge(
       sentopics_date(x),
@@ -595,7 +595,7 @@ sentiment_breakdown <- function(x,
     proportions,
     by = ".id", sort = FALSE
   )
-  
+
   ## early return
   if (period == "identity") {
     sCols <- names(proportions)[grepl("^s_", names(proportions))]
@@ -644,15 +644,15 @@ sentiment_breakdown <- function(x,
     #                          env = I(list( s = sCols, theta = thetaCols))]
   }
 
-  
+
   breakdown <- breakdown[order(date)]
-  
+
   ## quick check
   if (!isTRUE(all.equal(
               breakdown$sentiment - rowSums(breakdown[, -c("date", "sentiment")]),
               rep(0, nrow(breakdown)))))
     stop("Computation of breakdown failed. Please contact the author of the package to work on a solution.")
-  
+
   if (rolling_window > 1) {
     ## Store existing dates
     idx <- breakdown$date
@@ -700,7 +700,7 @@ sentiment_breakdown <- function(x,
 
     p_breakdown <- ggplot2::ggplot(plot_data[Topic != "sentiment"], ggplot2::aes(x = date_center, y = value, fill = Topic)) +
       ggplot2::geom_col(alpha = .8, position = ggplot2::position_stack(reverse = TRUE), width = plot_data[Topic != "sentiment"]$width*24*60*60) +
-      ggplot2::geom_line(data = plot_data[Topic == "sentiment"], ggplot2::aes(x = date_center, y = value, group = 1L), inherit.aes = FALSE, size = .8) +
+      ggplot2::geom_line(data = plot_data[Topic == "sentiment"], ggplot2::aes(x = date_center, y = value, group = 1L), inherit.aes = FALSE, linewidth = .8) +
       ggplot2::scale_fill_manual(values = make_colors(x, "L1")) +
       ggplot2::ylab("Sentiment") +
       ggplot2::xlab("Date") +
@@ -819,7 +819,7 @@ sentiment_topics <- function(x,
     variable <- theta <- s <- ..cols <- prob <-  NULL
 
   if (!inherits(x, c("LDA", "rJST"))) stop("`sentiment_topics` is only implemented for LDA and rJST models.")
-  
+
   period <- match.arg(period)
   plot <- as.character(plot)
   plot <- match.arg(plot)
@@ -870,7 +870,7 @@ sentiment_topics <- function(x,
     proportions,
     by = ".id", sort = FALSE
   )
-  
+
   ## early return
   if (period == "identity") {
     sCols <- names(proportions)[grepl("^s_", names(proportions))]
@@ -891,10 +891,10 @@ sentiment_topics <- function(x,
     #          SIMPLIFY = FALSE)),
     #   env = I(list( s = sCols, theta = thetaCols))]
     return(topical_sent)
-    
-    
+
+
   }
-  
+
   if (length(tmp_sent) <= 2) {
     ## then there is only one sentiment column
     if (inherits(x, "rJST")) warning("Sentiment for the rJST model comes from an external source. This means that the sentiment layer of the model is ignored. Was it really your intent? Perhaps should you run `sentopics_sentiment(x, override = TRUE)` on the model before calling this function, or instead remove the sentiment layer by using an LDA.")
@@ -918,7 +918,7 @@ sentiment_topics <- function(x,
     #                             by = list(date = floor_date(.date, period)),
     #                             env = I(list( s = sCols, theta = thetaCols))]
   }
-  
+
   topical_sent <- topical_sent[order(date)]
 
   if (rolling_window > 1) {
@@ -973,7 +973,7 @@ sentiment_topics <- function(x,
 
       p_topical_sent <-
         ggplot2::ggplot(plot_data, ggplot2::aes(date, value, color = variable)) +
-        ggplot2::geom_line(size = 1.5) +
+        ggplot2::geom_line(linewidth = 1.5) +
         # ggplot2::guides(color = ggplot2::guide_legend(reverse = TRUE, title = "Topic")) +
         ggplot2::guides(color = "none") +
         ggplot2::scale_color_manual(values = make_colors(x, "L1")) +
@@ -1100,26 +1100,26 @@ proportion_topics <- function(x,
                           },
                           stop("Undefined input"))
   }
-  
 
-  
+
+
   proportions <- merge(
     sentopics_date(x),
     proportions,
     by = ".id", sort = FALSE
   )
-  
+
   ## early return
   if (period == "identity") {
     data.table::setnames(proportions, ".date", "date")
     return(proportions)
   }
-  
+
   proportions <- proportions[, c(lapply(.SD, mean)),
                               .SDcols = -c(".id", ".date"),
                               by = list(date = floor_date(`.date`, period))]
   proportions <- proportions[order(date)]
-  
+
   ## quick check
   if (!isTRUE(all.equal(
     rowSums(proportions[, -c("date")]),
@@ -1210,8 +1210,8 @@ proportion_topics <- function(x,
       #     ggplot2::geom_line(data = plot_data_alt)
       # }
 
-      
-      
+
+
     }
 
 

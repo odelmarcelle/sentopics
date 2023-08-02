@@ -58,7 +58,7 @@ series <- sentiment_series(lda, period = "month")
 
 # JST and rJST models can use computed sentiment from the sentiment layer,
 # but the model must be estimated first.
-rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald) 
+rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 sentiment_series(rjst)
 
 sentopics_sentiment(rjst) <- NULL ## remove existing sentiment

@@ -11,14 +11,15 @@
 #' @inherit rJST
 #' @export
 #' @family topic models
-#' @seealso Growing a model: [grow()], extracting top words: [topWords()]
+#' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}}, extracting
+#'   top words: [topWords()]
 #' @examples
 #' \donttest{# creating a model
 #' LDA(ECB_press_conferences_tokens, K = 5, alpha = 0.1, beta = 0.01)
 #' 
 #' # estimating an LDA model
 #' lda <- LDA(ECB_press_conferences_tokens)
-#' lda <- grow(lda, 100)}
+#' lda <- fit(lda, 100)}
 LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
   as.LDA(sentopicmodel(x, lexicon = NULL, L1 = K, L2 = 1, L1prior = alpha, L2prior = 0, beta = beta))
 }
@@ -49,7 +50,8 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #' @param ... not used
 #'
 #' @export
-#' @seealso Growing a model: [grow()], extracting top words: [topWords()]
+#' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}}, extracting
+#'   top words: [topWords()]
 #' @family topic models
 #' @examples 
 #' \donttest{# simple rJST model
@@ -57,18 +59,18 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #' 
 #' # estimating a rJST model including lexicon
 #' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
-#' rjst <- grow(rjst, 100)
+#' rjst <- fit(rjst, 100)
 #' 
 #' # from an LDA model:
 #' lda <- LDA(ECB_press_conferences_tokens)
-#' lda <- grow(lda, 100)
+#' lda <- fit(lda, 100)
 #' 
 #' # creating a rJST model out of it
 #' rjst <- rJST(lda, lexicon = LoughranMcDonald)
 #' # topic proportions remain identical
 #' identical(lda$theta, rjst$theta)
 #' # model should be iterated to estimate sentiment proportions
-#' rjst <- grow(rjst, 100)}
+#' rjst <- fit(rjst, 100)}
 rJST <- function(x, ...) {
   UseMethod("rJST")
 }
@@ -146,7 +148,7 @@ rJST.LDA <- function(x,
   if (x$it > 0 & !is.null(x$L2post)) x$L2post <- array(1/x$L2, dim = c(x$L2, x$L1, length(x$tokens)))
   
   stopifnot(check_integrity(x))
-  x <- grow(x, 0, displayProgress = FALSE)
+  x <- fit(x, 0, displayProgress = FALSE)
   
   as.rJST(x)
 }
@@ -166,7 +168,8 @@ rJST.LDA <- function(x,
 #'
 #' @inherit rJST
 #' @export
-#' @seealso Growing a model: [grow()], extracting top words: [topWords()]
+#' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}},
+#'   extracting top words: [topWords()]
 #' @family topic models
 #' @examples
 #' \donttest{# creating a JST model
@@ -174,7 +177,7 @@ rJST.LDA <- function(x,
 #' 
 #' # estimating a JST model including a lexicon
 #' jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
-#' jst <- grow(jst, 100)}
+#' jst <- fit(jst, 100)}
 JST <- function(x, lexicon = NULL, S = 3, K = 5,
                  gamma = 1, alpha = 5, beta = 0.01,
                  gammaCycle = 0, alphaCycle = 0) {
@@ -206,14 +209,16 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #' @param lexicon a `quanteda` dictionary with positive and negative categories
 #' @param smooth integer specifying the number of iterations of the smoothed burn-in
 #'
-#' @seealso Growing a model: [grow()], extracting top words: [topWords()]
+#' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}},
+#'   extracting top words: [topWords()]
 #' @family topic models
 #'
 #' @keywords internal
 #'
 #' @return An S3 list containing the model parameter and the estimated mixture.
 #'   This object corresponds to a Gibbs sampler estimator with zero iterations.
-#'   The MCMC can be iterated using the [grow()] function.
+#'   The MCMC can be iterated using the \code{\link[=fit.sentopicmodel]{fit()}}
+#'   function.
 #' 
 #'   - `tokens` is the tokens object used to create the model
 #'   - `vocabulary` contains the set of words of the corpus

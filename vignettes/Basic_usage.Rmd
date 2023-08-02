@@ -51,13 +51,13 @@ In `sentopics` the LDA model is estimated through Gibbs sampling, that iterative
 
 ## Estimating LDA models with `sentopics`
 
-The estimation of an LDA model is easily replicated using the `LDA()` and `grow()` function. The first function prepares the `R` object and initialize the assignment of the latent topics. The second function estimates the model using Gibbs sampling for a given number of iterations. Note that `grow()` may be used to iterate the model multiple times without resetting the estimation.
+The estimation of an LDA model is easily replicated using the `LDA()` and `fit()` function. The first function prepares the `R` object and initialize the assignment of the latent topics. The second function estimates the model using Gibbs sampling for a given number of iterations. Note that `grow()` may be used to iterate the model multiple times without resetting the estimation.
 
 ```{r}
 set.seed(123)
 lda <- LDA(ECB_press_conferences_tokens)
 lda
-lda <- grow(lda, iterations = 100)
+lda <- fit(lda, iterations = 100)
 lda
 ```
 
@@ -102,7 +102,7 @@ merged <- mergeTopics(lda, list(
 merged
 ```
 
-Note that merging topics is only useful for presentation purpose. Using again `grow` on a model with merged topics will drastically change the results as the current state of the model does not results from a standard estimation with the merged set of parameters.
+Note that merging topics is only useful for presentation purpose. Using again `fit` on a model with merged topics will drastically change the results as the current state of the model does not results from a standard estimation with the merged set of parameters.
 
 Provided that the `plotly` package is installed, one can also directly use `plot()` on the estimated topic model to enjoy a dynamic view of topic proportions and their most probable words (presented as a screenshot hereafter to limit this vignette's size).
 

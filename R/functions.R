@@ -27,7 +27,7 @@
 #' @seealso [melt.sentopicmodel()] for extracting estimated mixtures
 #' @examples
 #' model <- LDA(ECB_press_conferences_tokens)
-#' model <- grow(model, 10)
+#' model <- fit(model, 10)
 #' topWords(model)
 #' topWords(model, output = "matrix")
 #' topWords(model, method = "FREX")
@@ -41,7 +41,7 @@ topWords <- function(x,
   ## CMD check
   word <- value <- overall <- NULL
 
-  if (x$it < 1) stop("No top words yet. Iterate the model with grow() first.")
+  if (x$it < 1) stop("No top words yet. Iterate the model with fit() first.")
   class <- class(x)[1]
   method <- match.arg(method)
   output <- match.arg(output)
@@ -191,7 +191,7 @@ topWords_dt <- function(x,
 #' plot_topWords(model, subset = topic %in% 1:2)
 #' 
 #' jst <- JST(ECB_press_conferences_tokens)
-#' jst <- grow(jst, 10)
+#' jst <- fit(jst, 10)
 #' plot_topWords(jst)
 #' plot_topWords(jst, subset = topic %in% 1:2 & sentiment == 3)
 plot_topWords <- function(x,
@@ -216,7 +216,7 @@ plot_topWords <- function(x,
 #'   = TRUE`.
 #'
 #' @param x a model created from the [LDA()], [JST()] or [rJST()] function and
-#'   estimated with [grow()]
+#'   estimated with \code{\link[=fit.sentopicmodel]{fit()}}
 #' @param method the coherence method used.
 #' @param nWords the number of words in each topic used for evaluation.
 #' @param window optional. If `NULL`, use the default window for each coherence
@@ -292,7 +292,8 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 #'   Estimates are referred to as *chains*.
 #'
 #' @param x a valid `multiChains` object, obtained through the estimation of a
-#'   topic model using [grow()] and the argument `nChains` greater than `1`.
+#'   topic model using \code{\link[=fit.sentopicmodel]{fit()}} and the argument
+#'   `nChains` greater than `1`.
 #' @param method the method used to measure the distance between chains.
 #' @param ... further arguments passed to internal distance functions.
 #'
@@ -316,7 +317,7 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 #' @return A matrix of distance between the elements of `x`
 #' @examples
 #' model <- LDA(ECB_press_conferences_tokens)
-#' model <- grow(model, 10, nChains = 5)
+#' model <- fit(model, 10, nChains = 5)
 #' chainsDistances(model)
 #'
 #' @seealso [plot.multiChains()] [chainsScores()]
@@ -353,7 +354,8 @@ chainsDistances <- function(x,
 #' models.
 #'
 #' @param x a valid `multiChains` object, obtained through the estimation of a
-#'   topic model using [grow()] and the argument `nChains` greater than `1`.
+#'   topic model using \code{\link[=fit.sentopicmodel]{fit()}} and the argument
+#'   `nChains` greater than `1`.
 #' @param nWords the number of words used to compute coherence. See
 #'   [coherence()].
 #' @param window optional. If `NULL`, use the default window for each coherence
@@ -365,11 +367,11 @@ chainsDistances <- function(x,
 #'   coherence metrics, the value shown is the mean coherence across all topics
 #'   of a chain
 #'
-#' @inheritSection grow Parallelism
+#' @inheritSection fit.sentopicmodel Parallelism
 #'
 #' @examples
 #' model <- LDA(ECB_press_conferences_tokens[1:10])
-#' model <- grow(model, 10, nChains = 5)
+#' model <- fit(model, 10, nChains = 5)
 #' chainsScores(model, window = 5)
 #' chainsScores(model, window = "boolean")
 #' 

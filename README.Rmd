@@ -49,7 +49,7 @@ library("sentopics")
 print(ECB_press_conferences_tokens, 2)
 set.seed(123)
 lda <- LDA(ECB_press_conferences_tokens, K = 3, alpha = .1)
-lda <- grow(lda, 100)
+lda <- fit(lda, 100)
 lda
 ```
 

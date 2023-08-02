@@ -18,14 +18,15 @@
 #'
 #'   Note that the output of this function does not constitute an estimated
 #'   topic model, but merely an aggregation to ease the analysis. It is not
-#'   advised to use [grow()] on the merged topic model as it will radically
-#'   affect the content and proportions of the new themes.
+#'   advised to use \code{\link[=fit.sentopicmodel]{fit()}} on the merged topic
+#'   model as it will radically affect the content and proportions of the new
+#'   themes.
 #'
 #' @export
 #' @seealso sentopics_labels
 #' @examples
 #' \donttest{lda <- LDA(ECB_press_conferences_tokens, K = 5)
-#' lda <- grow(lda, 100)
+#' lda <- fit(lda, 100)
 #' merging_list <- list(
 #'   c(1,5),
 #'   2:4
@@ -42,7 +43,7 @@
 #' 
 #' # implemented for rJST
 #' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
-#' rjst <- grow(rjst, 100)
+#' rjst <- fit(rjst, 100)
 #' mergeTopics(rjst, merging_list2)}
 mergeTopics <- function(x, merging_list){
   
@@ -110,7 +111,7 @@ mergeTopics <- function(x, merging_list){
 
   stopifnot(check_integrity(x))
   attr(x, "labels") <- list(L1 = names(merging_list))
-  x <- grow(x, 0, displayProgress = FALSE)
+  x <- fit(x, 0, displayProgress = FALSE)
 
   if (sent_flag) {
     sentopics_sentiment(x)

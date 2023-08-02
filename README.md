@@ -56,7 +56,7 @@ print(ECB_press_conferences_tokens, 2)
 # [ reached max_ndoc ... 3,858 more documents ]
 set.seed(123)
 lda <- LDA(ECB_press_conferences_tokens, K = 3, alpha = .1)
-lda <- grow(lda, 100)
+lda <- fit(lda, 100)
 lda
 # An LDA model with 3 topics. Currently grown by 100 Gibbs sampling iterations.
 # ------------------Useful methods------------------

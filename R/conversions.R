@@ -21,14 +21,14 @@
 #'   example, estimated through variational inference). For these, the
 #'   conversion is limited and some functionalities of \pkg{sentopics} will be
 #'   disabled. The list of affected functions is subject to change and currently
-#'   includes [grow()], [mergeTopics()] and [rJST.LDA()].
+#'   includes \code{\link[=fit.sentopicmodel]{fit()}}, [mergeTopics()] and [rJST.LDA()].
 #'
 #'   Since models from the \pkg{lda} package are simply lists of outputs, the
 #'   function `as.LDA_lda()` is not related to the other methods and should be
 #'   applied directly on lists containing a model.
 #'
 #' @return A S3 list of class `LDA`, as if it was created and estimated using
-#'   [LDA()] and [grow()].
+#'   [LDA()] and \code{\link[=fit.sentopicmodel]{fit()}}.
 #'
 #' @rdname as.LDA
 #' @export
@@ -218,7 +218,7 @@ as.LDA.LDA_Gibbs <- function(x, docs, ...) {
     za = za,
     logLikelihood = NULL
   ), class = c("LDA", "sentopicmodel"), reversed = TRUE, Sdim = "L2")
-  LDA <- grow(LDA, 0, displayProgress = FALSE)
+  LDA <- fit(LDA, 0, displayProgress = FALSE)
   
   LDA
 }
@@ -390,7 +390,7 @@ as.LDA_lda <- function(list, docs, alpha, eta) {
     za = za,
     logLikelihood = NULL
   ), class = c("LDA", "sentopicmodel"), reversed = TRUE, Sdim = "L2")
-  LDA <- grow(LDA, 0, displayProgress = FALSE)
+  LDA <- fit(LDA, 0, displayProgress = FALSE)
   
   LDA
 }
@@ -529,7 +529,7 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
 #'
 #' @examples
 #' lda <- LDA(ECB_press_conferences_tokens)
-#' lda <- grow(lda, 100)
+#' lda <- fit(lda, 100)
 #' LDAvis(lda)
 LDAvis <- function(x, ...) {
   mis <- missingSuggets(c("LDAvis", "servr"))

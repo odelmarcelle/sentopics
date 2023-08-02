@@ -2,14 +2,14 @@
 # print -------------------------------------------------------------------
 
 sentopics_print_extend <- function(extended = FALSE) {
-  methods = c("grow", "topics", "topWords", "plot")
+  methods = c("fit", "topics", "topWords", "plot")
   explain <- c("Iterates the model using Gibbs sampling",
                "Return the most important topic of each document",
                "Return a data.table with the top words of each topic/sentiment",
                "A sunburst chart representing the estimated mixtures")
   cat("------------------Useful methods------------------\n")
   cat(sprintf("%-10s:%s", methods, explain), sep = "\n")
-  if (!extended) cat("This helpful message is displayed once per session, unless calling `print(x, extended = TRUE)`\n")
+  if (!extended) cat("This message is displayed once per session, unless calling `print(x, extended = TRUE)`\n")
 }
 
 #' Print method for sentopics models
@@ -29,7 +29,7 @@ sentopics_print_extend <- function(extended = FALSE) {
 #'
 #' @export
 print.sentopicmodel <- function(x, extended = FALSE, ...) {
-  cat("A sentopicmodel topic model with", x$L1, "topics and", x$L2, "sentiments. Currently grown by",
+  cat("A sentopicmodel topic model with", x$L1, "topics and", x$L2, "sentiments. Currently fitted by",
       x$it, "Gibbs sampling iterations.\n")
   if (getOption("sentopics_print_extended", TRUE) | extended) {
     sentopics_print_extend(extended)
@@ -41,7 +41,7 @@ print.sentopicmodel <- function(x, extended = FALSE, ...) {
 #' @rdname print.sentopicmodel
 #' @export
 print.rJST <- function(x, extended = FALSE, ...) {
-  cat("A reversed-JST model with", x$K, "topics and", x$S, "sentiments. Currently grown by",
+  cat("A reversed-JST model with", x$K, "topics and", x$S, "sentiments. Currently fitted by",
       x$it, "Gibbs sampling iterations.\n")
   if (getOption("sentopics_print_extended", TRUE) | extended) {
     sentopics_print_extend(extended)
@@ -52,7 +52,7 @@ print.rJST <- function(x, extended = FALSE, ...) {
 #' @rdname print.sentopicmodel
 #' @export
 print.LDA <- function(x, extended = FALSE, ...) {
-  cat("An LDA model with", x$K, "topics. Currently grown by",
+  cat("An LDA model with", x$K, "topics. Currently fitted by",
       x$it, "Gibbs sampling iterations.\n")
   if (getOption("sentopics_print_extended", TRUE) | extended) {
     sentopics_print_extend(extended)
@@ -63,7 +63,7 @@ print.LDA <- function(x, extended = FALSE, ...) {
 #' @rdname print.sentopicmodel
 #' @export
 print.JST <- function(x, extended = FALSE, ...) {
-  cat("A JST model with", x$S, "sentiments and", x$K, "topics. Currently grown by",
+  cat("A JST model with", x$S, "sentiments and", x$K, "topics. Currently fitted by",
       x$it, "Gibbs sampling iterations.\n")
   if (getOption("sentopics_print_extended", TRUE) | extended) {
     sentopics_print_extend(extended)
@@ -92,7 +92,7 @@ print.topWords <- function(x, ...) {
 #'   from the [plotly::plotly] library.
 #'
 #' @param x a model created from the [LDA()], [JST()] or [rJST()] function and
-#'   estimated with [grow()]
+#'   estimated with [fit()]
 #' @param nWords the number of words per topic/sentiment to display in the outer
 #'   layer of the plot
 #' @param layers specifies the number of layers for the sunburst chart. This
@@ -108,7 +108,7 @@ print.topWords <- function(x, ...) {
 #' @seealso [topWords()] [LDAvis()]
 #' @examples 
 #' lda <- LDA(ECB_press_conferences_tokens)
-#' lda <- grow(lda, 100)
+#' lda <- fit(lda, 100)
 #' plot(lda, nWords = 5)
 #' 
 #' # only displays the topic proportions
@@ -229,7 +229,7 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
 #'
 #' @examples
 #' models <- LDA(ECB_press_conferences_tokens)
-#' models <- grow(models, 10, nChains = 5)
+#' models <- fit(models, 10, nChains = 5)
 #' plot(models)
 #' @export
 plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosine", "minMax", "naiveEuclidean", "invariantEuclidean")) {
@@ -251,9 +251,15 @@ plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosin
   invisible(coord)
 }
 
-# grow --------------------------------------------------------------------
+# fit --------------------------------------------------------------------
 
-#' Estimate a topic model
+#' @importFrom generics fit
+#' @export
+generics::fit
+
+#' @name fit.sentopicmodel
+#' @aliases grow
+#' @title Estimate a topic model
 #'
 #' @description This function is used to estimate a topic model created by
 #'   [LDA()], [JST()] or [rJST()]. In essence, this function iterates a Gibbs
@@ -261,16 +267,25 @@ plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosin
 #'
 #' @param x a model created with the [LDA()], [JST()] or [rJST()] function.
 #' @param iterations the number of iterations by which the model should be
-#'   grown.
-#' @param nChains if set above 1, the model will be grown into multiple chains.
+#'   fitted.
+#' @param nChains if set above 1, the model will be fitted multiple times
 #'   from various starting positions. Latent variables will be re-initialized if
-#'   `x` has not been grown before.
+#'   `x` has not been fitted before.
 #' @param displayProgress if `TRUE`, a progress bar will be displayed indicating
 #'   the progress of the computation. When `nChains` is greater than 1, this
 #'   requires the package \pkg{progressr} and optionally \pkg{progress}.
 #' @param computeLikelihood if set to `FALSE`, does not compute the likelihood
 #'   at each iteration. This can slightly decrease the computing time.
 #' @param seed for reproducibility, a seed can be provided.
+#'
+#' @usage fit(
+#'   x,
+#'   iterations = 100,
+#'   nChains = 1,
+#'   displayProgress = TRUE,
+#'   computeLikelihood = TRUE,
+#'   seed = NULL
+#' )
 #'
 #' @return a `sentopicmodel` of the relevant model class if `nChains` is
 #'   unspecified or equal to 1. A `multiChains` object if `nChains` is greater
@@ -285,47 +300,53 @@ plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosin
 #' @export
 #' @examples
 #' model <- rJST(ECB_press_conferences_tokens)
-#' grow(model, 10)
+#' fit(model, 10)
 #'
 #' # -- Parallel computation --
 #' require(future.apply)
 #' future::plan("multisession", workers = 2) # Set up 2 workers
-#' grow(model, 10, nChains = 2)
+#' fit(model, 10, nChains = 2)
 #'
 #' future::plan("sequential") # Shut down workers
-grow <- function(x, iterations = 100, nChains = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL) {
-  UseMethod("grow")
-}
+NULL
+
+#' @aliases fit.sentopicmodel
 #' @export
-grow.LDA <- function(x, iterations = 100, nChains = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL) {
+fit.LDA <- function(x, iterations = 100, nChains = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL) {
   if (isTRUE(attr(x, "approx"))) stop("Not possible for approximated models")
-  as.LDA(grow(as.sentopicmodel(x),
+  as.LDA(fit(as.sentopicmodel(x),
             iterations = iterations,
             nChains = nChains,
             displayProgress = displayProgress,
             computeLikelihood = computeLikelihood,
             seed = seed))
 }
+
+#' @aliases fit.sentopicmodel
 #' @export
-grow.rJST <- function(x, iterations = 100, nChains = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL) {
-  as.rJST(grow(as.sentopicmodel(x),
+fit.rJST <- function(x, iterations = 100, nChains = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL) {
+  as.rJST(fit(as.sentopicmodel(x),
               iterations = iterations,
               nChains = nChains,
               displayProgress = displayProgress,
               computeLikelihood = computeLikelihood,
               seed = seed))
 }
+
+#' @aliases fit.sentopicmodel
 #' @export
-grow.JST <- function(x, iterations = 100, nChains = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL) {
-  as.JST(grow(as.sentopicmodel(x),
+fit.JST <- function(x, iterations = 100, nChains = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL) {
+  as.JST(fit(as.sentopicmodel(x),
               iterations = iterations,
               nChains = nChains,
               displayProgress = displayProgress,
               computeLikelihood = computeLikelihood,
               seed = seed))
 }
+
+#' @aliases fit.sentopicmodel
 #' @export
-grow.sentopicmodel <- function(x, iterations = 100, nChains = 1,
+fit.sentopicmodel <- function(x, iterations = 100, nChains = 1,
                                displayProgress = TRUE, computeLikelihood = TRUE,
                                seed = NULL) {
   start_time <- Sys.time()
@@ -451,9 +472,9 @@ grow.sentopicmodel <- function(x, iterations = 100, nChains = 1,
   }
 }
 
-
+#' @aliases fit.sentopicmodel
 #' @export
-grow.multiChains <- function(x, iterations = 100, nChains = NULL,
+fit.multiChains <- function(x, iterations = 100, nChains = NULL,
                              displayProgress = TRUE, computeLikelihood = TRUE,
                              seed = NULL) {
   start_time <- Sys.time()
@@ -563,6 +584,30 @@ grow.multiChains <- function(x, iterations = 100, nChains = NULL,
   chains
 }
 
+# Retain `grow` methods for compatibility
+
+#' @rdname fit.sentopicmodel
+#' @export
+#' @usage NULL
+grow <- function(x, iterations = 100, nChains = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL) {
+  UseMethod("grow")
+}
+#' @export
+#' @usage NULL
+grow.LDA <- fit.LDA
+#' @export
+#' @usage NULL
+grow.rJST <- fit.rJST
+#' @export
+#' @usage NULL
+grow.rJST <- fit.rJST
+#' @export
+#' @usage NULL
+grow.sentopicmodel <- fit.sentopicmodel
+#' @export
+#' @usage NULL
+grow.multiChains <- fit.multiChains
+
 #' Re-initialize a topic model
 #'
 #' @author Olivier Delmarcelle
@@ -572,16 +617,16 @@ grow.multiChains <- function(x, iterations = 100, nChains = NULL,
 #'   retains its original parameter specification.
 #'
 #' @param x a model created from the [LDA()], [JST()] or [rJST()] function and
-#'   estimated with [grow()]
+#'   estimated with [fit()]
 #'
 #' @return a `sentopicmodel` of the relevant model class, with the iteration count
 #'   reset to zero and re-initialized assignment of latent variables.
 #'
-#' @seealso [grow()]
+#' @seealso [fit()]
 #' @export
 #' @examples
 #' model <- LDA(ECB_press_conferences_tokens)
-#' model <- grow(model, 10)
+#' model <- fit(model, 10)
 #' reset(model)
 reset <- function(x) {
   
@@ -643,7 +688,7 @@ melt <- function(data, ...) {
 #'   topic model and returns them in a long [data.table] format.
 #'
 #' @param data a model created from the [LDA()], [JST()] or [rJST()] function
-#'   and estimated with [grow()]
+#'   and estimated with [fit()]
 #' @param ... not used
 #' @param include_docvars if `TRUE`, the melted result will also include the
 #'   *docvars* stored in the [tokens] object provided at model initialization
@@ -661,15 +706,15 @@ melt <- function(data, ...) {
 #' @examples
 #' # only returns topic proportion for LDA models
 #' lda <- LDA(ECB_press_conferences_tokens)
-#' lda <- grow(lda, 10)
+#' lda <- fit(lda, 10)
 #' melt(lda)
 #'
 #' # includes sentiment for JST and rJST models
 #' jst <- JST(ECB_press_conferences_tokens)
-#' jst <- grow(jst, 10)
+#' jst <- fit(jst, 10)
 #' melt(jst)
 melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
-  if (data$it <= 0) stop("Nothing to melt. Iterate the model with grow() first.")
+  if (data$it <= 0) stop("Nothing to melt. Estimate the model with fit() first.")
   class <- class(data)[1]
   data <- as.sentopicmodel(data)
   .id <- topic <- sentiment <- prob <- L1_prob <- L2_prob <- NULL # due to NSE notes in R CMD check

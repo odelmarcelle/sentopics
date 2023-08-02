@@ -1,3 +1,7 @@
+# development
+
+* Renamed `grow()` to `fit()` as a more intuitive name. `grow()` remains in the package for compatibility with older version.
+
 # sentopics 0.7.2
 
 * Added `as.LDA()` method for outputs from the **keyATM** package.

@@ -8,7 +8,8 @@ chainsScores(x, window = 110, nWords = 10)
 }
 \arguments{
 \item{x}{a valid \code{multiChains} object, obtained through the estimation of a
-topic model using \code{\link[=grow]{grow()}} and the argument \code{nChains} greater than \code{1}.}
+topic model using \code{\link[=fit.sentopicmodel]{fit()}} and the argument
+\code{nChains} greater than \code{1}.}
 
 \item{window}{optional. If \code{NULL}, use the default window for each coherence
 metric (10 for C_NPMI and 110 for C_V). It is possible to override these
@@ -36,7 +37,7 @@ using \code{\link[future:plan]{future::plan()}}. See the examples below.
 
 \examples{
 model <- LDA(ECB_press_conferences_tokens[1:10])
-model <- grow(model, 10, nChains = 5)
+model <- fit(model, 10, nChains = 5)
 chainsScores(model, window = 5)
 chainsScores(model, window = "boolean")
 

@@ -51,7 +51,7 @@ In `sentopics` the LDA model is estimated through Gibbs sampling, that iterative
 
 ## Estimating LDA models with `sentopics`
 
-The estimation of an LDA model is easily replicated using the `LDA()` and `fit()` function. The first function prepares the `R` object and initialize the assignment of the latent topics. The second function estimates the model using Gibbs sampling for a given number of iterations. Note that `grow()` may be used to iterate the model multiple times without resetting the estimation.
+The estimation of an LDA model is easily replicated using the `LDA()` and `fit()` function. The first function prepares the `R` object and initialize the assignment of the latent topics. The second function estimates the model using Gibbs sampling for a given number of iterations. Note that `fit()` may be used to iterate the model multiple times without resetting the estimation.
 
 ```{r}
 set.seed(123)

@@ -51,7 +51,7 @@ Extract the top words in each topic/sentiment from a
 }
 \examples{
 model <- LDA(ECB_press_conferences_tokens)
-model <- grow(model, 10)
+model <- fit(model, 10)
 topWords(model)
 topWords(model, output = "matrix")
 topWords(model, method = "FREX")
@@ -59,7 +59,7 @@ plot_topWords(model)
 plot_topWords(model, subset = topic \%in\% 1:2)
 
 jst <- JST(ECB_press_conferences_tokens)
-jst <- grow(jst, 10)
+jst <- fit(jst, 10)
 plot_topWords(jst)
 plot_topWords(jst, subset = topic \%in\% 1:2 & sentiment == 3)
 }

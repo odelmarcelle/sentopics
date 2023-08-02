@@ -4,11 +4,11 @@
 \alias{reset}
 \title{Re-initialize a topic model}
 \usage{
-reset(x)
+reset(object)
 }
 \arguments{
-\item{x}{a model created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}} function and
-estimated with \code{\link[=grow]{grow()}}}
+\item{object}{a model created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}} function and
+estimated with \code{\link[=fit]{fit()}}}
 }
 \value{
 a \code{sentopicmodel} of the relevant model class, with the iteration count
@@ -21,11 +21,11 @@ retains its original parameter specification.
 }
 \examples{
 model <- LDA(ECB_press_conferences_tokens)
-model <- grow(model, 10)
+model <- fit(model, 10)
 reset(model)
 }
 \seealso{
-\code{\link[=grow]{grow()}}
+\code{\link[=fit]{fit()}}
 }
 \author{
 Olivier Delmarcelle

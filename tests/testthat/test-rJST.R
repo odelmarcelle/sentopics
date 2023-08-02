@@ -5,24 +5,24 @@ toks <- ECB_press_conferences_tokens[1:10]
 rJST <- rJST(toks, lexicon = LoughranMcDonald)
 
 test_that("rJST works", {
-  expect_output(print(rJST), "A reversed-JST model with 5 topics and 3 sentiments. Currently grown by 0 Gibbs sampling iterations.")
+  expect_output(print(rJST), "A reversed-JST model with 5 topics and 3 sentiments. Currently fitted by 0 Gibbs sampling iterations.")
   tabl <- table(rJST$vocabulary$lexicon)
   expect_length(tabl, 3)
   expect_gt(sum(tabl), 0)
-  rJST <- grow(rJST, 2, displayProgress = FALSE)
+  rJST <- fit(rJST, 2, displayProgress = FALSE)
   expect_true(check_integrity(rJST, fast = FALSE))
   expect_s3_class(rJST, "rJST")
   expect_equal(attr(rJST, "reversed"), TRUE)
 
-  rJST2 <- grow(rJST, 2, nChains = 2, displayProgress = FALSE)
-  rJST2 <- grow(rJST2, 2, displayProgress = FALSE)
+  rJST2 <- fit(rJST, 2, nChains = 2, displayProgress = FALSE)
+  rJST2 <- fit(rJST2, 2, displayProgress = FALSE)
   expect_identical(attr(rJST2, "containedClass"), "rJST")
 
   expect_true(all(sapply(rJST2, function(x) attr(x, "reversed"))))
   expect_true(all(sapply(rJST2, check_integrity, fast = FALSE)))
 })
 
-rJST <- grow(rJST, 2, displayProgress = FALSE)
+rJST <- fit(rJST, 2, displayProgress = FALSE)
 
 test_that("functions works", {
   expect_s3_class(topWords(rJST), "data.table")
@@ -49,10 +49,10 @@ test_that("test convergence", {
   convergence <- FALSE
   while (convergence == FALSE && retry < 5) {
     rJST <- rJST(toks, lex, K = 3, S = 2, alpha = .1)
-    rJST <- grow(rJST, 100, nChains = 2, displayProgress = FALSE)
+    rJST <- fit(rJST, 100, nChains = 2, displayProgress = FALSE)
     count <- 0
     while (convergence == FALSE && count < 30) {
-      rJST <- grow(rJST, 100, nChains = 2, displayProgress = FALSE)
+      rJST <- fit(rJST, 100, nChains = 2, displayProgress = FALSE)
       count <- count + 1
       if (all(distToGenerative(rJST, vocab) < .15)) convergence <- TRUE
     }
@@ -65,11 +65,11 @@ test_that("test convergence", {
   convergence <- FALSE
   while (convergence == FALSE && retry < 20) {
     rJST <- rJST(toks, K = 3, S = 2, alpha = .1)
-    rJST <- grow(rJST, 100, nChains = 2, displayProgress = FALSE)
+    rJST <- fit(rJST, 100, nChains = 2, displayProgress = FALSE)
     expect_message(distToGenerative(rJST, vocab), "No lexicon detected, allowing")
     count <- 0
     while (convergence == FALSE && count < 30) {
-      rJST <- grow(rJST, 100, nChains = 2, displayProgress = FALSE)
+      rJST <- fit(rJST, 100, nChains = 2, displayProgress = FALSE)
       count <- count + 1
       if (all(suppressMessages(distToGenerative(rJST, vocab)) < .15))
         convergence <- TRUE
@@ -81,7 +81,7 @@ test_that("test convergence", {
 
 test_that("from LDA works", {
   toks <- ECB_press_conferences_tokens[1:10]
-  LDA <- grow(LDA(toks), 10, displayProgress = FALSE)
+  LDA <- fit(LDA(toks), 10, displayProgress = FALSE)
   rJST <- rJST(LDA, lexicon = LoughranMcDonald)
 
   expect_identical(LDA$theta, rJST$theta)

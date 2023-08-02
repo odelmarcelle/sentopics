@@ -8,7 +8,7 @@
 }
 \arguments{
 \item{x}{a model created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}} function and
-estimated with \code{\link[=grow]{grow()}}}
+estimated with \code{\link[=fit]{fit()}}}
 
 \item{nWords}{the number of words per topic/sentiment to display in the outer
 layer of the plot}
@@ -31,7 +31,7 @@ from the \link[plotly:plotly]{plotly::plotly} library.
 }
 \examples{
 lda <- LDA(ECB_press_conferences_tokens)
-lda <- grow(lda, 100)
+lda <- fit(lda, 100)
 plot(lda, nWords = 5)
 
 # only displays the topic proportions

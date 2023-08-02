@@ -6,7 +6,7 @@ dfm <- quanteda::dfm_trim(dfm, min_termfreq = 2)
 dfm <- quanteda::dfm_remove(dfm, quanteda::stopwords("en"))
 toks <- quanteda::tokens_keep(toks, colnames(dfm), padding = TRUE)
 sentopicmodel <- sentopicmodel(toks, lexicon = LoughranMcDonald)
-sentopicmodel <- grow(sentopicmodel, 100, displayProgress = FALSE)
+sentopicmodel <- fit(sentopicmodel, 100, displayProgress = FALSE)
 
 
 test_that("basic metrics works", {
@@ -32,13 +32,13 @@ test_that("basic metrics works", {
 })
 
 LDA <- LDA(toks)
-LDA <- grow(LDA, 100, displayProgress = FALSE)
+LDA <- fit(LDA, 100, displayProgress = FALSE)
 
 JST <- JST(toks)
-JST <- grow(JST, 100, displayProgress = FALSE)
+JST <- fit(JST, 100, displayProgress = FALSE)
 
 rJST <- rJST(toks)
-rJST <- grow(rJST, 100, displayProgress = FALSE)
+rJST <- fit(rJST, 100, displayProgress = FALSE)
 
 test_that("other models works", {
   expect_silent(res <- coherence(LDA))

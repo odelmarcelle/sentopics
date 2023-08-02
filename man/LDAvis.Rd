@@ -27,7 +27,7 @@ the development version of \pkg{LDAvis} from github
 }
 \examples{
 lda <- LDA(ECB_press_conferences_tokens)
-lda <- grow(lda, 100)
+lda <- fit(lda, 100)
 LDAvis(lda)
 }
 \seealso{

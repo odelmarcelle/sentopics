@@ -8,7 +8,7 @@
 }
 \arguments{
 \item{data}{a model created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}} function
-and estimated with \code{\link[=grow]{grow()}}}
+and estimated with \code{\link[=fit]{fit()}}}
 
 \item{...}{not used}
 
@@ -29,12 +29,12 @@ topic model and returns them in a long \link{data.table} format.
 \examples{
 # only returns topic proportion for LDA models
 lda <- LDA(ECB_press_conferences_tokens)
-lda <- grow(lda, 10)
+lda <- fit(lda, 10)
 melt(lda)
 
 # includes sentiment for JST and rJST models
 jst <- JST(ECB_press_conferences_tokens)
-jst <- grow(jst, 10)
+jst <- fit(jst, 10)
 melt(jst)
 }
 \seealso{

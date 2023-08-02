@@ -4,6 +4,7 @@
 \name{reexports}
 \alias{reexports}
 \alias{as.tokens}
+\alias{fit}
 \alias{docvars}
 \alias{tokens}
 \title{Objects exported from other packages}
@@ -13,6 +14,8 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
+  \item{generics}{\code{\link[generics]{fit}}}
+
   \item{quanteda}{\code{\link[quanteda]{as.tokens}}, \code{\link[quanteda]{docvars}}, \code{\link[quanteda]{tokens}}}
 }}
 

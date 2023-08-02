@@ -13,7 +13,8 @@ chainsDistances(
 }
 \arguments{
 \item{x}{a valid \code{multiChains} object, obtained through the estimation of a
-topic model using \code{\link[=grow]{grow()}} and the argument \code{nChains} greater than \code{1}.}
+topic model using \code{\link[=fit.sentopicmodel]{fit()}} and the argument
+\code{nChains} greater than \code{1}.}
 
 \item{method}{the method used to measure the distance between chains.}
 
@@ -50,7 +51,7 @@ the model. Equivalent to \code{euclidean} for LDA models.
 }
 \examples{
 model <- LDA(ECB_press_conferences_tokens)
-model <- grow(model, 10, nChains = 5)
+model <- fit(model, 10, nChains = 5)
 chainsDistances(model)
 
 }

@@ -58,13 +58,13 @@ set.seed(123)
 lda <- LDA(ECB_press_conferences_tokens, K = 3, alpha = .1)
 lda <- fit(lda, 100)
 lda
-# An LDA model with 3 topics. Currently grown by 100 Gibbs sampling iterations.
+# An LDA model with 3 topics. Currently fitted by 100 Gibbs sampling iterations.
 # ------------------Useful methods------------------
-# grow      :Iterates the model using Gibbs sampling
+# fit       :Estimate the model using Gibbs sampling
 # topics    :Return the most important topic of each document
 # topWords  :Return a data.table with the top words of each topic/sentiment
-# plot      :A sunburst chart representing the estimated mixtures
-# This helpful message is displayed once per session, unless calling `print(x, extended = TRUE)`
+# plot      :Plot a sunburst chart representing the estimated mixtures
+# This message is displayed once per session, unless calling `print(x, extended = TRUE)`
 ```
 
 There are various way to extract results from the model: it is either

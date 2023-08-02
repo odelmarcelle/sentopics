@@ -40,7 +40,8 @@ the hyperparameter alpha}
 \value{
 An S3 list containing the model parameter and the estimated mixture.
 This object corresponds to a Gibbs sampler estimator with zero iterations.
-The MCMC can be iterated using the \code{\link[=grow]{grow()}} function.
+The MCMC can be iterated using the \code{\link[=fit.sentopicmodel]{fit()}}
+function.
 \itemize{
 \item \code{tokens} is the tokens object used to create the model
 \item \code{vocabulary} contains the set of words of the corpus
@@ -71,7 +72,7 @@ JST(ECB_press_conferences_tokens)
 
 # estimating a JST model including a lexicon
 jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
-jst <- grow(jst, 100)}
+jst <- fit(jst, 100)}
 }
 \references{
 Lin, C. and He, Y. (2009). \href{https://dl.acm.org/doi/10.1145/1645953.1646003}{Joint sentiment/topic model for sentiment analysis}. In \emph{Proceedings
@@ -82,7 +83,8 @@ Lin, C., He, Y., Everson, R. and Ruger, S. (2012). \href{https://ieeexplore.ieee
 \emph{IEEE Transactions on Knowledge and Data Engineering}, 24(6), 1134–-1145.
 }
 \seealso{
-Growing a model: \code{\link[=grow]{grow()}}, extracting top words: \code{\link[=topWords]{topWords()}}
+Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}},
+extracting top words: \code{\link[=topWords]{topWords()}}
 
 Other topic models: 
 \code{\link{LDA}()},

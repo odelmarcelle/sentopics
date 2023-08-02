@@ -11,7 +11,7 @@ test_that("prior population works", {
   expect_identical(sentopics_date(jst), data.table(.id = names(toks), .date = as.Date(ECB_press_conferences_tokens$.date)))
 })
 
-jst <- grow(JST(toks, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
+jst <- fit(JST(toks, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
 
 
 sentopics_date(jst) <- NULL
@@ -47,7 +47,7 @@ test_that("sentiment works", {
   sentopics_sentiment(lda) <- NULL
   expect_error(sentopics_sentiment(lda))
 
-  rjst <- grow(rJST(toks, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
+  rjst <- fit(rJST(toks, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
   expect_message(sent <- sentopics_sentiment(rjst, override = TRUE), "Sentiment computed and assigned")
   expect_true(all(is.finite(sent$.sentiment)))
 })
@@ -66,21 +66,21 @@ sentopics_date(jst) <- ECB_press_conferences_tokens$.date
 
 test_that("sentiment_series works", {
   skip_if_not_installed("xts")
-  jst <- grow(JST(toks, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
+  jst <- fit(JST(toks, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
   s1_1 <- sentiment_series(jst)
   sentopics_sentiment(jst, override = TRUE)
   s2 <- sentiment_series(jst)
   expect_false(isTRUE(all.equal(s1_1, s2, check.attributes = FALSE)))
 
 
-  rjst <- grow(rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
+  rjst <- fit(rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
   sentopics_labels(jst) <- list(topic = paste0("superTopic", 1:jst$K))
   s1_2 <- sentiment_series(rjst)
   sentopics_sentiment(rjst, override = TRUE)
   s2 <- sentiment_series(rjst)
   expect_false(isTRUE(all.equal(s1_2, s2, check.attributes = FALSE)))
 
-  lda <- grow(LDA(ECB_press_conferences_tokens), 1, displayProgress = FALSE)
+  lda <- fit(LDA(ECB_press_conferences_tokens), 1, displayProgress = FALSE)
   s1_3 <- sentiment_series(lda)
 
   expect_identical(s1_1, s1_2)
@@ -106,7 +106,7 @@ test_that("series functions works for LDA", {
   expect_silent(res <- sentiment_series(lda))
   expect_equal(mean(res), 0)
   expect_equal(sd(res), 1)
-  lda <- grow(lda, 1, displayProgress = FALSE)
+  lda <- fit(lda, 1, displayProgress = FALSE)
 
   expect_silent(sentiment_topics(lda))
   expect_silent(breakdown <- sentiment_breakdown(lda))
@@ -125,7 +125,7 @@ test_that("series functions works for LDA", {
 test_that("series functions works for rJST", {
 
   rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
-  rjst <- grow(rjst, 10, displayProgress = FALSE)
+  rjst <- fit(rjst, 10, displayProgress = FALSE)
 
   expect_warning(sentiment_breakdown(rjst))
   expect_warning(sentiment_topics(rjst))
@@ -171,7 +171,7 @@ test_that("series functions works for rJST", {
 test_that("series functions works for JST", {
   skip_if_not_installed("xts")
   jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
-  jst <- grow(jst, 10, displayProgress = FALSE)
+  jst <- fit(jst, 10, displayProgress = FALSE)
 
   expect_error(sentiment_breakdown(jst))
   expect_error(sentiment_topics(jst))

@@ -16,7 +16,7 @@ test_that("vocab generation works", {
   expect_equal(dim(vocab), c(5 * 3 * 5 + 2 * (5 + 3), 3, 5))
   expect_equal(sum(vocab), 5 * 3)
   expect_equal(sum(vocab < 0), 0)
-  
+
   expect_equal(sum(vocab2), 3 * 2)
   expect_equal(sum(vocab2 < 0), 0)
   expect_equal(sum(vocab3), 3 * 1)
@@ -48,7 +48,7 @@ test_that("lexicon & class  generation works", {
 })
 
 generated_sentopicmodel <- sentopicmodel(toks)
-generated_sentopicmodel <- grow(generated_sentopicmodel, 20, displayProgress = FALSE)
+generated_sentopicmodel <- fit(generated_sentopicmodel, 20, displayProgress = FALSE)
 test_that("generated sentopicmodel works", {
   expect_true(check_integrity(generated_sentopicmodel))
   expect_s3_class(generated_sentopicmodel, "sentopicmodel")

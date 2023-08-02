@@ -27,12 +27,13 @@ assignments.
 
 Note that the output of this function does not constitute an estimated
 topic model, but merely an aggregation to ease the analysis. It is not
-advised to use \code{\link[=grow]{grow()}} on the merged topic model as it will radically
-affect the content and proportions of the new themes.
+advised to use \code{\link[=fit.sentopicmodel]{fit()}} on the merged topic
+model as it will radically affect the content and proportions of the new
+themes.
 }
 \examples{
 \donttest{lda <- LDA(ECB_press_conferences_tokens, K = 5)
-lda <- grow(lda, 100)
+lda <- fit(lda, 100)
 merging_list <- list(
   c(1,5),
   2:4
@@ -49,7 +50,7 @@ sentopics_labels(merged)
 
 # implemented for rJST
 rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
-rjst <- grow(rjst, 100)
+rjst <- fit(rjst, 100)
 mergeTopics(rjst, merging_list2)}
 }
 \seealso{

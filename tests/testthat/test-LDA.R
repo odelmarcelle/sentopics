@@ -5,19 +5,19 @@ toks <- ECB_press_conferences_tokens[1:10]
 LDA <- LDA(toks)
 
 test_that("LDA works", {
-  expect_output(print(LDA), "An LDA model with 5 topics. Currently grown by 0 Gibbs sampling iterations.")
-  LDA <- grow(LDA, 2, displayProgress = FALSE)
+  expect_output(print(LDA), "An LDA model with 5 topics. Currently fitted by 0 Gibbs sampling iterations.")
+  LDA <- fit(LDA, 2, displayProgress = FALSE)
   expect_true(check_integrity(LDA, fast = FALSE))
   expect_s3_class(LDA, "LDA")
 
-  LDA2 <- grow(LDA, 2, nChains = 2, displayProgress = FALSE)
-  LDA2 <- grow(LDA2, 2, displayProgress = FALSE)
+  LDA2 <- fit(LDA, 2, nChains = 2, displayProgress = FALSE)
+  LDA2 <- fit(LDA2, 2, displayProgress = FALSE)
   expect_identical(attr(LDA2, "containedClass"), "LDA")
 
   expect_true(all(sapply(LDA2, check_integrity, fast = FALSE)))
 })
 
-LDA <- grow(LDA, 2, displayProgress = FALSE)
+LDA <- fit(LDA, 2, displayProgress = FALSE)
 
 test_that("functions works", {
   expect_s3_class(topWords(LDA), "data.table")
@@ -39,7 +39,7 @@ test_that("test convergence", {
   toks <- generateDocuments(vocab, nDocs = 100, L1prior = 1, nWords = 100, nClass = 1)
   LDA <- LDA(toks)
 
-  LDA <- grow(LDA, 100, nChains = 10, displayProgress = FALSE)
+  LDA <- fit(LDA, 100, nChains = 10, displayProgress = FALSE)
   expect_lte(mean(distToGenerative(LDA, vocab)), .15)
 })
 

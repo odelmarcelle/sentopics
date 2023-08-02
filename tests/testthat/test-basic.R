@@ -10,9 +10,9 @@ test_that("creating a sentopicmodel works", {
   expect_s3_class(sentopicmodel, "sentopicmodel")
 })
 
-sentopicmodel <- grow(sentopicmodel, 5, displayProgress = FALSE)
+sentopicmodel <- fit(sentopicmodel, 5, displayProgress = FALSE)
 
-test_that("growing a sentopicmodel works", {
+test_that("fitting a sentopicmodel works", {
   expect_true(check_integrity(sentopicmodel, fast = FALSE))
   expect_s3_class(sentopicmodel, "sentopicmodel")
   expect_length(sentopicmodel$logLikelihood, 5)
@@ -30,7 +30,7 @@ test_that("reset works", {
 })
 
 test_that("print and plot methods work", {
-  expect_output(print(sentopicmodel), "A sentopicmodel topic model with 5 topics and 3 sentiments. Currently grown by 5 Gibbs sampling iterations.")
+  expect_output(print(sentopicmodel), "A sentopicmodel topic model with 5 topics and 3 sentiments. Currently fitted by 5 Gibbs sampling iterations.")
 })
 
 test_that("output functions works", {
@@ -58,11 +58,11 @@ test_that("topWords methods works", {
   expect_silent(tops <- topWords(sentopicmodel, method = "probability"))
   expect_true(all(is.finite(tops$value)))
   expect_output(print(tops), "probability")
-  
+
   expect_silent(tops <- topWords(sentopicmodel, method = "term-score"))
   expect_true(all(is.finite(tops$value)))
   expect_output(print(tops), "term-score")
-  
+
   expect_silent(tops <- topWords(sentopicmodel, method = "FREX"))
   expect_true(all(is.finite(tops$value)))
   expect_output(print(tops), "FREX")
@@ -70,12 +70,12 @@ test_that("topWords methods works", {
 
 test_that("Updates works", {
   alphaU <- sentopicmodel(toks, L1cycle = 2)
-  alphaU <- grow(alphaU, 5, displayProgress = FALSE)
+  alphaU <- fit(alphaU, 5, displayProgress = FALSE)
   expect_false(isTRUE(all.equal(rep(1, 5), alphaU$alpha)))
 
   alphaU <- LDA(toks)
   alphaU$alphaCycle <- 2
-  alphaU <- grow(alphaU, 5, displayProgress = FALSE)
+  alphaU <- fit(alphaU, 5, displayProgress = FALSE)
   expect_false(isTRUE(all.equal(rep(1, 5), alphaU$alpha)))
 })
 

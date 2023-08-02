@@ -29,7 +29,7 @@ test_that("from STM", {
     apply(stm$theta, 2, function(x) head(order(-x)))
   )
 
-  expect_error(grow(lda), "Not possible for approximated")
+  expect_error(fit(lda), "Not possible for approximated")
   expect_error(mergeTopics(lda, as.list(1:3)), "Not possible for approximated")
   expect_error(rJST(lda), "Not possible for approximated")
 
@@ -216,7 +216,7 @@ test_that("LDAvis", {
   skip_if_not_installed("servr")
 
   lda <- LDA(ECB_press_conferences_tokens)
-  lda <- grow(lda, 10, displayProgress = FALSE)
+  lda <- fit(lda, 10, displayProgress = FALSE)
   if (interactive())
     expect_message(LDAvis(lda), "To stop the server,")
   else

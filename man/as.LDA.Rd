@@ -43,7 +43,7 @@ hyperparameter will be set to \code{0.01}.}
 }
 \value{
 A S3 list of class \code{LDA}, as if it was created and estimated using
-\code{\link[=LDA]{LDA()}} and \code{\link[=grow]{grow()}}.
+\code{\link[=LDA]{LDA()}} and \code{\link[=fit.sentopicmodel]{fit()}}.
 }
 \description{
 These functions converts estimated models from other topic
@@ -54,7 +54,7 @@ Some models do not store the topic assignment of each word (for
 example, estimated through variational inference). For these, the
 conversion is limited and some functionalities of \pkg{sentopics} will be
 disabled. The list of affected functions is subject to change and currently
-includes \code{\link[=grow]{grow()}}, \code{\link[=mergeTopics]{mergeTopics()}} and \code{\link[=rJST.LDA]{rJST.LDA()}}.
+includes \code{\link[=fit.sentopicmodel]{fit()}}, \code{\link[=mergeTopics]{mergeTopics()}} and \code{\link[=rJST.LDA]{rJST.LDA()}}.
 
 Since models from the \pkg{lda} package are simply lists of outputs, the
 function \code{as.LDA_lda()} is not related to the other methods and should be

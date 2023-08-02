@@ -62,7 +62,7 @@ rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 sentiment_series(rjst)
 
 sentopics_sentiment(rjst) <- NULL ## remove existing sentiment
-rjst <- grow(rjst, 10) ## estimating the model is then needed
+rjst <- fit(rjst, 10) ## estimating the model is then needed
 sentiment_series(rjst)
 
 # note the presence of both raw and scaled sentiment values

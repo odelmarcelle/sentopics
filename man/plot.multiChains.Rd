@@ -13,7 +13,8 @@
 }
 \arguments{
 \item{x}{a valid \code{multiChains} object, obtained through the estimation of a
-topic model using \code{\link[=grow]{grow()}} and the argument \code{nChains} greater than \code{1}.}
+topic model using \code{\link[=fit.sentopicmodel]{fit()}} and the argument
+\code{nChains} greater than \code{1}.}
 
 \item{...}{not used}
 
@@ -31,7 +32,7 @@ scaling.
 }
 \examples{
 models <- LDA(ECB_press_conferences_tokens)
-models <- grow(models, 10, nChains = 5)
+models <- fit(models, 10, nChains = 5)
 plot(models)
 }
 \seealso{

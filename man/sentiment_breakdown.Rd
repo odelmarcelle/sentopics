@@ -81,7 +81,7 @@ averaged to compute the breakdown of the sentiment time series.
 }
 \examples{
 \donttest{lda <- LDA(ECB_press_conferences_tokens)
-lda <- grow(lda, 100)
+lda <- fit(lda, 100)
 sentiment_breakdown(lda)
 
 # plot shortcut
@@ -89,7 +89,7 @@ plot_sentiment_breakdown(lda)
 
 # also available for rJST models (with topic-level sentiment)
 rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
-rjst <- grow(rjst, 100)
+rjst <- fit(rjst, 100)
 sentopics_sentiment(rjst, override = TRUE)
 plot_sentiment_breakdown(rjst)}
 }

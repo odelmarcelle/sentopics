@@ -18,7 +18,8 @@ LDA(x, K = 5, alpha = 1, beta = 0.01)
 \value{
 An S3 list containing the model parameter and the estimated mixture.
 This object corresponds to a Gibbs sampler estimator with zero iterations.
-The MCMC can be iterated using the \code{\link[=grow]{grow()}} function.
+The MCMC can be iterated using the \code{\link[=fit.sentopicmodel]{fit()}}
+function.
 \itemize{
 \item \code{tokens} is the tokens object used to create the model
 \item \code{vocabulary} contains the set of words of the corpus
@@ -49,14 +50,15 @@ LDA(ECB_press_conferences_tokens, K = 5, alpha = 0.1, beta = 0.01)
 
 # estimating an LDA model
 lda <- LDA(ECB_press_conferences_tokens)
-lda <- grow(lda, 100)}
+lda <- fit(lda, 100)}
 }
 \references{
 Blei, D.M., Ng, A.Y. and Jordan, M.I. (2003). \href{http://www.cs.columbia.edu/~blei/papers/BleiNgJordan2003.pdf}{Latent Dirichlet Allocation}.
 \emph{Journal of Machine Learning Research}, 3, 993--1022.
 }
 \seealso{
-Growing a model: \code{\link[=grow]{grow()}}, extracting top words: \code{\link[=topWords]{topWords()}}
+Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}}, extracting
+top words: \code{\link[=topWords]{topWords()}}
 
 Other topic models: 
 \code{\link{JST}()},

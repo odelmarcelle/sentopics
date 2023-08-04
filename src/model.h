@@ -28,10 +28,6 @@ public:
   uword C;  // number of document classes
 
   uword it;          // internal iteration counter
-  uword initLDA;   // number of iterations where sentiment sampling is delayed
-
-  uword smooth;
-  double smooth_factor;
 
   double initBeta;   // value of beta provided at initialization
 
@@ -97,9 +93,7 @@ public:
             double beta_,
             mat& gamma_,
             uword alphaCycle_,
-            uword gammaCycle_,
-            uword initLDA_,
-            uword smooth_
+            uword gammaCycle_
             );
 
   void initBetaLex(double initBeta);        // initialize beta with lexicon information
@@ -128,8 +122,6 @@ public:
                uword D_,
                uword C_,
                uword it_,
-               uword initLDA_,
-               uword smooth_,
                SEXP za_,
                SEXP intTokens_,
                ivec& lexicon_,
@@ -161,9 +153,6 @@ RCPP_MODULE(model_module) {
   .field( "D", &model::D)
   .field( "C", &model::C)
   .field( "it", &model::it)
-  .field( "initLDA", &model::initLDA)
-  .field( "smooth", &model::smooth)
-  .field( "smooth_factor", &model::smooth_factor)
   .field( "zd", &model::zd)
   .field( "l1d", &model::l1d)
   .field( "count_z", &model::count_z)

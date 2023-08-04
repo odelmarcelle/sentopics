@@ -348,7 +348,7 @@ sentopics_labels <- function(x, flat = TRUE) {
 
   ## force update of labels on theta phi ect..
   x <- fit(x, 0, displayProgress = FALSE)
-  
+
   ## manually adjust stored sentiment in docvars (if any)
   docvars <- attr(x$tokens, "docvars")
   idx <- grepl("^\\.s_", names(docvars))
@@ -1272,7 +1272,7 @@ sentopicmodel_params <- function(x) {
   c(
     x[c("L1", "L2",
         # "L1prior", "L2prior", "beta",
-        "initLDA", "smooth", "initType", "L1cycle", "L2cycle")],
+        "L1cycle", "L2cycle")],
     attributes(x)[c("reversed", "Sdim")],
     L1_name = ifelse(attr(x, "reversed") == TRUE, "topic", "sentiment"),
     L2_name = ifelse(attr(x, "reversed") == FALSE, "topic", "sentiment")

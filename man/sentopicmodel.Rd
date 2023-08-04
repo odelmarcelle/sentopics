@@ -14,8 +14,6 @@ sentopicmodel(
   beta = 0.01,
   L1cycle = 0,
   L2cycle = 0,
-  initLDA = 0,
-  smooth = 0,
   reversed = TRUE
 )
 }
@@ -37,10 +35,6 @@ sentopicmodel(
 \item{L1cycle}{integer specifying the cycle size between two updates of the hyperparameter L1prior}
 
 \item{L2cycle}{integer specifying the cycle size between two updates of the hyperparameter L2prior}
-
-\item{initLDA}{integer specifying the number of iterations of the LDA burn-in}
-
-\item{smooth}{integer specifying the number of iterations of the smoothed burn-in}
 
 \item{reversed}{indicates on which dimension should \code{lexicon} apply. When
 \code{reversed=FALSE}, the lexicon is applied on the first layer of the document

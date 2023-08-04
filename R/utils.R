@@ -43,8 +43,6 @@ rebuild_cppModel <- function(x, base) {
       length(base$tokens), # x$D
       1L, # length(unique(quanteda::docvars(base$tokens, ".class"))), # x$C
       x$it,
-      x$initLDA,
-      x$smooth,
       x$za,
       #### clean tokens before rebuilding
       base$cleaned,
@@ -75,7 +73,7 @@ check_integrity <- function(x, detailed = FALSE, fast = TRUE) {
   if (!is.null(x$za)) {
     tmp <- unlist(x$za, use.names = FALSE, recursive = FALSE)
     zaRange <- c(min(tmp), max(tmp))
-    zaFlag <- zaRange[1] >= 1 && zaRange[2] <= (x$L1 * x$L2) 
+    zaFlag <- zaRange[1] >= 1 && zaRange[2] <= (x$L1 * x$L2)
   } else {
     zaFlag <- TRUE
   }
@@ -147,7 +145,7 @@ reorder_sentopicmodel <- function(x) {
            if (approx) c("zd", "zw") else "za",
            "L1post", "L2post", "phi",
            "logLikelihood",
-           "initLDA", "smooth", "L1cycle", "L2cycle")]
+           "L1cycle", "L2cycle")]
   x <- x[!sapply(x, is.null)]
   class(x) <- c("sentopicmodel")
   attr(x, "reversed") <- reversed
@@ -199,7 +197,7 @@ rebuild_L2d_from_posterior <- function(L1D, L2post, L2prior) {
   L2 <- dim(L2post)[1]
   D <- nrow(L1D)
   #### L2 frequencies from L1D, L2 post and L2 prior
-  
+
   L2post <- L2post
   dim(L2post) <- c(L1 * L2, D)
   L2post <- t(L2post)
@@ -432,7 +430,7 @@ invariantEuclideanOptim <- function(multiChains, L1 = multiChains[[1]]$L1,
 
     ## euclidean norm
     tmp <- euclidean_cdist(phi1, phi2)
-    
+
     ## Check only permutations of L1. Size: factorial(L1)
     ## Idea: L2 are fixed per L1. Reduce the size of the (L1*L2, L1*L2) matrix
     ## to a (L1, L1) matrix by summing the diagonal of each submatrix (L2, L2).
@@ -803,7 +801,7 @@ reorder_within <- function(x, by, within, fun = mean, sep = "___", ...) {
   if (!is.list(within)) {
     within <- list(within)
   }
-  
+
   new_x <- do.call(paste, c(list(x, sep = sep), within))
   stats::reorder(new_x, by, FUN = fun)
 }
@@ -829,7 +827,7 @@ custom_handler <- function() {
 }
 
 makeVocabulary <- function(toks, dictionary, S) {
-  
+
   ## CMD checks
   word <- NULL
 
@@ -1012,10 +1010,10 @@ makeVocabulary <- function(toks, dictionary, S) {
 
 ### TODO: check and export one day
 getTexts <- function(x, topic, sentiment, n = 3, collapsed = TRUE) {
-  
+
   # CMD check
   prob <- .id <- NULL
-  
+
   ## avoid conflict with column names
   if (attr(x, "reversed")) {
     stopifnot(topic %in% create_labels(x, flat = FALSE)[["L1"]] & sentiment %in% create_labels(x, flat = FALSE)[["L2"]])
@@ -1071,7 +1069,7 @@ create_labels <- function(x, class, flat = TRUE) {
                     stop("Error creating labels.")
       )
       res <- c(res, res2[empty_lab])
-    } 
+    }
   } else {
     res <- switch(class,
            "sentopicmodel" = labels_sentopicmodel(x),

@@ -16,7 +16,7 @@
 #' @examples
 #' \donttest{# creating a model
 #' LDA(ECB_press_conferences_tokens, K = 5, alpha = 0.1, beta = 0.01)
-#' 
+#'
 #' # estimating an LDA model
 #' lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- fit(lda, 100)}
@@ -53,18 +53,18 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}}, extracting
 #'   top words: [topWords()]
 #' @family topic models
-#' @examples 
+#' @examples
 #' \donttest{# simple rJST model
 #' rJST(ECB_press_conferences_tokens)
-#' 
+#'
 #' # estimating a rJST model including lexicon
 #' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' rjst <- fit(rjst, 100)
-#' 
+#'
 #' # from an LDA model:
 #' lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- fit(lda, 100)
-#' 
+#'
 #' # creating a rJST model out of it
 #' rjst <- rJST(lda, lexicon = LoughranMcDonald)
 #' # topic proportions remain identical
@@ -92,29 +92,29 @@ rJST.LDA <- function(x,
                      lexicon = NULL,
                      S = 3,
                      gamma = 5, ...) {
-  
+
   if (x$it < 1) stop("Requires an estimated LDA model.")
   if (isTRUE(attr(x, "approx"))) stop("Not possible for approximated models")
   x <- as.sentopicmodel(x)
   x$L2 <- as.numeric(S)
-  
+
   if (length(gamma) == 1L) gamma <- matrix(gamma, x$L1 * x$L2, 1)
   if (length(gamma) == x$L2) gamma <- matrix(rep(gamma, times = x$L1), x$L1 * x$L2, 1)
-  
+
   if (length(gamma) != x$L1 * x$L2)
     stop("Incorrect prior dimension. Please check input gamma.")
-  
+
   dim(gamma) <- c(x$L1 * x$L2, 1)
   x$L2prior <- gamma
-  
+
   vocabulary <- makeVocabulary(x$tokens, lexicon, S)
   x$tokens <- vocabulary$toks
   x$vocabulary <- vocabulary$vocabulary
-  
+
   reAssignZa <- as.integer(seq(x$L1) * S - 1)
   # x$za <- lapply(x$za, function(x) reAssignZa[x])
-  
-  
+
+
   clean <- cleanPadding(x$tokens)
   for (i in seq_along(x$za)) {
     for (j in seq_along(x$za[[i]])) {
@@ -130,8 +130,8 @@ rJST.LDA <- function(x,
     }
   }
 
-  
-  
+
+
   beta <- matrix(0, x$L1 * x$L2, ncol(x$beta))
   for (i in 1:(x$L1 * x$L2)) {
     beta[i, ] <- x$beta[(i - 1) %/% x$L2 + 1, ]
@@ -146,10 +146,10 @@ rJST.LDA <- function(x,
   x$beta <- beta
   if (x$it > 0) x$phi <- array(1/nrow(x$vocabulary), dim = c(nrow(x$vocabulary), x$L2, x$L1))
   if (x$it > 0 & !is.null(x$L2post)) x$L2post <- array(1/x$L2, dim = c(x$L2, x$L1, length(x$tokens)))
-  
+
   stopifnot(check_integrity(x))
   x <- fit(x, 0, displayProgress = FALSE)
-  
+
   as.rJST(x)
 }
 
@@ -174,7 +174,7 @@ rJST.LDA <- function(x,
 #' @examples
 #' \donttest{# creating a JST model
 #' JST(ECB_press_conferences_tokens)
-#' 
+#'
 #' # estimating a JST model including a lexicon
 #' jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' jst <- fit(jst, 100)}
@@ -205,9 +205,7 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #' @param beta the hyperparameter of vocabulary distribution
 #' @param L1cycle integer specifying the cycle size between two updates of the hyperparameter L1prior
 #' @param L2cycle integer specifying the cycle size between two updates of the hyperparameter L2prior
-#' @param initLDA integer specifying the number of iterations of the LDA burn-in
 #' @param lexicon a `quanteda` dictionary with positive and negative categories
-#' @param smooth integer specifying the number of iterations of the smoothed burn-in
 #' @param reversed indicates on which dimension should `lexicon` apply. When
 #'  `reversed=FALSE`, the lexicon is applied on the first layer of the document
 #'  mixture (as in a JST model). When `reversed=TRUE`, the lexicon is applied to
@@ -223,7 +221,7 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #'   This object corresponds to a Gibbs sampler estimator with zero iterations.
 #'   The MCMC can be iterated using the \code{\link[=fit.sentopicmodel]{fit()}}
 #'   function.
-#' 
+#'
 #'   - `tokens` is the tokens object used to create the model
 #'   - `vocabulary` contains the set of words of the corpus
 #'   - `it` tracks the number of Gibbs sampling iterations
@@ -232,7 +230,7 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #'   - `logLikelihood` returns the measured log-likelihood at each iteration,
 #'     with a breakdown of the likelihood into hierarchical components as
 #'     attribute
-#'   
+#'
 #'   The [topWords()] function easily extract the most probables words of each
 #'   topic/sentiment.
 #'
@@ -242,14 +240,12 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #' rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 sentopicmodel <- function(x, lexicon = NULL, L1 = 5, L2 = 3,
                  L1prior = 1, L2prior = 5, beta = 0.01,
-                 L1cycle = 0, L2cycle = 0,
-                 initLDA = 0, smooth = 0, reversed = TRUE) {
+                 L1cycle = 0, L2cycle = 0, reversed = TRUE) {
   count <- index <- word <- NULL # due to NSE notes in R CMD check
 
   ## Check arguments
   if (L1 < 1 || L2 < 1) stop("The number of topic and sentiments should be equal or greater than 1.")
   if ((L1 * L2) == 1L) stop("Impossible to run a model without having multiple topics or sentiments.")
-  if (initLDA != 0 && smooth > initLDA) warning("The smooth period is greater than the LDA initialization... This is perhaps not a good idea.")
 
   x <- quanteda::as.tokens(x)
 
@@ -274,13 +270,13 @@ sentopicmodel <- function(x, lexicon = NULL, L1 = 5, L2 = 3,
   dim(L2prior) <- c(L1 * L2, 1)
 
   model <- list(vocabulary = vocabulary, tokens = x, za = lapply(lengths(clean), integer), L1 = L1, L2 = L2,
-                initLDA = initLDA, smooth = smooth, L1cycle = L1cycle, L2cycle = L2cycle)
+                L1cycle = L1cycle, L2cycle = L2cycle)
 
   cpp_model <- methods::new(cpp_sentopicmodel, reversed)
 
   cpp_model$init(
     clean, model$za, nrow(vocabulary), L1, L2, as.integer(vocabulary$lexicon) - 1,
-    L1prior, beta, L2prior, L1cycle, L2cycle, initLDA, smooth
+    L1prior, beta, L2prior, L1cycle, L2cycle
   )
 
   # extract alpha beta and gamma arrays only once

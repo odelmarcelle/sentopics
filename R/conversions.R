@@ -219,7 +219,7 @@ as.LDA.LDA_Gibbs <- function(x, docs, ...) {
     logLikelihood = NULL
   ), class = c("LDA", "sentopicmodel"), reversed = TRUE, Sdim = "L2")
   LDA <- fit(LDA, 0, displayProgress = FALSE)
-  
+
   LDA
 }
 
@@ -391,7 +391,7 @@ as.LDA_lda <- function(list, docs, alpha, eta) {
     logLikelihood = NULL
   ), class = c("LDA", "sentopicmodel"), reversed = TRUE, Sdim = "L2")
   LDA <- fit(LDA, 0, displayProgress = FALSE)
-  
+
   LDA
 }
 
@@ -595,9 +595,6 @@ as.sentopicmodel_defaults <- function(x) {
                               dimnames(x$L1post)[1])
     x$L2post <- L2post
   }
-  if (is.null(x$initLDA)) x$initLDA <- 0
-  if (is.null(x$smooth)) x$smooth <- 0
-  if (is.null(x$initType)) x$initType <- 1
   if (is.null(x$L1cycle)) x$L1cycle <- 0
   if (is.null(x$L2cycle)) x$L2cycle <- 0
   if (is.null(x$logLikelihood)) {
@@ -690,7 +687,7 @@ as.LDA.sentopicmodel <- function(x, ...) {
   rename <- replace(rename, names(translate), translate)[rename]
   names(x) <- rename
   # x$phi <- x$phi[,,] ## this drops un-needed sentiment dimension ### Need to account for labels..
-  x$S <- x$gamma <- x$pi <- x$initLDA <- x$smooth <- x$initType <- x$alphaCycle <- x$gammaCycle <- x$logLikelihoodS <- NULL
+  x$S <- x$gamma <- x$pi <- x$alphaCycle <- x$gammaCycle <- x$logLikelihoodS <- NULL
   class(x) <- union("LDA", class(x))
   x
 }

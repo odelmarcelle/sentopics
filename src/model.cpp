@@ -34,10 +34,6 @@ void model::set_default_values(bool reversed_) {
   L2 = 1;
   D = 1;
   it = 0;
-  initLDA = 0;
-
-  smooth = false;
-  smooth_factor = 0;
 
   alphaCycle = 0;
   gammaCycle = 0;
@@ -59,9 +55,7 @@ void model::init(SEXP intTokens_,
                  double beta_,
                  mat& gamma_,
                  uword alphaCycle_,
-                 uword gammaCycle_,
-                 uword initLDA_,
-                 uword smooth_
+                 uword gammaCycle_
 ) {
   V = V_;
   L1 = L1_;
@@ -69,8 +63,6 @@ void model::init(SEXP intTokens_,
   D = LENGTH(intTokens_);
   C = 1;
   it = 0;
-  initLDA = initLDA_;
-  smooth = smooth_;
 
   intTokens.resize(D);
   za.resize(D);
@@ -166,8 +158,6 @@ void model::rebuild(uword V_,
                     uword D_,
                     uword C_,
                     uword it_,
-                    uword initLDA_,
-                    uword smooth_,
                     SEXP za_,
                     SEXP intTokens_,
                     ivec& lexicon_,
@@ -189,9 +179,6 @@ void model::rebuild(uword V_,
   D = D_;
   C = C_;
   it = it_;
-  initLDA = initLDA_;
-  smooth = smooth_;
-  if (smooth + initLDA < it) {smooth = false;}
   initBeta = initBeta_;
   intTokens.resize(LENGTH(intTokens_));
   za.resize(LENGTH(za_));
@@ -329,7 +316,7 @@ void model::iterate(uword iterations, bool displayProgress, bool computeLikeliho
 
 
   // branch to correct loop
-  int LDAruns = std::min( std::max( (int) (initLDA - it), 0), (int) iterations );
+  int LDAruns = 0;
   ///////////////////////////////////////////////////
   if ( (L2 == 1) & (reversed == true) ) {LDAruns = iterations;} //branch to LDA if no sentiment and not JST model
   //////////////////////////////////////////////////
@@ -345,9 +332,6 @@ void model::iterate(uword iterations, bool displayProgress, bool computeLikeliho
     *intTokens[d] += 1;
     *za[d] += 1;
   }
-
-
-  // classVector = classVector + 1; // reversing index correction
 }
 
 void model::iterateLDA(uword start, uword iterations, bool computeLikelihood, Progress& p) {
@@ -381,13 +365,6 @@ void model::iterateLDA(uword start, uword iterations, bool computeLikelihood, Pr
       return;
     }
 
-    if (smooth) {
-      if (smooth < it) {
-        smooth_factor = 0;
-      } else {
-        smooth_factor = pow(0.01, ((double) it) / (double) smooth);
-      }
-    }
     DEBUG_MSG("it = " << it << " . Starting sampling()\n");
     for (uword d = 0; d < D; d++){
       DEBUG_MSG("Starting document: " << d);
@@ -480,14 +457,6 @@ void model::iteratel2(uword start, uword iterations, bool computeLikelihood, Pro
       return;
     }
 
-    if (smooth) {
-      if (smooth + initLDA < it) {
-        smooth = false;
-      } else {
-        smooth_factor = pow(0.01, ((double) it - (double) initLDA) / (double) smooth);
-      }
-    }
-
     DEBUG_MSG("it = " << it << " . Starting sampling()\n");
     for (uword d = 0; d < D; d++){
       DEBUG_MSG("Starting document: " << d);
@@ -531,7 +500,7 @@ void model::iteratel2(uword start, uword iterations, bool computeLikelihood, Pro
       }
     }
 
-    if ( (it - initLDA - smooth + 1) > 0 ) {
+    if ( (it + 1) > 0 ) {
       if (gammaCycle > 0) {
         if ((it + 1) % gammaCycle == 0) {
           updateGamma();
@@ -583,87 +552,15 @@ void model::sampling(const uword& word, uword& zLeave, uword c, uword d)  {
   DEBUG_MSG("Cached probs before sampling");
   DEBUG_MSG(trans(CACHEDzProbs));
 
-  if (smooth) {
-    if (initLDA == 0) {
-      double noise;
 
-      for (uword z = 0; z < L1*L2; z++) {
-        zProbs(z) = CACHEDzProbs(z) * (zw(z, word) + beta(z, word));
-      }
-      DEBUG_MSG("Probs array before smoothing");
-      DEBUG_MSG(zProbs);
-
-
-      if (lexicon(word) == INT_MIN) {
-        noise = accu(zProbs) / (L1*L2);
-        for (uword z = 0; z < L1*L2; z++) {
-          zProbs(z) = (1 - smooth_factor) * zProbs(z) + smooth_factor * noise;
-        }
-      } else {
-        // this is different for rJST and JST
-        if (reversed) {
-          // rJST version
-          uword lex = lexicon(word);
-          noise = accu(zProbs) / L1;
-          for (uword tmpL1 = 0; tmpL1 < L1; tmpL1++) {
-            zProbs(tmpL1 * L2 + lex) = (1 - smooth_factor) * zProbs(tmpL1 * L2 + lex) + smooth_factor * noise;
-          }
-        }
-        else {
-          // JST version: probabilities are left intact as lexicon words
-          // cannot change L1 anyway
-        }
-      }
-
-
-
-      DEBUG_MSG("Probs array after smoothing");
-      DEBUG_MSG(trans(zProbs));
-
-      for (uword z = 1; z < L1*L2; z++) {
-        zProbs(z) += zProbs(z-1);
-      }
-      DEBUG_MSG("Cumulated probabilities");
-      DEBUG_MSG(trans(zProbs));
-    } else {
-
-      for (uword z = 0; z < L1*L2; z++) {
-        zProbs(z) = CACHEDzProbs(z) * (zw(z, word) + beta(z, word));
-      }
-      DEBUG_MSG("Probs array before smoothing");
-      DEBUG_MSG(trans(zProbs));
-
-      if (lexicon(word) == INT_MIN) {
-        arma::vec noise2 = arma::vec(L1);
-
-        for (uword tmpL1 = 0; tmpL1 < L1; tmpL1++) {
-          noise2(tmpL1) = accu(zProbs(arma::span( 0 + L2*tmpL1, L2-1 + L2*tmpL1 ))) / L2;
-        }
-        for (uword z = 0; z < L1*L2; z++) {
-          zProbs(z) = (1 - smooth_factor) * zProbs(z) + smooth_factor * noise2(z / L2);
-        }
-      }
-
-      DEBUG_MSG("Probs array after smoothing");
-      DEBUG_MSG(trans(zProbs));
-
-      for (uword z = 1; z < L1*L2; z++) {
-        zProbs(z) += zProbs(z-1);
-      }
-
-      DEBUG_MSG("Cumulated probabilities");
-      DEBUG_MSG(trans(zProbs));
-    }
-  } else {
-
-    zProbs(0) = CACHEDzProbs(0) * (zw(0, word) + beta(0, word));
-    for (uword z = 1; z < L1*L2; z++) {
-      zProbs(z) = zProbs(z-1) + CACHEDzProbs(z) * (zw(z, word) + beta(z, word));
-    }
-
-    DEBUG_MSG("Cumulated probabilities");
-    DEBUG_MSG(trans(zProbs));
+  zProbs(0) = CACHEDzProbs(0) * (zw(0, word) + beta(0, word));
+  for (uword z = 1; z < L1*L2; z++) {
+    zProbs(z) = zProbs(z-1) + CACHEDzProbs(z) * (zw(z, word) + beta(z, word));
   }
+
+  DEBUG_MSG("Cumulated probabilities");
+  DEBUG_MSG(trans(zProbs));
+
 
   // sampling a new topic and sentiment
 
@@ -727,45 +624,12 @@ void model::samplingLDA(const uword& word, uword& zLeave, uword c, uword d)  {
   DEBUG_MSG("count_l1");
   DEBUG_MSG(trans(count_l1));
 
-
-
-  if (smooth_factor > 0) {
-
-    for (uword t = 0; t < L1; t++) {
-      l1Probs(t) = CACHEDl1Probs(t) * (l1w(t, word) + L1beta(t, word));
-    }
-    DEBUG_MSG("Probs before smoothing");
-    DEBUG_MSG(trans(l1Probs));
-
-    double noise;
-    if (reversed | (lexicon(word) == INT_MIN)) {
-      noise = accu(l1Probs) / L1;
-      for (uword t = 0; t < L1; t++) {
-        l1Probs(t) = (1 - smooth_factor) * l1Probs(t) + smooth_factor * noise;
-      }
-    } else {
-      // lexicon words are not able to change L1 anyway in JST, no smooth applied
-    }
-
-
-    DEBUG_MSG("Probs array after smoothing");
-    DEBUG_MSG(trans(l1Probs));
-
-    for (uword t = 1; t < L1; t++) {
-      l1Probs(t) += l1Probs(t-1);
-    }
-    DEBUG_MSG("Cumulated probabilities");
-    DEBUG_MSG(trans(l1Probs));
-
-  } else {
-
-    l1Probs(0) = CACHEDl1Probs(0) * (l1w(0, word) + L1beta(0, word));
-    for (uword t = 1; t < L1; t++) {
-      l1Probs(t) = l1Probs(t-1) + CACHEDl1Probs(t) * (l1w(t, word) + L1beta(t, word));
-    }
-    DEBUG_MSG("Cumulated probabilities");
-    DEBUG_MSG(trans(l1Probs));
+  l1Probs(0) = CACHEDl1Probs(0) * (l1w(0, word) + L1beta(0, word));
+  for (uword t = 1; t < L1; t++) {
+    l1Probs(t) = l1Probs(t-1) + CACHEDl1Probs(t) * (l1w(t, word) + L1beta(t, word));
   }
+  DEBUG_MSG("Cumulated probabilities");
+  DEBUG_MSG(trans(l1Probs));
 
 
   // sampling a new topic and sentiment
@@ -823,7 +687,6 @@ void model::updateAlpha() {
     DEBUG_MSG("Recomputing alpha for class: " << c);
 
     // identify documents belonging to a given class
-    // index = find(classVector == c);
     index = linspace<uvec>(0, D-1);
     DEBUG_MSG("Index:");
     DEBUG_MSG(trans(index));
@@ -878,7 +741,6 @@ void model::updateGamma() {
   for (uword c = 0; c < C; c++){
 
     // identify documents belonging to a given class
-    // index = find(classVector == c);
     index = linspace<uvec>(0, D-1);
     sub_D = index.size();
     sub_tsd = zd.cols(index);
@@ -975,7 +837,6 @@ double model::computeLogLikelihoodL2() {
 
   for (uword d = 0; d < D; d++) {
 
-    // c = classVector(d);
     c = 0;
 
     for (uword t = 0; t < L1; t++) {
@@ -1014,7 +875,6 @@ double model::computeLogLikelihoodL1() {
 
   for (uword d = 0; d < D; d++) {
 
-    // c = classVector(d);
     c = 0;
 
     numOne = lgamma(sumAlpha(c));

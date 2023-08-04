@@ -208,6 +208,10 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #' @param initLDA integer specifying the number of iterations of the LDA burn-in
 #' @param lexicon a `quanteda` dictionary with positive and negative categories
 #' @param smooth integer specifying the number of iterations of the smoothed burn-in
+#' @param reversed indicates on which dimension should `lexicon` apply. When
+#'  `reversed=FALSE`, the lexicon is applied on the first layer of the document
+#'  mixture (as in a JST model). When `reversed=TRUE`, the lexicon is applied to
+#'  the second layer of the document mixture (as in a reversed-JST model).
 #'
 #' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}},
 #'   extracting top words: [topWords()]

@@ -41,6 +41,11 @@ sentopicmodel(
 \item{initLDA}{integer specifying the number of iterations of the LDA burn-in}
 
 \item{smooth}{integer specifying the number of iterations of the smoothed burn-in}
+
+\item{reversed}{indicates on which dimension should \code{lexicon} apply. When
+\code{reversed=FALSE}, the lexicon is applied on the first layer of the document
+mixture (as in a JST model). When \code{reversed=TRUE}, the lexicon is applied to
+the second layer of the document mixture (as in a reversed-JST model).}
 }
 \value{
 An S3 list containing the model parameter and the estimated mixture.

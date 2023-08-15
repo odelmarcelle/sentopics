@@ -955,7 +955,6 @@ sentiment_topics <- function(x,
     plot_data <- topical_sent[, lapply(.SD, nafill, type = "locf")]
     plot_data <- stats::na.omit(melt(plot_data, id.vars = "date"))
 
-    # if (plot_ridgelines & length(missingSuggets("ggridges")) == 0) {
     if (plot_ridgelines) {
       plot_data <- plot_data[, list(date, value = value / max(abs(value)), variable)]
 
@@ -969,8 +968,6 @@ sentiment_topics <- function(x,
         ggplot2::xlab("Date")
     } else {
 
-      # if (plot_ridgelines) message("Package `ggridges` is missing. Defaulting to standard ggplot.")
-
       p_topical_sent <-
         ggplot2::ggplot(plot_data, ggplot2::aes(date, value, color = variable)) +
         ggplot2::geom_line(linewidth = 1.5) +
@@ -979,9 +976,6 @@ sentiment_topics <- function(x,
         ggplot2::scale_color_manual(values = make_colors(x, "L1")) +
         # ggplot2::scale_y_continuous(expand = c(0,0), labels = function(breaks) sprintf("%.f%%", breaks * 100) ) +
         ggplot2::scale_x_date(expand = c(0,0)) +
-        ggplot2::theme_bw() +
-        # ggplot2::geom_line(ggplot2::aes(date, cum_value, group = variable),
-        #                    inherit.aes = FALSE) +
         ggplot2::ylab("Topical sentiment") +
         ggplot2::xlab("Date") +
         ggplot2::facet_wrap(. ~variable)

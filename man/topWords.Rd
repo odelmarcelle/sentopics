@@ -28,7 +28,7 @@ plot_topWords(
 \item{nWords}{the number of top words to extract}
 
 \item{method}{specify if a re-ranking function should be applied before
-returning the top words}
+returning the top words. See Details for a description of each method.}
 
 \item{output}{determines the output of the function}
 
@@ -39,7 +39,7 @@ label. It is possible to subset on both topic and sentiment but adding a
 \code{&} operator between two expressions.}
 
 \item{w}{only used when \code{method = "FREX"}. Determines the weight assigned to
-the frequency score at the expense of the exclusivity score.}
+the exclusivity score at the expense of the frequency score.}
 }
 \value{
 The top words of the topic model. Depending on the output chosen, can
@@ -48,6 +48,33 @@ result in either a long-style data.frame, a \code{ggplot2} object or a matrix.
 \description{
 Extract the top words in each topic/sentiment from a
 \code{sentopicmodel}.
+}
+\details{
+\code{"frequency"} ranks top words according to their frequency
+within a topic. This method also reports the overall frequency of
+each word. When returning a plot, the overall frequency is
+represented with a grey bar.
+
+\code{"probability"} uses the estimated topic-word mixture \eqn{\phi} to
+rank top words.
+
+\code{"term-score"} implements the re-ranking method from Blei and
+Lafferty (2009). This method down-weights terms that have high
+probability in all topics using the following score:
+\deqn{\text{term-score}_{k,v} = \phi_{k, v}\log\left(\frac{\phi_{k,
+  v}}{\left(\prod^K_{j=1}\phi_{j,v}\right)^{\frac{1}{K}}}\right),} for
+topic \eqn{k}, vocabulary word \eqn{v} and number of topics \eqn{K}.
+
+\code{"FREX"} implements the re-ranking method from Bischof and Airoldi
+(2012). This method used the weight \eqn{w} to balance between
+topic-word probability and topic exclusivity using the following
+score:
+\deqn{\text{FREX}_{k,v}=\left(\frac{w}{\text{ECDF}\left(
+  \frac{\phi_{k,v}}{\sum_{j=1}^K\phi_{k,v}}\right)}
+  + \frac{1-w}{\text{ECDF}\left(\phi_{k,v}\right)} \right),} for
+topic \eqn{k}, vocabulary word \eqn{v}, number of topics \eqn{K} and
+weight \eqn{w}, where \eqn{\text{ECDF}} is the empirical cumulative
+distribution function.
 }
 \examples{
 model <- LDA(ECB_press_conferences_tokens)
@@ -62,6 +89,14 @@ jst <- JST(ECB_press_conferences_tokens)
 jst <- fit(jst, 10)
 plot_topWords(jst)
 plot_topWords(jst, subset = topic \%in\% 1:2 & sentiment == 3)
+}
+\references{
+Blei, DM. and Lafferty, JD. (2009). \href{https://doi.org/10.1201/9781420059458-12}{Topic models.}. In \emph{Text Mining},
+chapter 4, 101--124.
+
+Bischof JM. and Airoldi, EM. (2012). \href{https://dl.acm.org/doi/10.5555/3042573.3042578}{Summarizing Topical Content with Word Frequency and Exclusivity.}. In
+\emph{Proceedings of the 29th International Coference on International
+Conference on Machine Learning}, ICML'12, 9--16.
 }
 \seealso{
 \code{\link[=melt.sentopicmodel]{melt.sentopicmodel()}} for extracting estimated mixtures

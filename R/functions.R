@@ -9,7 +9,7 @@
 #' @param x a `sentopicmodel` created from the [LDA()], [JST()] or [rJST()]
 #' @param nWords the number of top words to extract
 #' @param method specify if a re-ranking function should be applied before
-#'   returning the top words
+#'   returning the top words. See Details for a description of each method. 
 #' @param output determines the output of the function
 #' @param subset allows to subset using a logical expression, as in [subset()].
 #'   Particularly useful to limit the number of observation on plot outputs. The
@@ -17,11 +17,49 @@
 #'   label. It is possible to subset on both topic and sentiment but adding a
 #'   `&` operator between two expressions.
 #' @param w only used when `method = "FREX"`. Determines the weight assigned to
-#'   the frequency score at the expense of the exclusivity score.
+#'   the exclusivity score at the expense of the frequency score.
 #'
 #' @return The top words of the topic model. Depending on the output chosen, can
 #'   result in either a long-style data.frame, a `ggplot2` object or a matrix.
 #'
+#' @details `"frequency"` ranks top words according to their frequency
+#'   within a topic. This method also reports the overall frequency of
+#'   each word. When returning a plot, the overall frequency is
+#'   represented with a grey bar.
+#'
+#'   `"probability"` uses the estimated topic-word mixture \eqn{\phi} to
+#'   rank top words.
+#'
+#'   `"term-score"` implements the re-ranking method from Blei and
+#'   Lafferty (2009). This method down-weights terms that have high
+#'   probability in all topics using the following score:
+#'   \deqn{\text{term-score}_{k,v} = \phi_{k, v}\log\left(\frac{\phi_{k,
+#'   v}}{\left(\prod^K_{j=1}\phi_{j,v}\right)^{\frac{1}{K}}}\right),} for
+#'   topic \eqn{k}, vocabulary word \eqn{v} and number of topics \eqn{K}.
+#'
+#'   `"FREX"` implements the re-ranking method from Bischof and Airoldi
+#'   (2012). This method used the weight \eqn{w} to balance between
+#'   topic-word probability and topic exclusivity using the following
+#'   score:
+#'   \deqn{\text{FREX}_{k,v}=\left(\frac{w}{\text{ECDF}\left(
+#'   \frac{\phi_{k,v}}{\sum_{j=1}^K\phi_{k,v}}\right)}
+#'   + \frac{1-w}{\text{ECDF}\left(\phi_{k,v}\right)} \right),} for
+#'   topic \eqn{k}, vocabulary word \eqn{v}, number of topics \eqn{K} and
+#'   weight \eqn{w}, where \eqn{\text{ECDF}} is the empirical cumulative
+#'   distribution function.
+#'
+#'   
+#' @references Blei, DM. and Lafferty, JD. (2009). [Topic
+#'   models.](https://doi.org/10.1201/9781420059458-12). In *Text Mining*,
+#'   chapter 4, 101--124.
+#' 
+#'   Bischof JM. and Airoldi, EM. (2012). [Summarizing Topical Content
+#'   with Word Frequency and
+#'   Exclusivity.](https://dl.acm.org/doi/10.5555/3042573.3042578). In
+#'   *Proceedings of the 29th International Coference on International
+#'   Conference on Machine Learning*, ICML'12, 9--16.
+#'   
+#'   
 #' @import data.table
 #' @export
 #' @seealso [melt.sentopicmodel()] for extracting estimated mixtures
@@ -162,10 +200,10 @@ topWords_dt <- function(x,
            
            phiStats[, "exclusivity" := value / sum(value), by = word]
            phiStats <-
-             phiStats[, list(word, value =
-                               w * data.table::frank(value) / .N +
-                               (1 - w) * data.table::frank(exclusivity) / .N),
-                      by = c("L1", "L2")]
+             phiStats[, list(word, value = (
+               w / (data.table::frank(exclusivity) / .N) +
+                 (1 - w) / (data.table::frank(value) / .N)
+               )^-1 ), by = c("L1", "L2")]
          },
          "topics" = {
            ## TODO: to update?

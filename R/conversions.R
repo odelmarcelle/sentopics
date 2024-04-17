@@ -311,11 +311,15 @@ as.LDA.LDA_VEM <- function(x, docs, ...) {
 #' @export
 as.LDA.textmodel_lda <- function(x, ...) {
 
+  version <- x$version
+
+  if (!(version >= "1.2.0")) stop("Conversion is not allowed from models created using a version of `seededlda` below 1.2.0")
+
   labels <- colnames(x$theta)
 
   beta <- x$phi
   beta[] <- x$beta
-  alpha <- rep(x$alpha, x$k)
+  alpha <- x$alpha
 
   tokens <- as.tokens(x$data)
   vocabulary <- makeVocabulary(tokens, NULL, 1L)
@@ -333,7 +337,7 @@ as.LDA.textmodel_lda <- function(x, ...) {
     tokens = vocabulary$toks,
     vocabulary = vocabulary$vocabulary,
     K = x$k,
-    alpha = as.matrix(rep(x$alpha, x$k)),
+    alpha = as.matrix(x$alpha),
     beta = beta,
     it = x$last_iter,
     theta = x$theta,

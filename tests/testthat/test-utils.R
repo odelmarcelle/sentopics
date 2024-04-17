@@ -25,7 +25,10 @@ test_that("as.tokens.dfm works", {
   toks <- as.tokens.dfm(dfm)
   expect_identical(nrow(dfm), length(toks))
   expect_identical(colnames(dfm), quanteda::types(toks))
-  expect_equal(quanteda::rowSums(dfm), quanteda::ntoken(toks))
+  expect_equal(
+    unname(quanteda::rowSums(dfm)),
+    unname(quanteda::ntoken(toks))
+  )
 
   toks <- tokens(c(
     "This text will be broken down into pieces with the `tokens` function",

@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 
 The package is shipped with a sample of press conferences from the European Central bank. For ease of use, the press conferences have been pre-processed into a `tokens` object from the `quanteda` package. (See [quanteda's introduction](https://quanteda.io/articles/quickstart.html#tokenizing-texts-1) for details on these objects). The press conferences also contains meta-data which can be accessed using `docvars()`.
 
-The press conferences were obtained from [ECB's website](https://www.ecb.europa.eu/press/key/html/index.en.html). The package also provides an helper function to replicate the creation of the dataset: `get_ECB_press_conferences()`
+The press conferences were obtained from [ECB's website](https://www.ecb.europa.eu/press/press_conference/monetary-policy-statement/html/index.en.html). The package also provides an helper function to replicate the creation of the dataset: `get_ECB_press_conferences()`
 
 ```{r}
 library("sentopics")

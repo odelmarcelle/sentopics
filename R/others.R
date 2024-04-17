@@ -125,21 +125,21 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
 #' @return Depending on the arguments, returns either a data.frame or a
 #'   [quanteda::tokens] object containing press conferences of the ECB.
 get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.table = TRUE) {
-  
+
   # R CMD check:
   paragraph_id <- doc_id <- sections <- NULL
-  
+
   res <- lapply(stats::setNames(nm = years), function(year) {
-    
+
     ## Get index page
     utils::download.file(
-      sprintf("https://www.ecb.europa.eu/press/pressconf/%s/html/index_include.en.html", year),
+      sprintf("https://www.ecb.europa.eu/press/press_conference/monetary-policy-statement/%s/html/index_include.en.html", year),
       file <- tempfile(),
       quiet = TRUE)
     html <- readChar(file, file.info(file)$size)
     # html <- readLines(file, encoding = "UTF-8", warn = FALSE) |> paste0(collapse = "")
     unlink(file)
-    
+
     ## Get press conferences
     message(year)
     LIST <- regmatches(html, gregexpr(sprintf("/press.*?\\.%s\\.html", language), html, perl = TRUE))[[1]]
@@ -162,11 +162,11 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
       unlink(file)
       html
     })
-    
+
     ## Get main content of the page
     cleaned <- lapply(LIST, function(html)
       regmatches(html, gregexpr("<main >(?s).*</main>", html, perl = TRUE))[[1]])
-    
+
     ## Correct html tags
     {
       cleaned <- lapply(cleaned, function(html) {
@@ -181,36 +181,36 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
         html <- gsub("&ccedil;", "\u00E7", html, fixed = TRUE)
         html <- gsub("&atilde;", "\u00E3", html, fixed = TRUE)
       })
-      
+
       check <- lapply(cleaned, function(html)
         regmatches(html, gregexpr("&[A-Za-z]*?;", html, perl = TRUE))[[1]])
       if ( any(lengths(check) > 0) ) warning("Unknown html entity detected.: ", check)
     }
-    
+
     lapply(LIST, function(html)
       regmatches(html, gregexpr("&[A-Za-z]*?;", html, perl = TRUE))[[1]])
-    
+
     cleaned <- lapply(cleaned, function(html) {
-      
+
       ## Remove address-box at the end of the page
       html <- regmatches(html, gregexpr("<div class=\"address-box -top-arrow\">(?s).*", html, perl = TRUE), invert = TRUE)[[1]][1]
-      
+
       ## First attempt at removing questions
       html <- sub("<p>[ ]?(<em>)?[ ]?(<strong>)?[ ]?(<em>)?[ ]?\"?[ ]?Question[ ]?(\\(translation\\))?:.*", "", html, perl = TRUE)
       # regmatches(html, gregexpr(r"(<p>(<em>)?(<strong>)?(<em>)?"?[ ]?Question[ ]?(\(translation\))?:)", html, perl = TRUE), invert = FALSE)
-      
+
       ## First attempt but based on last line of statement
       html <- sub("<p>[ ]?We are now at your disposal for questions.[ ]?</p>\\K.*", "", html, perl = TRUE)
       html <- sub("<p>[ ]?We are now ready to take your questions.[ ]?</p>\\K.*", "", html, perl = TRUE)
-      
+
       ## Second attempt at removing questions
       html <- sub("<h2[A-Za-z \"=:]*?>(<strong>)?[ ]?Transcript of the [Qq]uestions.*?</h2>.*", "", html, perl = TRUE)
-      
+
       ## Third attempt based on specific cases detected with kwic()
       html <- sub("<p>[ ]?(<strong>)?[ ]?My (first )?question would be.*", "", html, perl = TRUE)
-      
-      
-      
+
+
+
       title <- gsub("<.*?>", "", regmatches(html, gregexpr("<h1.*?>(?s).*?</h1>", html, perl = TRUE))[[1]])
       rest <- gsub("<h1.*?>(?s).*?</h1>", "", html, perl = TRUE)
       sections <- lapply(rest, function(html)
@@ -221,7 +221,7 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
           content = gsub("<.*?>", "", regmatches(html, gregexpr("<p>(?s).*?</p>", html, perl = TRUE))[[1]])
         )
       })
-      
+
       res <- list(
         title = title,
         sections = sections[sapply(sections, function(x) length(x$content) > 0)]
@@ -234,13 +234,13 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
       # }
       res
     })
-    
+
     cleaned
-    
+
     # ## Remove after second <h2> (this removes Q&A)
     # cleaned <- lapply(cleaned, function(html)
     #   regmatches(html, gregexpr("(?s).*?<h2.*?>(?s).*?</h2>(?s).*?<h2.*?>", html, perl = TRUE))[[1]])
-    # 
+    #
     # ## Break down in paragraphs and remove HTML tags
     # cleaned <- lapply(cleaned, function(html)
     #   list(
@@ -249,9 +249,9 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
     #     content = gsub("<.*?>", "", regmatches(html, gregexpr("<p>(?s).*?</p>", html, perl = TRUE))[[1]])
     #   )
     # )
-    
+
   })
-  
+
   res <- unlist(unname(res), recursive = FALSE, use.names = TRUE)
   res <- res[order(names(res))]
   res <- mapply(function(x, date) {x$date <- date; x}, x = res, date = names(res), SIMPLIFY = FALSE)
@@ -309,22 +309,22 @@ compute_PicaultRenault_scores <- function(x, min_ngram = 2, return_dfm = FALSE) 
   PicaultRenault <- PicaultRenault[PicaultRenault$ngram >= min_ngram, ]
   x <- quanteda::tokens(x, remove_numbers = TRUE, remove_punct = TRUE,
                         remove_symbols = TRUE, remove_separators = FALSE)
-  x <- quanteda::tokens_remove(x, " ") 
-  x <- quanteda::tokens_wordstem(x) 
+  x <- quanteda::tokens_remove(x, " ")
+  x <- quanteda::tokens_wordstem(x)
   x <- quanteda::tokens_tolower(x)
-  
+
   x <- quanteda::tokens_compound(
     x,
     quanteda::phrase(PicaultRenault$keyword),
     concatenator = " ")
-  
+
   dfm <- quanteda::dfm(x)
   dfm <- dfm[, intersect(colnames(dfm), PicaultRenault$keyword)]
-  
+
   weight <- PicaultRenault[match(colnames(dfm), PicaultRenault$keyword),
                            -c("keyword", "ngram", "total_class")]
   weight <- lapply(weight, stats::setNames, nm = colnames(dfm))
-  
+
   weighted_dfms <- lapply(weight, function(w)
     quanteda::dfm_weight(dfm, weight = w))
 
@@ -340,7 +340,7 @@ compute_PicaultRenault_scores <- function(x, min_ngram = 2, return_dfm = FALSE) 
   }
   MP <- quanteda::as.dfm(MP)
   quanteda::docvars(MP) <- quanteda::docvars(dfm)
-  
+
   EC <- quanteda::as.dfm(weighted_dfms$ec_posi - weighted_dfms$ec_nega)
   denom <- as.matrix(Reduce(`+`, weighted_dfms[c("ec_nega", "ec_neut", "ec_posi")]))
   denom <- stats::aggregate(rowSums(denom), mean, by = list(doc = quanteda::docid(dfm)))
@@ -352,7 +352,7 @@ compute_PicaultRenault_scores <- function(x, min_ngram = 2, return_dfm = FALSE) 
   }
   EC <- quanteda::as.dfm(EC)
   quanteda::docvars(EC) <- quanteda::docvars(dfm)
-  
+
   if (return_dfm) return(list(MP = MP, EC = EC))
   else cbind(MP = rowSums(as.matrix(MP)), EC = rowSums(as.matrix(EC)))
 }

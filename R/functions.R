@@ -9,7 +9,7 @@
 #' @param x a `sentopicmodel` created from the [LDA()], [JST()] or [rJST()]
 #' @param nWords the number of top words to extract
 #' @param method specify if a re-ranking function should be applied before
-#'   returning the top words. See Details for a description of each method. 
+#'   returning the top words. See Details for a description of each method.
 #' @param output determines the output of the function
 #' @param subset allows to subset using a logical expression, as in [subset()].
 #'   Particularly useful to limit the number of observation on plot outputs. The
@@ -48,18 +48,18 @@
 #'   weight \eqn{w}, where \eqn{\text{ECDF}} is the empirical cumulative
 #'   distribution function.
 #'
-#'   
+#'
 #' @references Blei, DM. and Lafferty, JD. (2009). [Topic
 #'   models.](https://doi.org/10.1201/9781420059458-12). In *Text Mining*,
 #'   chapter 4, 101--124.
-#' 
+#'
 #'   Bischof JM. and Airoldi, EM. (2012). [Summarizing Topical Content
 #'   with Word Frequency and
 #'   Exclusivity.](https://dl.acm.org/doi/10.5555/3042573.3042578). In
-#'   *Proceedings of the 29th International Coference on International
+#'   *Proceedings of the 29th International Conference on International
 #'   Conference on Machine Learning*, ICML'12, 9--16.
-#'   
-#'   
+#'
+#'
 #' @import data.table
 #' @export
 #' @seealso [melt.sentopicmodel()] for extracting estimated mixtures
@@ -95,7 +95,7 @@ topWords <- function(x,
       env))
     top <- subset(top, eval(subset))
   }
-  
+
   switch(output,
          "matrix" = {
            res <- matrix(top$word, nrow = nWords)
@@ -177,7 +177,7 @@ topWords_dt <- function(x,
   epsilon <- 10^-100
 
   method <- match.arg(method)
-  
+
   nClusters <- max(phiStats$L1) * max(phiStats$L2)
   switch(method,
          "frequency" = {
@@ -195,9 +195,9 @@ topWords_dt <- function(x,
              , list(word, L1, L2, value = value + .Machine$double.eps)][
                , list(L1, L2, value = value * log(value / prod(value)^(1/nClusters))), by = word]},
          "FREX" = {
-           
+
            if (w < 0 | w > 1) stop("The argument 'w' should be constrained between 0 and 1.")
-           
+
            phiStats[, "exclusivity" := value / sum(value), by = word]
            phiStats <-
              phiStats[, list(word, value = (
@@ -224,10 +224,10 @@ topWords_dt <- function(x,
 
 #' @rdname topWords
 #' @export
-#' @examples 
+#' @examples
 #' plot_topWords(model)
 #' plot_topWords(model, subset = topic %in% 1:2)
-#' 
+#'
 #' jst <- JST(ECB_press_conferences_tokens)
 #' jst <- fit(jst, 10)
 #' plot_topWords(jst)
@@ -336,7 +336,7 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 #' @param ... further arguments passed to internal distance functions.
 #'
 #' @details The `method` argument determines how are computed distance.
-#' 
+#'
 #'  - `euclidean` finds the pairs of topics that minimizes and returns the total
 #'  Euclidean distance.
 #'  - `hellinger` does the same but based on the Hellinger distance.
@@ -373,7 +373,7 @@ chainsDistances <- function(x,
   x <- as.sentopicmodel(x)
   # avoid copying base to each chain
   x <- as.list(x, copy = FALSE)
-    
+
   method <- match.arg(method)
   switch(method,
          "cosine" = cosineDistances(x),
@@ -412,7 +412,7 @@ chainsDistances <- function(x,
 #' model <- fit(model, 10, nChains = 5)
 #' chainsScores(model, window = 5)
 #' chainsScores(model, window = "boolean")
-#' 
+#'
 #' # -- Parallel computation --
 #' require(future.apply)
 #' future::plan("multisession", workers = 2) # Set up 2 workers
@@ -435,10 +435,10 @@ chainsScores <- function(x, window = 110, nWords = 10) {
   } else {
     NPMIsW <- NPMIs10 <- computeNPMI(x$tokens, window)
   }
-  
+
   # avoid copying base to each chain # could be further optimized
   x <- as.list(x, copy = FALSE)
-  
+
   FUN <- function(x) {
     score <- data.table::data.table(
       # name = name,
@@ -465,6 +465,6 @@ chainsScores <- function(x, window = 110, nWords = 10) {
   } else {
     chainsScores <- sapply(x, FUN)
   }
-  
+
   t(chainsScores)
 }

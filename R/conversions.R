@@ -13,7 +13,7 @@
 #' @param alpha for \pkg{lda} models, the document-topic mixture hyperparameter.
 #'   If missing, the hyperparameter will be set to `50/K`.
 #' @param eta for \pkg{lda} models, the topic-word mixture hyperparameter. Other
-#'   packages refer to this hypeparameter as *beta*. If missing, the
+#'   packages refer to this hyperparameter as *beta*. If missing, the
 #'   hyperparameter will be set to `0.01`.
 #' @param ... arguments passed to other methods.
 #'

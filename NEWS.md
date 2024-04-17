@@ -2,8 +2,8 @@
 
 * Renamed `grow()` to `fit()` as a more intuitive name. `grow()` remains in the package for compatibility with older version.
 * Aligned the weight argument and the algorithm of `topWords(..., method="FREX")` to the original paper.
-* Fixed the un-exported function `get_ECB_conferences()` to accomodates changes from the ECB website.
-* Fixed the model conversion from newer `seededlda` versions (1.2.0 and subsequents)
+* Fixed the un-exported function `get_ECB_conferences()` to accommodates changes from the ECB website.
+* Fixed the model conversion from newer `seededlda` versions (1.2.0 and subsequent)
 
 # sentopics 0.7.2
 

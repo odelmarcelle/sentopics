@@ -95,7 +95,7 @@ Blei, DM. and Lafferty, JD. (2009). \href{https://doi.org/10.1201/9781420059458-
 chapter 4, 101--124.
 
 Bischof JM. and Airoldi, EM. (2012). \href{https://dl.acm.org/doi/10.5555/3042573.3042578}{Summarizing Topical Content with Word Frequency and Exclusivity.}. In
-\emph{Proceedings of the 29th International Coference on International
+\emph{Proceedings of the 29th International Conference on International
 Conference on Machine Learning}, ICML'12, 9--16.
 }
 \seealso{

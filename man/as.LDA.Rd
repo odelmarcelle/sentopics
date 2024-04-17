@@ -38,7 +38,7 @@ as.LDA_lda(list, docs, alpha, eta)
 If missing, the hyperparameter will be set to \code{50/K}.}
 
 \item{eta}{for \pkg{lda} models, the topic-word mixture hyperparameter. Other
-packages refer to this hypeparameter as \emph{beta}. If missing, the
+packages refer to this hyperparameter as \emph{beta}. If missing, the
 hyperparameter will be set to \code{0.01}.}
 }
 \value{

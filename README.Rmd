@@ -20,8 +20,8 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![CRAN Version](https://www.r-pkg.org/badges/version/sentopics)](https://CRAN.R-project.org/package=sentopics)
-[![R-CMD-check](https://github.com/odelmarcelle/sentopics/workflows/R-CMD-check/badge.svg)](https://github.com/odelmarcelle/sentopics/actions)
 [![Codecov test coverage](https://codecov.io/gh/odelmarcelle/sentopics/branch/master/graph/badge.svg?token=V6M82L4ZCX)](https://app.codecov.io/gh/odelmarcelle/sentopics)
+[![R-CMD-check](https://github.com/odelmarcelle/sentopics/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/odelmarcelle/sentopics/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 ## Installation

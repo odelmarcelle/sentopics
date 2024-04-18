@@ -91,7 +91,7 @@ plot_topWords(jst)
 plot_topWords(jst, subset = topic \%in\% 1:2 & sentiment == 3)
 }
 \references{
-Blei, DM. and Lafferty, JD. (2009). \href{https://doi.org/10.1201/9781420059458-12}{Topic models.}. In \emph{Text Mining},
+Blei, DM. and Lafferty, JD. (2009). \href{https://www.taylorfrancis.com/chapters/edit/10.1201/9781420059458-12/topic-models-david-blei-john-la\%EF\%AC\%80erty}{Topic models.}. In \emph{Text Mining},
 chapter 4, 101--124.
 
 Bischof JM. and Airoldi, EM. (2012). \href{https://dl.acm.org/doi/10.5555/3042573.3042578}{Summarizing Topical Content with Word Frequency and Exclusivity.}. In

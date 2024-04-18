@@ -50,7 +50,7 @@
 #'
 #'
 #' @references Blei, DM. and Lafferty, JD. (2009). [Topic
-#'   models.](https://doi.org/10.1201/9781420059458-12). In *Text Mining*,
+#'   models.](https://www.taylorfrancis.com/chapters/edit/10.1201/9781420059458-12/topic-models-david-blei-john-la%EF%AC%80erty). In *Text Mining*,
 #'   chapter 4, 101--124.
 #'
 #'   Bischof JM. and Airoldi, EM. (2012). [Summarizing Topical Content

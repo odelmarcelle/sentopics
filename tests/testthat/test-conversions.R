@@ -150,7 +150,7 @@ test_that("from seededlda", {
   ))
   slda <- textmodel_seededlda(dfm(ECB_press_conferences_tokens),
                               dict, residual = TRUE,
-                              k = 6, max_iter = 100)
+                              max_iter = 100)
   LDA <- as.LDA(slda)
 
   expect_true(check_integrity(LDA))

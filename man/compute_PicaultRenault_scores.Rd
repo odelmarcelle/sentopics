@@ -12,7 +12,7 @@ compute_PicaultRenault_scores(x, min_ngram = 2, return_dfm = FALSE)
 \item{min_ngram}{the minimum length of n-grams considered in the computation}
 
 \item{return_dfm}{if \code{TRUE}, returns the scaled word-per-document score under
-two \link{dfm}, on for the Monetary Policy and one for the Economic Condition
+two \link[quanteda:dfm]{quanteda::dfm}, on for the Monetary Policy and one for the Economic Condition
 categories. If \code{FALSE}, returns the sum of all word scores per document.}
 }
 \value{

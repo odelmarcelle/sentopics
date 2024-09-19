@@ -1,3 +1,7 @@
+# sentopics 0.7.4
+
+* Fixed a test
+
 # sentopics 0.7.3
 
 * Renamed `grow()` to `fit()` as a more intuitive name. `grow()` remains in the package for compatibility with older version.

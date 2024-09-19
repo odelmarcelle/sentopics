@@ -17,10 +17,10 @@ NULL
 #'
 #'   Please refer to the vignettes for a comprehensive introduction to the
 #'   package functions.
-#'   
+#'
 #'   - [Basic usage](../doc/Basic_usage.html): Introduction to topic model estimation with **sentopics**
 #'   - [Topical time series](../doc/Topical_time_series.html): Integrate topic analysis with sentiment analysis along a time dimension
-#'   
+#'
 #'   For further details, you may browse the package [documentation](../html/00Index.html).
 #'
 #'
@@ -51,7 +51,7 @@ NULL
 #' @description The pre-processed and tokenized version of the
 #'   [ECB_press_conferences] corpus of press conferences. The processing
 #'   involved the following steps:
-#'   
+#'
 #'   - Subset paragraphs shorter than 10 words
 #'   - Removal of stop words
 #'   - Part-of-speech tagging, following which only nouns, proper nouns and
@@ -96,7 +96,7 @@ NULL
 #' @description The Picault-Renault lexicon, specialized in the analysis of
 #'   central bank communication. The lexicon identifies a large number of n-grams
 #'   and gives their probability to belong to six categories:
-#'   
+#'
 #'   - Monetary Policy - accommodative
 #'   - Monetary Policy - neutral
 #'   - Monetary Policy - restrictive
@@ -107,8 +107,8 @@ NULL
 #' @examples
 #' head(PicaultRenault)
 #'
-#' @format A [data.table] object.
-#' 
+#' @format A [data.table::data.table] object.
+#'
 #' @references Picault, M. & Renault, T. (2017). [Words are not all created
 #'   equal: A new measure of ECB
 #'   communication](https://www.sciencedirect.com/science/article/abs/pii/S0261560617301808). *Journal of
@@ -124,7 +124,7 @@ NULL
 #' @description A regression dataset built to partially replicate the result of
 #'   Picault & Renault. This dataset contains, for each press conference
 #'   published after 2000:
-#'   
+#'
 #'   - The Main Refinancing Rate (MRR) of the ECB set following the press
 #'   conference
 #'   - The change in the MRR following the press conference
@@ -139,7 +139,7 @@ NULL
 #' head(PicaultRenault_data)
 #'
 #' @format An [xts::xts] object.
-#' 
+#'
 #' @references Picault, M. & Renault, T. (2017). [Words are not all created
 #'   equal: A new measure of ECB
 #'   communication](https://www.sciencedirect.com/science/article/abs/pii/S0261560617301808). *Journal of

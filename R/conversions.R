@@ -812,7 +812,7 @@ quanteda::as.tokens
 #'   positions.
 #' @param case_insensitive only used when the `tokens` argument is provided.
 #'   Default to `FALSE`. This function removes words in the initial [tokens]
-#'   based on the remaining features in the [dfm] object. This check is
+#'   based on the remaining features in the [quanteda::dfm] object. This check is
 #'   case-sensitive by default, and can be relaxed by setting this argument to
 #'   `TRUE`.
 #' @param ... unused

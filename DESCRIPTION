@@ -1,8 +1,8 @@
 Package: sentopics
 Type: Package
 Title: Tools for Joint Sentiment and Topic Analysis of Textual Data
-Version: 0.7.3
-Date: 2024-04-17
+Version: 0.7.4
+Date: 2024-09-19
 Authors@R: c(
   person("Olivier", "Delmarcelle", email = "delmarcelle.olivier@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-4347-070X")),
   person("Samuel", "Borms", email = "samuel.borms@unine.ch", role = c("ctb"), comment = c(ORCID = "0000-0001-9533-1870")),
@@ -52,7 +52,7 @@ Suggests:
     stm,
     lda,
     topicmodels,
-    seededlda,
+    seededlda (>= 1.4.0),
     keyATM,
     LDAvis,
     servr,

@@ -29,7 +29,7 @@ following the usage of \code{\link[quanteda:dfm_trim]{quanteda::dfm_trim()}}.}
 
 \item{case_insensitive}{only used when the \code{tokens} argument is provided.
 Default to \code{FALSE}. This function removes words in the initial \link{tokens}
-based on the remaining features in the \link{dfm} object. This check is
+based on the remaining features in the \link[quanteda:dfm]{quanteda::dfm} object. This check is
 case-sensitive by default, and can be relaxed by setting this argument to
 \code{TRUE}.}
 

@@ -16,7 +16,7 @@ and estimated with \code{\link[=fit]{fit()}}}
 \emph{docvars} stored in the \link{tokens} object provided at model initialization}
 }
 \value{
-A \link{data.table} in the long format, where each line is the estimated
+A \link[data.table:data.table]{data.table::data.table} in the long format, where each line is the estimated
 proportion of a single topic/sentiment for a document. For JST and rJST
 models, the probability is also decomposed into 'L1' and 'L2' layers,
 representing the probability at each layer of the topic-sentiment
@@ -24,7 +24,7 @@ hierarchy.
 }
 \description{
 This function extracts the estimated document mixtures from a
-topic model and returns them in a long \link{data.table} format.
+topic model and returns them in a long \link[data.table:data.table]{data.table::data.table} format.
 }
 \examples{
 # only returns topic proportion for LDA models

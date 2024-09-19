@@ -119,7 +119,7 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
 #'
 #' @param years the years for which press conferences should be retrieved
 #' @param language the language in which press conferences should be retrieved
-#' @param data.table if TRUE, returns a [data.table]. Otherwise, return a list
+#' @param data.table if TRUE, returns a [data.table::data.table]. Otherwise, return a list
 #'   in which each element is a press conference.
 #'
 #' @return Depending on the arguments, returns either a data.frame or a
@@ -274,7 +274,7 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
 #' @param x a [quanteda::corpus] object.
 #' @param min_ngram the minimum length of n-grams considered in the computation
 #' @param return_dfm if `TRUE`, returns the scaled word-per-document score under
-#'   two [dfm], on for the Monetary Policy and one for the Economic Condition
+#'   two [quanteda::dfm], on for the Monetary Policy and one for the Economic Condition
 #'   categories. If `FALSE`, returns the sum of all word scores per document.
 #'
 #' @details The computation is done on a per-document basis, such as each

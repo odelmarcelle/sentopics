@@ -5,7 +5,7 @@
 \alias{PicaultRenault}
 \title{Picault-Renault lexicon}
 \format{
-A \link{data.table} object.
+A \link[data.table:data.table]{data.table::data.table} object.
 }
 \source{
 \url{http://www.cbcomindex.com/lexicon.php}

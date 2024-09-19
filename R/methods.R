@@ -688,7 +688,7 @@ melt.default <- function(data, ...) {
 #' @author Olivier Delmarcelle
 #'
 #' @description This function extracts the estimated document mixtures from a
-#'   topic model and returns them in a long [data.table] format.
+#'   topic model and returns them in a long [data.table::data.table] format.
 #'
 #' @param data a model created from the [LDA()], [JST()] or [rJST()] function
 #'   and estimated with [fit()]
@@ -699,7 +699,7 @@ melt.default <- function(data, ...) {
 #' @seealso [topWords()] for extracting representative words,
 #'   [data.table::melt()] and [data.table::dcast()]
 #'
-#' @return A [data.table] in the long format, where each line is the estimated
+#' @return A [data.table::data.table] in the long format, where each line is the estimated
 #'   proportion of a single topic/sentiment for a document. For JST and rJST
 #'   models, the probability is also decomposed into 'L1' and 'L2' layers,
 #'   representing the probability at each layer of the topic-sentiment

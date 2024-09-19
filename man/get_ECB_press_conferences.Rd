@@ -15,7 +15,7 @@ get_ECB_press_conferences(
 
 \item{language}{the language in which press conferences should be retrieved}
 
-\item{data.table}{if TRUE, returns a \link{data.table}. Otherwise, return a list
+\item{data.table}{if TRUE, returns a \link[data.table:data.table]{data.table::data.table}. Otherwise, return a list
 in which each element is a press conference.}
 }
 \value{

@@ -294,10 +294,11 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
 #'
 #' @export
 #' @seealso [PicaultRenault]
-#' @references Picault, M. & Renault, T. (2017). [Words are not all created
+#' @references Picault, M. & Renault, T. (2017). Words are not all created
 #'   equal: A new measure of ECB
-#'   communication](https://www.sciencedirect.com/science/article/abs/pii/S0261560617301808).
+#'   communication.
 #'   *Journal of International Money and Finance*, 79, 136--156.
+#'    \doi{10.1016/j.jimonfin.2017.09.005}
 #' @examples
 #' \donttest{# on documents
 #' docs <- quanteda::corpus_reshape(ECB_press_conferences, "documents")

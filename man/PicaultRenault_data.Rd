@@ -34,7 +34,10 @@ head(PicaultRenault_data)
 
 }
 \references{
-Picault, M. & Renault, T. (2017). \href{https://www.sciencedirect.com/science/article/abs/pii/S0261560617301808}{Words are not all created equal: A new measure of ECB communication}. \emph{Journal of
+Picault, M. & Renault, T. (2017). Words are not all created
+equal: A new measure of ECB
+communication. \emph{Journal of
 International Money and Finance}, 79, 136--156.
+\doi{10.1016/j.jimonfin.2017.09.005}
 }
 \keyword{datasets}

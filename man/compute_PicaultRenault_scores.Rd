@@ -45,8 +45,11 @@ compute_PicaultRenault_scores(docs)
 compute_PicaultRenault_scores(ECB_press_conferences)}
 }
 \references{
-Picault, M. & Renault, T. (2017). \href{https://www.sciencedirect.com/science/article/abs/pii/S0261560617301808}{Words are not all created equal: A new measure of ECB communication}.
+Picault, M. & Renault, T. (2017). Words are not all created
+equal: A new measure of ECB
+communication.
 \emph{Journal of International Money and Finance}, 79, 136--156.
+\doi{10.1016/j.jimonfin.2017.09.005}
 }
 \seealso{
 \link{PicaultRenault}

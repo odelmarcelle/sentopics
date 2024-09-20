@@ -85,10 +85,10 @@ NULL
 #' @source \url{https://sraf.nd.edu/loughranmcdonald-master-dictionary/} for the
 #'   lexicon and [lexicon::hash_valence_shifters] for the valence shifters.
 #'
-#' @references Loughran, T. & McDonald, B. (2011). [When Is a Liability Not a
+#' @references Loughran, T. & McDonald, B. (2011). When Is a Liability Not a
 #'   Liability? Textual Analysis, Dictionaries, and
-#'   10-Ks](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1331573). *The Journal of
-#'   Finance*, 66(1), 35--65.
+#'   10-Ks. *The Journal of
+#'   Finance*, 66(1), 35--65.\doi{10.1111/j.1540-6261.2010.01625.x}
 "LoughranMcDonald"
 
 #' Picault-Renault lexicon
@@ -109,10 +109,11 @@ NULL
 #'
 #' @format A [data.table::data.table] object.
 #'
-#' @references Picault, M. & Renault, T. (2017). [Words are not all created
+#' @references Picault, M. & Renault, T. (2017). Words are not all created
 #'   equal: A new measure of ECB
-#'   communication](https://www.sciencedirect.com/science/article/abs/pii/S0261560617301808). *Journal of
+#'   communication. *Journal of
 #'    International Money and Finance*, 79, 136--156.
+#'    \doi{10.1016/j.jimonfin.2017.09.005}
 #'
 #' @seealso [compute_PicaultRenault_scores()]
 #'
@@ -140,10 +141,11 @@ NULL
 #'
 #' @format An [xts::xts] object.
 #'
-#' @references Picault, M. & Renault, T. (2017). [Words are not all created
+#' @references Picault, M. & Renault, T. (2017). Words are not all created
 #'   equal: A new measure of ECB
-#'   communication](https://www.sciencedirect.com/science/article/abs/pii/S0261560617301808). *Journal of
+#'   communication. *Journal of
 #'    International Money and Finance*, 79, 136--156.
+#'    \doi{10.1016/j.jimonfin.2017.09.005}
 #'
 #' @source The data was manually prepared by the author of this package.
 "PicaultRenault_data"

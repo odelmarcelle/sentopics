@@ -119,7 +119,7 @@ test_that("from topicmodels", {
 test_that("from seededlda", {
   skip_if_not_installed("seededlda")
   library("seededlda")
-  lda <- textmodel_lda(dfm(ECB_press_conferences_tokens),
+  lda <- textmodel_lda(quanteda::dfm(ECB_press_conferences_tokens),
                        k = 6, max_iter = 100)
   LDA <- as.LDA(lda)
 
@@ -148,7 +148,7 @@ test_that("from seededlda", {
     growth = c("growth", "development", "increase"),
     `monetary policy` = c("monetary_policy", "monetary", "interest_rate")
   ))
-  slda <- textmodel_seededlda(dfm(ECB_press_conferences_tokens),
+  slda <- textmodel_seededlda(quanteda::dfm(ECB_press_conferences_tokens),
                               dict, residual = TRUE,
                               max_iter = 100)
   LDA <- as.LDA(slda)

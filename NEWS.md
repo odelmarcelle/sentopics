@@ -1,3 +1,7 @@
+# sentopics 0.7.5
+
+* Fixed a test following change in suggested dependency.
+
 # sentopics 0.7.4
 
 * Fixed a test

@@ -1,11 +1,13 @@
-
 context("testing rJST")
 toks <- ECB_press_conferences_tokens[1:10]
 
 rJST <- rJST(toks, lexicon = LoughranMcDonald)
 
 test_that("rJST works", {
-  expect_output(print(rJST), "A reversed-JST model with 5 topics and 3 sentiments. Currently fitted by 0 Gibbs sampling iterations.")
+  expect_output(
+    print(rJST),
+    "A reversed-JST model with 5 topics and 3 sentiments. Currently fitted by 0 Gibbs sampling iterations."
+  )
   tabl <- table(rJST$vocabulary$lexicon)
   expect_length(tabl, 3)
   expect_gt(sum(tabl), 0)
@@ -40,8 +42,19 @@ test_that("functions works", {
 })
 
 test_that("test convergence", {
-  vocab <- generateVocab(nTopics = 3, nSentiments = 2, nWords = 3, nCommonWords = 1)
-  toks <- generateDocuments(vocab, nDocs = 100, L1prior = .1, L2prior = 5, nWords = 100)
+  vocab <- generateVocab(
+    nTopics = 3,
+    nSentiments = 2,
+    nWords = 3,
+    nCommonWords = 1
+  )
+  toks <- generateDocuments(
+    vocab,
+    nDocs = 100,
+    L1prior = .1,
+    L2prior = 5,
+    nWords = 100
+  )
   lex <- generatePartialLexicon(toks, Sindex = 1:2)
 
   ## With lexicon
@@ -66,13 +79,17 @@ test_that("test convergence", {
   while (convergence == FALSE && retry < 20) {
     rJST <- rJST(toks, K = 3, S = 2, alpha = .1)
     rJST <- fit(rJST, 100, nChains = 2, displayProgress = FALSE)
-    expect_message(distToGenerative(rJST, vocab), "No lexicon detected, allowing")
+    expect_message(
+      distToGenerative(rJST, vocab),
+      "No lexicon detected, allowing"
+    )
     count <- 0
     while (convergence == FALSE && count < 30) {
       rJST <- fit(rJST, 100, nChains = 2, displayProgress = FALSE)
       count <- count + 1
-      if (all(suppressMessages(distToGenerative(rJST, vocab)) < .15))
+      if (all(suppressMessages(distToGenerative(rJST, vocab)) < .15)) {
         convergence <- TRUE
+      }
     }
     retry <- retry + 1
   }
@@ -85,9 +102,10 @@ test_that("from LDA works", {
   rJST <- rJST(LDA, lexicon = LoughranMcDonald)
 
   expect_identical(LDA$theta, rJST$theta)
-  expect_equal(unlist(LDA$za, use.names = FALSE),
-               (unlist(rJST$za, use.names = FALSE) - 1) %/% rJST$S + 1)
+  expect_equal(
+    unlist(LDA$za, use.names = FALSE),
+    (unlist(rJST$za, use.names = FALSE) - 1) %/% rJST$S + 1
+  )
   expect_identical(LDA$it, rJST$it)
   expect_identical(LDA$logLikelihood, rJST$logLikelihood)
 })
-

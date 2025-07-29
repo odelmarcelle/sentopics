@@ -11,6 +11,10 @@
    - renamed S3 class `topWords` to `top_words`
    - renamed S3 class `multiChains` to `multi_chains`
 
+### Other changes
+
+* Reformatted codebase using Air.
+
 # sentopics 0.7.5
 
 * Fixed a test following change in suggested dependency.

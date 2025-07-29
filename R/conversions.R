@@ -1,4 +1,3 @@
-
 # From other packages -----------------------------------------------------
 
 #' Conversions from other packages to LDA
@@ -98,15 +97,15 @@ as.LDA.STM <- function(x, docs, ...) {
   for (i in which(diff != 0)) {
     while (diff[i] != 0L) {
       possible <- zd[, i] > (-diff[i] - .5)
-      idx <- which.min( (zd[possible, i] - round(zd[possible, i])*diff[i] ))
-      zd[which(possible)[idx], i] <- zd[which(possible)[idx], i] + 1*sign(diff[i])
+      idx <- which.min((zd[possible, i] - round(zd[possible, i]) * diff[i]))
+      zd[which(possible)[idx], i] <- zd[which(possible)[idx], i] +
+        1 * sign(diff[i])
       diff[i] <- as.integer(doc.length[i] - sum(round(zd[, i])))
     }
   }
   zd <- round(zd)
   storage.mode(zd) <- "integer"
   stopifnot(isTRUE(all.equal(colSums(zd), doc.length)))
-
 
   phi <- t(exp(x$beta$logbeta[[1]]))
   beta <- t(phi)
@@ -118,8 +117,9 @@ as.LDA.STM <- function(x, docs, ...) {
   for (i in which(diff != 0)) {
     while (diff[i] != 0L) {
       possible <- (zw[, i] > (-diff[i] - .5))
-      idx <- which.min( (zw[possible, i] - round(zw[possible, i])*diff[i] ))
-      zw[which(possible)[idx], i] <- zw[which(possible)[idx], i] + 1*sign(diff[i])
+      idx <- which.min((zw[possible, i] - round(zw[possible, i]) * diff[i]))
+      zw[which(possible)[idx], i] <- zw[which(possible)[idx], i] +
+        1 * sign(diff[i])
       diff[i] <- as.integer(x$settings$dim$wcounts$x[i] - sum(round(zw[, i])))
     }
   }
@@ -127,14 +127,20 @@ as.LDA.STM <- function(x, docs, ...) {
   diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
   ## quickly adjust second dimension
   while (any(diff2 < 0)) {
-    count <- 1L;
+    count <- 1L
     while (TRUE) {
       non_zero <- length(zw[diff2 < 0][zw[diff2 < 0] > count])
-      deduct <- ceiling(abs(min(diff2))/non_zero)
-      if (deduct <= count) break
-      else count <- count + 1
+      deduct <- ceiling(abs(min(diff2)) / non_zero)
+      if (deduct <= count) {
+        break
+      } else {
+        count <- count + 1
+      }
     }
-    zw[diff2 < 0][zw[diff2 < 0] > count] <- zw[diff2 < 0][zw[diff2 < 0] > count] - deduct
+    zw[diff2 < 0][zw[diff2 < 0] > count] <- zw[diff2 < 0][
+      zw[diff2 < 0] > count
+    ] -
+      deduct
     diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
   }
   diff <- x$settings$dim$wcounts$x - as.integer(colSums(round(zw)))
@@ -142,7 +148,6 @@ as.LDA.STM <- function(x, docs, ...) {
   storage.mode(zw) <- "integer"
   stopifnot(isTRUE(all.equal(colSums(zw), x$settings$dim$wcounts$x)))
   stopifnot(isTRUE(all.equal(rowSums(zw), rowSums(zd))))
-
 
   ## Attempt to recreate ZA (not working)
   # za <- rebuild_za_ARRAY(zd, zw)
@@ -166,26 +171,34 @@ as.LDA.STM <- function(x, docs, ...) {
   tokens <- build_tokens(
     x = lapply(docs, function(doc) rep(doc[1, ], times = doc[2, ])),
     types = x$vocab,
-    docvars = make_docvars(length(docs)))
-  stopifnot(isTRUE(all.equal(unname(lengths(cleanPadding(tokens))),
-                             doc.length)))
+    docvars = make_docvars(length(docs))
+  )
+  stopifnot(isTRUE(all.equal(
+    unname(lengths(cleanPadding(tokens))),
+    doc.length
+  )))
 
   vocabulary <- makeVocabulary(tokens, NULL, 1L)
 
-  LDA <- structure(list(
-    tokens = vocabulary$toks,
-    vocabulary = vocabulary$vocabulary,
-    K = K,
-    alpha = as.matrix(rep(0, K)),
-    beta = beta,
-    it = x$convergence$its,
-    zd = zd,
-    zw = zw,
-    theta = theta,
-    phi = phi,
-    logLikelihood = x$convergence$bound
-  ), class = c("LDA", "sentopicmodel"), reversed = TRUE, Sdim = "L2",
-  approx = TRUE)
+  LDA <- structure(
+    list(
+      tokens = vocabulary$toks,
+      vocabulary = vocabulary$vocabulary,
+      K = K,
+      alpha = as.matrix(rep(0, K)),
+      beta = beta,
+      it = x$convergence$its,
+      zd = zd,
+      zw = zw,
+      theta = theta,
+      phi = phi,
+      logLikelihood = x$convergence$bound
+    ),
+    class = c("LDA", "sentopicmodel"),
+    reversed = TRUE,
+    Sdim = "L2",
+    approx = TRUE
+  )
   LDA <- as.LDA(reorder_sentopicmodel(LDA))
 
   LDA
@@ -203,21 +216,28 @@ as.LDA.LDA_Gibbs <- function(x, docs, ...) {
   tokens <- quanteda::as.tokens(quanteda::as.dfm(docs))
   vocabulary <- makeVocabulary(tokens, NULL, 1L)
 
-  za <- split(x@z, rep(seq_len(length(tokens)),
-                       times = lengths(cleanPadding(tokens))))
+  za <- split(
+    x@z,
+    rep(seq_len(length(tokens)), times = lengths(cleanPadding(tokens)))
+  )
 
-  LDA <- structure(list(
-    tokens = vocabulary$toks,
-    vocabulary = vocabulary$vocabulary,
-    K = K,
-    alpha = as.matrix(rep(alpha, K)),
-    beta = beta,
-    it = x@iter,
-    theta = x@gamma,
-    phi = exp(t(x@beta)),
-    za = za,
-    logLikelihood = NULL
-  ), class = c("LDA", "sentopicmodel"), reversed = TRUE, Sdim = "L2")
+  LDA <- structure(
+    list(
+      tokens = vocabulary$toks,
+      vocabulary = vocabulary$vocabulary,
+      K = K,
+      alpha = as.matrix(rep(alpha, K)),
+      beta = beta,
+      it = x@iter,
+      theta = x@gamma,
+      phi = exp(t(x@beta)),
+      za = za,
+      logLikelihood = NULL
+    ),
+    class = c("LDA", "sentopicmodel"),
+    reversed = TRUE,
+    Sdim = "L2"
+  )
   LDA <- fit(LDA, 0, displayProgress = FALSE)
 
   LDA
@@ -244,8 +264,9 @@ as.LDA.LDA_VEM <- function(x, docs, ...) {
   for (i in which(diff != 0)) {
     while (diff[i] != 0L) {
       possible <- zd[, i] > (-diff[i] - .5)
-      idx <- which.min( (zd[possible, i] - round(zd[possible, i])*diff[i] ))
-      zd[which(possible)[idx], i] <- zd[which(possible)[idx], i] + 1*sign(diff[i])
+      idx <- which.min((zd[possible, i] - round(zd[possible, i]) * diff[i]))
+      zd[which(possible)[idx], i] <- zd[which(possible)[idx], i] +
+        1 * sign(diff[i])
       diff[i] <- as.integer(doc.length[i] - sum(round(zd[, i])))
     }
   }
@@ -263,8 +284,9 @@ as.LDA.LDA_VEM <- function(x, docs, ...) {
   for (i in which(diff != 0)) {
     while (diff[i] != 0L) {
       possible <- (zw[, i] > (-diff[i] - .5))
-      idx <- which.min( (zw[possible, i] - round(zw[possible, i])*diff[i] ))
-      zw[which(possible)[idx], i] <- zw[which(possible)[idx], i] + 1*sign(diff[i])
+      idx <- which.min((zw[possible, i] - round(zw[possible, i]) * diff[i]))
+      zw[which(possible)[idx], i] <- zw[which(possible)[idx], i] +
+        1 * sign(diff[i])
       diff[i] <- as.integer(sum(dfm[, i]) - sum(round(zw[, i])))
     }
   }
@@ -272,14 +294,20 @@ as.LDA.LDA_VEM <- function(x, docs, ...) {
   diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
   ## quickly adjust second dimension
   while (any(diff2 < 0)) {
-    count <- 1L;
+    count <- 1L
     while (TRUE) {
       non_zero <- length(zw[diff2 < 0][zw[diff2 < 0] > count])
-      deduct <- ceiling(abs(min(diff2))/non_zero)
-      if (deduct <= count) break
-      else count <- count + 1
+      deduct <- ceiling(abs(min(diff2)) / non_zero)
+      if (deduct <= count) {
+        break
+      } else {
+        count <- count + 1
+      }
     }
-    zw[diff2 < 0][zw[diff2 < 0] > count] <- zw[diff2 < 0][zw[diff2 < 0] > count] - deduct
+    zw[diff2 < 0][zw[diff2 < 0] > count] <- zw[diff2 < 0][
+      zw[diff2 < 0] > count
+    ] -
+      deduct
     diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
   }
   diff <- as.integer(colSums(dfm)) - as.integer(colSums(round(zw)))
@@ -288,20 +316,25 @@ as.LDA.LDA_VEM <- function(x, docs, ...) {
   stopifnot(isTRUE(all.equal(colSums(zw), unname(colSums(dfm)))))
   stopifnot(isTRUE(all.equal(rowSums(zw), rowSums(zd))))
 
-  LDA <- structure(list(
-    tokens = vocabulary$toks,
-    vocabulary = vocabulary$vocabulary,
-    K = K,
-    alpha = as.matrix(alpha),
-    beta = beta,
-    it = x@iter,
-    zd = zd,
-    zw = zw,
-    theta = x@gamma,
-    phi = phi,
-    logLikelihood = x@logLiks
-  ), class = c("LDA", "sentopicmodel"), reversed = TRUE, Sdim = "L2",
-  approx = TRUE)
+  LDA <- structure(
+    list(
+      tokens = vocabulary$toks,
+      vocabulary = vocabulary$vocabulary,
+      K = K,
+      alpha = as.matrix(alpha),
+      beta = beta,
+      it = x@iter,
+      zd = zd,
+      zw = zw,
+      theta = x@gamma,
+      phi = phi,
+      logLikelihood = x@logLiks
+    ),
+    class = c("LDA", "sentopicmodel"),
+    reversed = TRUE,
+    Sdim = "L2",
+    approx = TRUE
+  )
   LDA <- as.LDA(reorder_sentopicmodel(LDA))
 
   LDA
@@ -310,10 +343,13 @@ as.LDA.LDA_VEM <- function(x, docs, ...) {
 #' @rdname as.LDA
 #' @export
 as.LDA.textmodel_lda <- function(x, ...) {
-
   version <- x$version
 
-  if (!(version >= "1.2.0")) stop("Conversion is not allowed from models created using a version of `seededlda` below 1.2.0")
+  if (!(version >= "1.2.0")) {
+    stop(
+      "Conversion is not allowed from models created using a version of `seededlda` below 1.2.0"
+    )
+  }
 
   labels <- colnames(x$theta)
 
@@ -324,7 +360,11 @@ as.LDA.textmodel_lda <- function(x, ...) {
   tokens <- as.tokens(x$data)
   vocabulary <- makeVocabulary(tokens, NULL, 1L)
 
-  zd <- rebuild_L1d_from_posterior(lengths(cleanPadding(tokens)), x$theta, alpha)
+  zd <- rebuild_L1d_from_posterior(
+    lengths(cleanPadding(tokens)),
+    x$theta,
+    alpha
+  )
   zd <- t(zd)
   zd <- round(zd)
   storage.mode(zd) <- "integer"
@@ -333,20 +373,26 @@ as.LDA.textmodel_lda <- function(x, ...) {
   zw <- round(zw)
   storage.mode(zw) <- "integer"
 
-  LDA <- structure(list(
-    tokens = vocabulary$toks,
-    vocabulary = vocabulary$vocabulary,
-    K = x$k,
-    alpha = as.matrix(x$alpha),
-    beta = beta,
-    it = x$last_iter,
-    theta = x$theta,
-    phi = t(x$phi),
-    zd = zd,
-    zw = zw,
-    logLikelihood = NULL
-  ), class = c("LDA", "sentopicmodel"), reversed = TRUE, Sdim = "L2",
-  approx = TRUE, labels = list(L1 = colnames(x$theta)))
+  LDA <- structure(
+    list(
+      tokens = vocabulary$toks,
+      vocabulary = vocabulary$vocabulary,
+      K = x$k,
+      alpha = as.matrix(x$alpha),
+      beta = beta,
+      it = x$last_iter,
+      theta = x$theta,
+      phi = t(x$phi),
+      zd = zd,
+      zw = zw,
+      logLikelihood = NULL
+    ),
+    class = c("LDA", "sentopicmodel"),
+    reversed = TRUE,
+    Sdim = "L2",
+    approx = TRUE,
+    labels = list(L1 = colnames(x$theta))
+  )
   LDA <- as.LDA(reorder_sentopicmodel(LDA))
 
   LDA
@@ -367,38 +413,52 @@ as.LDA_lda <- function(list, docs, alpha, eta) {
   tokens <- build_tokens(
     x = lapply(docs, function(doc) rep(doc[1, ] + 1L, times = doc[2, ])),
     types = colnames(zw),
-    docvars = make_docvars(length(docs)))
+    docvars = make_docvars(length(docs))
+  )
 
-  stopifnot(isTRUE(all.equal(unname(lengths(cleanPadding(tokens))),
-                             colSums(zd))))
+  stopifnot(isTRUE(all.equal(
+    unname(lengths(cleanPadding(tokens))),
+    colSums(zd)
+  )))
 
-  za <- mapply(function(doc, assignments) rep(assignments + 1L, times = doc[2, ]),
-               docs, list$assignments)
+  za <- mapply(
+    function(doc, assignments) rep(assignments + 1L, times = doc[2, ]),
+    docs,
+    list$assignments
+  )
 
   vocabulary <- makeVocabulary(tokens, NULL, 1L)
 
-  if (missing(alpha)) alpha <- 50/K
-  if (missing(eta)) eta <- 0.01
+  if (missing(alpha)) {
+    alpha <- 50 / K
+  }
+  if (missing(eta)) {
+    eta <- 0.01
+  }
   beta <- zw
   beta[] <- eta
 
-  LDA <- structure(list(
-    tokens = vocabulary$toks,
-    vocabulary = vocabulary$vocabulary,
-    K = K,
-    alpha = as.matrix(rep(alpha, K)),
-    beta = beta,
-    it = 1,
-    theta = t(zd),
-    phi = t(zw),
-    za = za,
-    logLikelihood = NULL
-  ), class = c("LDA", "sentopicmodel"), reversed = TRUE, Sdim = "L2")
+  LDA <- structure(
+    list(
+      tokens = vocabulary$toks,
+      vocabulary = vocabulary$vocabulary,
+      K = K,
+      alpha = as.matrix(rep(alpha, K)),
+      beta = beta,
+      it = 1,
+      theta = t(zd),
+      phi = t(zw),
+      za = za,
+      logLikelihood = NULL
+    ),
+    class = c("LDA", "sentopicmodel"),
+    reversed = TRUE,
+    Sdim = "L2"
+  )
   LDA <- fit(LDA, 0, displayProgress = FALSE)
 
   LDA
 }
-
 
 
 #' @rdname as.LDA
@@ -406,18 +466,15 @@ as.LDA_lda <- function(list, docs, alpha, eta) {
 as.LDA.keyATM_output <- function(x, docs, ...) {
   K = x$keyword_k + x$no_keyword_topics
 
-
   labels <- colnames(x$theta)
 
-
   alpha <- as.matrix(rep(utils::tail(x$values_iter$alpha_iter$alpha, 1), K))
-
 
   tokens <- quanteda::as.tokens(docs$W_raw)
   vocabulary <- makeVocabulary(tokens, NULL, 1L)
 
   # Align keyATM phi to the new vocabulary order
-  reorder <- order(match(x$vocab,vocabulary$vocabulary$word))
+  reorder <- order(match(x$vocab, vocabulary$vocabulary$word))
   x$vocab <- x$vocab[reorder]
   stopifnot(identical(
     vocabulary$vocabulary$word,
@@ -427,11 +484,15 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
   beta <- x$phi
   beta[] <- x$priors$beta
   stopifnot(identical(
-    order(match(x$vocab,vocabulary$vocabulary$word)),
+    order(match(x$vocab, vocabulary$vocabulary$word)),
     seq(x$V)
   ))
 
-  zd <- rebuild_L1d_from_posterior(lengths(cleanPadding(tokens)), x$theta, alpha)
+  zd <- rebuild_L1d_from_posterior(
+    lengths(cleanPadding(tokens)),
+    x$theta,
+    alpha
+  )
   zd <- unname(t(zd))
   doc.length <- lengths(tokens, use.names = FALSE)
 
@@ -440,8 +501,9 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
   for (i in which(diff != 0)) {
     while (diff[i] != 0L) {
       possible <- zd[, i] > (-diff[i] - .5)
-      idx <- which.min( (zd[possible, i] - round(zd[possible, i])*diff[i] ))
-      zd[which(possible)[idx], i] <- zd[which(possible)[idx], i] + 1*sign(diff[i])
+      idx <- which.min((zd[possible, i] - round(zd[possible, i]) * diff[i]))
+      zd[which(possible)[idx], i] <- zd[which(possible)[idx], i] +
+        1 * sign(diff[i])
       diff[i] <- as.integer(doc.length[i] - sum(round(zd[, i])))
     }
   }
@@ -449,14 +511,20 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
   diff2 <- as.integer(x$topic_counts - rowSums(zd))
   ## quickly adjust second dimension
   while (any(diff2 < 0)) {
-    count <- 1L;
+    count <- 1L
     while (TRUE) {
       non_zero <- length(zd[diff2 < 0][zd[diff2 < 0] > count])
-      deduct <- ceiling(abs(min(diff2))/non_zero)
-      if (deduct <= count) break
-      else count <- count + 1
+      deduct <- ceiling(abs(min(diff2)) / non_zero)
+      if (deduct <= count) {
+        break
+      } else {
+        count <- count + 1
+      }
     }
-    zd[diff2 < 0][zd[diff2 < 0] > count] <- zd[diff2 < 0][zd[diff2 < 0] > count] - deduct
+    zd[diff2 < 0][zd[diff2 < 0] > count] <- zd[diff2 < 0][
+      zd[diff2 < 0] > count
+    ] -
+      deduct
     diff2 <- as.integer(x$topic_counts - rowSums(zd))
   }
   diff <- doc.length - as.integer(colSums(round(zd)))
@@ -464,8 +532,6 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
   storage.mode(zd) <- "integer"
   stopifnot(isTRUE(all.equal(colSums(zd), doc.length)))
   stopifnot(isTRUE(all.equal(rowSums(zd), x$topic_counts)))
-
-
 
   phi <- t(x$phi)
 
@@ -477,8 +543,9 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
   for (i in which(diff != 0)) {
     while (diff[i] != 0L) {
       possible <- (zw[, i] > (-diff[i] - .5))
-      idx <- which.min( (zw[possible, i] - round(zw[possible, i])*diff[i] ))
-      zw[which(possible)[idx], i] <- zw[which(possible)[idx], i] + 1*sign(diff[i])
+      idx <- which.min((zw[possible, i] - round(zw[possible, i]) * diff[i]))
+      zw[which(possible)[idx], i] <- zw[which(possible)[idx], i] +
+        1 * sign(diff[i])
       diff[i] <- as.integer(sum(dfm[, i]) - sum(round(zw[, i])))
     }
   }
@@ -486,14 +553,20 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
   diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
   ## quickly adjust second dimension
   while (any(diff2 < 0)) {
-    count <- 1L;
+    count <- 1L
     while (TRUE) {
       non_zero <- length(zw[diff2 < 0][zw[diff2 < 0] > count])
-      deduct <- ceiling(abs(min(diff2))/non_zero)
-      if (deduct <= count) break
-      else count <- count + 1
+      deduct <- ceiling(abs(min(diff2)) / non_zero)
+      if (deduct <= count) {
+        break
+      } else {
+        count <- count + 1
+      }
     }
-    zw[diff2 < 0][zw[diff2 < 0] > count] <- zw[diff2 < 0][zw[diff2 < 0] > count] - deduct
+    zw[diff2 < 0][zw[diff2 < 0] > count] <- zw[diff2 < 0][
+      zw[diff2 < 0] > count
+    ] -
+      deduct
     diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
   }
   diff <- as.integer(quanteda::colSums(dfm)) - as.integer(colSums(round(zw)))
@@ -502,29 +575,33 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
   stopifnot(isTRUE(all.equal(colSums(zw), unname(quanteda::colSums(dfm)))))
   stopifnot(isTRUE(all.equal(rowSums(zw), rowSums(zd))))
 
-  LDA <- structure(list(
-    tokens = vocabulary$toks,
-    vocabulary = vocabulary$vocabulary,
-    K = K,
-    alpha = alpha,
-    beta = beta,
-    it = x$options$iterations,
-    theta = x$theta,
-    phi = phi,
-    zd = zd,
-    zw = zw,
-    logLikelihood = NULL
-  ), class = c("LDA", "sentopicmodel"), reversed = TRUE, Sdim = "L2",
-  approx = TRUE, labels = list(L1 = colnames(x$theta)))
+  LDA <- structure(
+    list(
+      tokens = vocabulary$toks,
+      vocabulary = vocabulary$vocabulary,
+      K = K,
+      alpha = alpha,
+      beta = beta,
+      it = x$options$iterations,
+      theta = x$theta,
+      phi = phi,
+      zd = zd,
+      zw = zw,
+      logLikelihood = NULL
+    ),
+    class = c("LDA", "sentopicmodel"),
+    reversed = TRUE,
+    Sdim = "L2",
+    approx = TRUE,
+    labels = list(L1 = colnames(x$theta))
+  )
   LDA <- as.LDA(reorder_sentopicmodel(LDA))
 
   LDA
 }
 
 
-
 # To LDAvis ---------------------------------------------------------------
-
 
 #' Visualize a LDA model using \pkg{LDAvis}
 #'
@@ -551,11 +628,17 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
 #' LDAvis(lda)
 LDAvis <- function(x, ...) {
   mis <- missingSuggets(c("LDAvis", "servr"))
-  if (length(mis) > 0) stop("Suggested packages are missing for the LDAvis function.\n",
-                            "Please install first the following packages: ",
-                            paste0(mis, collapse = ", "),".\n",
-                            "Install command: install.packages(",
-                            paste0("'", mis, "'", collapse = ", "),")" )
+  if (length(mis) > 0) {
+    stop(
+      "Suggested packages are missing for the LDAvis function.\n",
+      "Please install first the following packages: ",
+      paste0(mis, collapse = ", "),
+      ".\n",
+      "Install command: install.packages(",
+      paste0("'", mis, "'", collapse = ", "),
+      ")"
+    )
+  }
 
   stopifnot(inherits(x, c("LDA", "sentopicmodel")))
   zw <- rebuild_zw(as.sentopicmodel(x))
@@ -567,7 +650,8 @@ LDAvis <- function(x, ...) {
     vocab = x$vocabulary$word,
     term.frequency = colSums(zw),
     reorder.topics = FALSE,
-    ...)
+    ...
+  )
   LDAvis::serVis(json, encoding = "UTF-8", ...)
 }
 
@@ -590,17 +674,27 @@ as.sentopicmodel <- function(x) {
 as.sentopicmodel_defaults <- function(x) {
   ### perhaps create too many objects
   ### especially in multi_chains, recreate things that are stored in base
-  if (is.null(x$L2)) x$L2 <- 1
-  if (is.null(x$L2prior)) x$L2prior <- x$L1prior
+  if (is.null(x$L2)) {
+    x$L2 <- 1
+  }
+  if (is.null(x$L2prior)) {
+    x$L2prior <- x$L1prior
+  }
   if (is.null(x$L2post) & x$it > 0) {
     L2post <- array(1, dim = c(1, x$L1, length(x$tokens)))
-    dimnames(L2post) = c(list(L2 = levels(x$vocabulary$lexicon)),
-                              dimnames(x$L1post)[2],
-                              dimnames(x$L1post)[1])
+    dimnames(L2post) = c(
+      list(L2 = levels(x$vocabulary$lexicon)),
+      dimnames(x$L1post)[2],
+      dimnames(x$L1post)[1]
+    )
     x$L2post <- L2post
   }
-  if (is.null(x$L1cycle)) x$L1cycle <- 0
-  if (is.null(x$L2cycle)) x$L2cycle <- 0
+  if (is.null(x$L1cycle)) {
+    x$L1cycle <- 0
+  }
+  if (is.null(x$L2cycle)) {
+    x$L2cycle <- 0
+  }
   if (is.null(x$logLikelihood)) {
     logLikelihood <- 0
     attr(logLikelihood, "components") <- list(
@@ -616,16 +710,40 @@ as.sentopicmodel_defaults <- function(x) {
 as.sentopicmodel.LDA <- function(x) {
   rename <- stats::setNames(names(x), names(x))
   translate <- stats::setNames(
-    c("L1", "L2", "L1prior", "L2prior", "L1post", "L2post", "L1cycle", "L2cycle", "logLikelihoodL1", "logLikelihoodL2"),
-    c("K", "S", "alpha", "gamma", "theta", "pi", "alphaCycle", "gammaCycle", "logLikelihoodK", "logLikelihoodS")
+    c(
+      "L1",
+      "L2",
+      "L1prior",
+      "L2prior",
+      "L1post",
+      "L2post",
+      "L1cycle",
+      "L2cycle",
+      "logLikelihoodL1",
+      "logLikelihoodL2"
+    ),
+    c(
+      "K",
+      "S",
+      "alpha",
+      "gamma",
+      "theta",
+      "pi",
+      "alphaCycle",
+      "gammaCycle",
+      "logLikelihoodK",
+      "logLikelihoodS"
+    )
   )
   if (x$it > 0) {
     if (length(dim(x$phi)) < 3) {
       names <- dimnames(x$phi)
       names[3] <- list(sent = levels(x$vocabulary$lexicon))
-      x$phi <- array(x$phi,
-                     dim = c(nrow(x$phi), 1, ncol(x$phi)),
-                     dimnames = names[c(1,3,2)])
+      x$phi <- array(
+        x$phi,
+        dim = c(nrow(x$phi), 1, ncol(x$phi)),
+        dimnames = names[c(1, 3, 2)]
+      )
     }
   }
   rename <- replace(rename, names(translate), translate)[rename]
@@ -637,8 +755,30 @@ as.sentopicmodel.LDA <- function(x) {
 as.sentopicmodel.rJST <- function(x) {
   rename <- stats::setNames(names(x), names(x))
   translate <- stats::setNames(
-    c("L1", "L2", "L1prior", "L2prior", "L1post", "L2post", "L1cycle", "L2cycle", "logLikelihoodL1", "logLikelihoodL2"),
-    c("K", "S", "alpha", "gamma", "theta", "pi", "alphaCycle", "gammaCycle", "logLikelihoodK", "logLikelihoodS")
+    c(
+      "L1",
+      "L2",
+      "L1prior",
+      "L2prior",
+      "L1post",
+      "L2post",
+      "L1cycle",
+      "L2cycle",
+      "logLikelihoodL1",
+      "logLikelihoodL2"
+    ),
+    c(
+      "K",
+      "S",
+      "alpha",
+      "gamma",
+      "theta",
+      "pi",
+      "alphaCycle",
+      "gammaCycle",
+      "logLikelihoodK",
+      "logLikelihoodS"
+    )
   )
   rename <- replace(rename, names(translate), translate)[rename]
   names(x) <- rename
@@ -649,8 +789,30 @@ as.sentopicmodel.rJST <- function(x) {
 as.sentopicmodel.JST <- function(x) {
   rename <- stats::setNames(names(x), names(x))
   translate <- stats::setNames(
-    c("L1", "L2", "L1prior", "L2prior", "L1post", "L2post", "L1cycle", "L2cycle", "logLikelihoodL1", "logLikelihoodL2"),
-    c("S", "K", "gamma", "alpha", "pi", "theta", "gammaCycle", "alphaCycle", "logLikelihoodS", "logLikelihoodK")
+    c(
+      "L1",
+      "L2",
+      "L1prior",
+      "L2prior",
+      "L1post",
+      "L2post",
+      "L1cycle",
+      "L2cycle",
+      "logLikelihoodL1",
+      "logLikelihoodL2"
+    ),
+    c(
+      "S",
+      "K",
+      "gamma",
+      "alpha",
+      "pi",
+      "theta",
+      "gammaCycle",
+      "alphaCycle",
+      "logLikelihoodS",
+      "logLikelihoodK"
+    )
   )
   rename <- replace(rename, names(translate), translate)[rename]
   names(x) <- rename
@@ -678,15 +840,44 @@ as.sentopicmodel.default <- function(x) {
 as.LDA.sentopicmodel <- function(x, ...) {
   rename <- stats::setNames(names(x), names(x))
   translate <- stats::setNames(
-    c("K", "S", "alpha", "gamma", "theta", "pi", "alphaCycle", "gammaCycle", "logLikelihoodK", "logLikelihoodS"),
-    c("L1", "L2", "L1prior", "L2prior", "L1post", "L2post", "L1cycle", "L2cycle", "logLikelihoodL1", "logLikelihoodL2")
+    c(
+      "K",
+      "S",
+      "alpha",
+      "gamma",
+      "theta",
+      "pi",
+      "alphaCycle",
+      "gammaCycle",
+      "logLikelihoodK",
+      "logLikelihoodS"
+    ),
+    c(
+      "L1",
+      "L2",
+      "L1prior",
+      "L2prior",
+      "L1post",
+      "L2post",
+      "L1cycle",
+      "L2cycle",
+      "logLikelihoodL1",
+      "logLikelihoodL2"
+    )
   )
   # correct phi theta pi structure and names
   if (x$it > 0) {
     # dimnames(x$theta) <- list(doc_id = names(x$tokens), topic = paste0("topic", 1:x$K))
-    dimnames(x$L1post) <- list(doc_id = names(x$tokens), topic = create_labels(x, "LDA", flat = FALSE)[["L1"]])
-    dimnames(x$phi) <- list(word = x$vocabulary$word, sent = levels(x$vocabulary$lexicon), topic = create_labels(x, "LDA", flat = FALSE)[["L1"]])
-    x$phi <- x$phi[ ,1, ]
+    dimnames(x$L1post) <- list(
+      doc_id = names(x$tokens),
+      topic = create_labels(x, "LDA", flat = FALSE)[["L1"]]
+    )
+    dimnames(x$phi) <- list(
+      word = x$vocabulary$word,
+      sent = levels(x$vocabulary$lexicon),
+      topic = create_labels(x, "LDA", flat = FALSE)[["L1"]]
+    )
+    x$phi <- x$phi[, 1, ]
   }
   rename <- replace(rename, names(translate), translate)[rename]
   names(x) <- rename
@@ -717,14 +908,47 @@ as.rJST <- function(x) {
 as.rJST.sentopicmodel <- function(x) {
   rename <- stats::setNames(names(x), names(x))
   translate <- stats::setNames(
-    c("K", "S", "alpha", "gamma", "theta", "pi", "alphaCycle", "gammaCycle", "logLikelihoodK", "logLikelihoodS"),
-    c("L1", "L2", "L1prior", "L2prior", "L1post", "L2post", "L1cycle", "L2cycle", "logLikelihoodL1", "logLikelihoodL2")
+    c(
+      "K",
+      "S",
+      "alpha",
+      "gamma",
+      "theta",
+      "pi",
+      "alphaCycle",
+      "gammaCycle",
+      "logLikelihoodK",
+      "logLikelihoodS"
+    ),
+    c(
+      "L1",
+      "L2",
+      "L1prior",
+      "L2prior",
+      "L1post",
+      "L2post",
+      "L1cycle",
+      "L2cycle",
+      "logLikelihoodL1",
+      "logLikelihoodL2"
+    )
   )
   # correct phi theta pi structure and names
   if (x$it > 0) {
-    dimnames(x$L1post) <- list(doc_id = names(x$tokens), topic = create_labels(x, "rJST", flat = FALSE)[["L1"]])
-    dimnames(x$L2post) <- list(sent = create_labels(x, "rJST", flat = FALSE)[["L2"]], topic = create_labels(x, "rJST", flat = FALSE)[["L1"]], doc_id = names(x$tokens))
-    dimnames(x$phi) <- list(word = x$vocabulary$word, sent = create_labels(x, "rJST", flat = FALSE)[["L2"]], topic = create_labels(x, "rJST", flat = FALSE)[["L1"]])
+    dimnames(x$L1post) <- list(
+      doc_id = names(x$tokens),
+      topic = create_labels(x, "rJST", flat = FALSE)[["L1"]]
+    )
+    dimnames(x$L2post) <- list(
+      sent = create_labels(x, "rJST", flat = FALSE)[["L2"]],
+      topic = create_labels(x, "rJST", flat = FALSE)[["L1"]],
+      doc_id = names(x$tokens)
+    )
+    dimnames(x$phi) <- list(
+      word = x$vocabulary$word,
+      sent = create_labels(x, "rJST", flat = FALSE)[["L2"]],
+      topic = create_labels(x, "rJST", flat = FALSE)[["L1"]]
+    )
   }
   rename <- replace(rename, names(translate), translate)[rename]
   names(x) <- rename
@@ -753,14 +977,47 @@ as.JST <- function(x) {
 as.JST.sentopicmodel <- function(x) {
   rename <- stats::setNames(names(x), names(x))
   translate <- stats::setNames(
-    c("S", "K", "gamma", "alpha", "pi", "theta", "gammaCycle", "alphaCycle", "logLikelihoodS", "logLikelihoodK"),
-    c("L1", "L2", "L1prior", "L2prior", "L1post", "L2post", "L1cycle", "L2cycle", "logLikelihoodL1", "logLikelihoodL2")
+    c(
+      "S",
+      "K",
+      "gamma",
+      "alpha",
+      "pi",
+      "theta",
+      "gammaCycle",
+      "alphaCycle",
+      "logLikelihoodS",
+      "logLikelihoodK"
+    ),
+    c(
+      "L1",
+      "L2",
+      "L1prior",
+      "L2prior",
+      "L1post",
+      "L2post",
+      "L1cycle",
+      "L2cycle",
+      "logLikelihoodL1",
+      "logLikelihoodL2"
+    )
   )
   # correct phi theta pi structure and names
   if (x$it > 0) {
-    dimnames(x$L1post) <- list(doc_id = names(x$tokens), sent = levels(x$vocabulary$lexicon))
-    dimnames(x$L2post) <- list(topic = create_labels(x, "JST", flat = FALSE)[["L2"]], sent = create_labels(x, "JST", flat = FALSE)[["L1"]], doc_id = names(x$tokens))
-    dimnames(x$phi) <- list(word = x$vocabulary$word, topic = create_labels(x, "JST", flat = FALSE)[["L2"]], sent = create_labels(x, "JST", flat = FALSE)[["L1"]])
+    dimnames(x$L1post) <- list(
+      doc_id = names(x$tokens),
+      sent = levels(x$vocabulary$lexicon)
+    )
+    dimnames(x$L2post) <- list(
+      topic = create_labels(x, "JST", flat = FALSE)[["L2"]],
+      sent = create_labels(x, "JST", flat = FALSE)[["L1"]],
+      doc_id = names(x$tokens)
+    )
+    dimnames(x$phi) <- list(
+      word = x$vocabulary$word,
+      topic = create_labels(x, "JST", flat = FALSE)[["L2"]],
+      sent = create_labels(x, "JST", flat = FALSE)[["L1"]]
+    )
   }
   rename <- replace(rename, names(translate), translate)[rename]
   names(x) <- rename
@@ -827,28 +1084,47 @@ quanteda::as.tokens
 #' as.tokens(dfm)
 #' as.tokens(dfm, tokens = ECB_press_conferences_tokens)
 #' as.tokens(dfm, tokens = ECB_press_conferences_tokens, padding = FALSE)
-as.tokens.dfm <- function(x, concatenator = NULL, tokens = NULL, ignore_list = NULL, case_insensitive = FALSE, padding = TRUE, ...) {
+as.tokens.dfm <- function(
+  x,
+  concatenator = NULL,
+  tokens = NULL,
+  ignore_list = NULL,
+  case_insensitive = FALSE,
+  padding = TRUE,
+  ...
+) {
   if (!is.null(tokens)) {
-    if (!is.null(ignore_list)) keep <- c(dimnames(x)$features, ignore_list) else
+    if (!is.null(ignore_list)) {
+      keep <- c(dimnames(x)$features, ignore_list)
+    } else {
       keep <- dimnames(x)$features
+    }
     ntypes <- length(dimnames(x)$features)
     ## force removal of padding in the dfm object
-    if (!padding) keep <- setdiff(keep, "")
+    if (!padding) {
+      keep <- setdiff(keep, "")
+    }
     res <- quanteda::as.tokens(
-      quanteda::tokens_select(tokens,
-                              keep,
-                              selection = "keep",
-                              case_insensitive = case_insensitive,
-                              padding = padding
+      quanteda::tokens_select(
+        tokens,
+        keep,
+        selection = "keep",
+        case_insensitive = case_insensitive,
+        padding = padding
       )
     )
-    if (length(quanteda::types(res)) + 1 < ntypes) warning("The returned tokens object has less types than the number of column in the dfm input. This could indicate that:\n\t1. The input dfm was lowercase, unlike the provided tokens object.\n\t2. The dfm does not originate from the tokens object.\nTo solve the first problem, consider using the argument `case_insensitive = TRUE` or using the function `quanteda::tokens_tolower()`")
+    if (length(quanteda::types(res)) + 1 < ntypes) {
+      warning(
+        "The returned tokens object has less types than the number of column in the dfm input. This could indicate that:\n\t1. The input dfm was lowercase, unlike the provided tokens object.\n\t2. The dfm does not originate from the tokens object.\nTo solve the first problem, consider using the argument `case_insensitive = TRUE` or using the function `quanteda::tokens_tolower()`"
+      )
+    }
     res
   } else {
     # quanteda::as.tokens(apply(quanteda::dfm_remove(x, ""), 1, function(x) rep(names(x), times = x)))
 
-    if (min(x) < 0) stop("Dfm input should not contain negative values")
-
+    if (min(x) < 0) {
+      stop("Dfm input should not contain negative values")
+    }
 
     #faster
     # tmp <- quanteda::convert(quanteda::t(x), to = "tripletlist")
@@ -878,10 +1154,14 @@ as.tokens.dfm <- function(x, concatenator = NULL, tokens = NULL, ignore_list = N
           document = missing,
           feature = 1L,
           frequency = 0L
-        ))
+        )
+      )
     }
 
-    toks <- tmp[, list(toks = list(rep(feature, times = frequency))), by = document]
+    toks <- tmp[,
+      list(toks = list(rep(feature, times = frequency))),
+      by = document
+    ]
     toks <- toks[order(document)]
 
     build_tokens <- get("build_tokens", envir = getNamespace("quanteda"))

@@ -1,7 +1,18 @@
-
-
-vocab <- generateVocab(nTopics = 2, nSentiments = 3, nWords = 5, nCommonWords = 2, betaDirichlet = 10000000)
-toks <- generateDocuments(vocab, nDocs = 10, L1prior = .1, L2prior = .1, nWords = 50, nClass = 1)
+vocab <- generateVocab(
+  nTopics = 2,
+  nSentiments = 3,
+  nWords = 5,
+  nCommonWords = 2,
+  betaDirichlet = 10000000
+)
+toks <- generateDocuments(
+  vocab,
+  nDocs = 10,
+  L1prior = .1,
+  L2prior = .1,
+  nWords = 50,
+  nClass = 1
+)
 lex <- generatePartialLexicon(toks)
 
 

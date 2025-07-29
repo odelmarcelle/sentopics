@@ -1,4 +1,3 @@
-
 #' @useDynLib sentopics,.registration = TRUE
 #' @importFrom Rcpp evalCpp sourceCpp
 NULL

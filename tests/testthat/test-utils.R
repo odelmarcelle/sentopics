@@ -1,4 +1,3 @@
-
 context("Test utils")
 
 test_that("virtualDocuments works", {
@@ -32,7 +31,8 @@ test_that("as.tokens.dfm works", {
 
   toks <- tokens(c(
     "This text will be broken down into pieces with the `tokens` function",
-    "The function was re-exported from the quanteda package."))
+    "The function was re-exported from the quanteda package."
+  ))
 
   dfm <- quanteda::dfm(toks) |>
     quanteda::dfm_remove(quanteda::stopwords("en")) |>
@@ -40,7 +40,11 @@ test_that("as.tokens.dfm works", {
 
   toks_recomposed <- as.tokens(dfm, tokens = toks)
   toks_processed <-
-    quanteda::tokens_remove(toks, c(quanteda::stopwords("en"), "function", "`"), padding = TRUE)
+    quanteda::tokens_remove(
+      toks,
+      c(quanteda::stopwords("en"), "function", "`"),
+      padding = TRUE
+    )
 
   expect_identical(toks_recomposed, toks_processed)
 })
@@ -70,12 +74,18 @@ test_that("R likelihood works", {
   toks <- ECB_press_conferences_tokens[1:10]
   model <- sentopicmodel(toks)
   model <- fit(model, 10, displayProgress = FALSE)
-  logLik <- c(tail(model$logLikelihood, 1L), sapply(attr(model$logLikelihood, "components"), tail, 1L))
+  logLik <- c(
+    tail(model$logLikelihood, 1L),
+    sapply(attr(model$logLikelihood, "components"), tail, 1L)
+  )
   RlogLik <- multLikelihood(model)
   expect_equivalent(logLik, RlogLik[, 1])
 
   JST <- fit(JST(toks), displayProgress = FALSE)
-  logLik <- c(tail(JST$logLikelihood, 1L), sapply(attr(JST$logLikelihood, "components"), tail, 1L))
+  logLik <- c(
+    tail(JST$logLikelihood, 1L),
+    sapply(attr(JST$logLikelihood, "components"), tail, 1L)
+  )
   RlogLik <- multLikelihood(JST)
   expect_equivalent(logLik, RlogLik[, 1])
 })
@@ -87,18 +97,20 @@ test_that("recompile & reset works", {
   model$vocabulary[!is.na(lexicon)]
   model$vocabulary[word == "crisis"]
   model <- fit(model, 10, displayProgress = FALSE)
-  expect_true(all(model$phi["crisis", ,-1] == 0))
-  expect_true(all(model$phi["crisis", ,1] > 0))
+  expect_true(all(model$phi["crisis", , -1] == 0))
+  expect_true(all(model$phi["crisis", , 1] > 0))
 
-  model$vocabulary[word == "crisis", lexicon := NA ]
+  model$vocabulary[word == "crisis", lexicon := NA]
   idx <- model$vocabulary[word == "crisis", index]
-  expect_warning(model2 <- recompileVocabulary(model),
-                 "The model will be reset")
+  expect_warning(
+    model2 <- recompileVocabulary(model),
+    "The model will be reset"
+  )
   expect_silent(model2 <- recompileVocabulary(model2))
   expect_true(all(model2$beta[, idx] > 0))
   model2 <- fit(model2, 10, displayProgress = FALSE)
   expect_equal(model2$it, 10)
-  expect_true(all(model2$phi["crisis", ,] > 0))
+  expect_true(all(model2$phi["crisis", , ] > 0))
 })
 
 test_that("fit0 doesn't alter anything", {
@@ -173,4 +185,3 @@ test_that("rebuild counts from posterior works", {
   expect_equal(rebuild_zd_from_posterior(lda), rebuild_zd(lda))
   expect_equal(rebuild_zw_from_posterior(lda), rebuild_zw(lda))
 })
-

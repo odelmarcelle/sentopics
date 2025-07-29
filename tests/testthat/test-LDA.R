@@ -1,11 +1,13 @@
-
 context("testing LDA")
 toks <- ECB_press_conferences_tokens[1:10]
 
 LDA <- LDA(toks)
 
 test_that("LDA works", {
-  expect_output(print(LDA), "An LDA model with 5 topics. Currently fitted by 0 Gibbs sampling iterations.")
+  expect_output(
+    print(LDA),
+    "An LDA model with 5 topics. Currently fitted by 0 Gibbs sampling iterations."
+  )
   LDA <- fit(LDA, 2, displayProgress = FALSE)
   expect_true(check_integrity(LDA, fast = FALSE))
   expect_s3_class(LDA, "LDA")
@@ -35,8 +37,20 @@ test_that("functions works", {
 })
 
 test_that("test convergence", {
-  vocab <- generateVocab(nTopics = 5, nSentiments = 1, nWords = 5, nCommonWords = 0, betaDirichlet = 10000000)
-  toks <- generateDocuments(vocab, nDocs = 100, L1prior = 1, nWords = 100, nClass = 1)
+  vocab <- generateVocab(
+    nTopics = 5,
+    nSentiments = 1,
+    nWords = 5,
+    nCommonWords = 0,
+    betaDirichlet = 10000000
+  )
+  toks <- generateDocuments(
+    vocab,
+    nDocs = 100,
+    L1prior = 1,
+    nWords = 100,
+    nClass = 1
+  )
   LDA <- LDA(toks)
 
   LDA <- fit(LDA, 100, nChains = 10, displayProgress = FALSE)

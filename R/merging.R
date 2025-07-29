@@ -1,5 +1,3 @@
-
-
 #' Merge topics into fewer themes
 #'
 #' @description This operation is especially useful for the analysis of the
@@ -32,7 +30,7 @@
 #'   2:4
 #' )
 #' merge_topics(lda, merging_list)
-#' 
+#'
 #' # also possible with a named list
 #' merging_list2 <- list(
 #'   mytheme_1 = c(1,5),
@@ -40,18 +38,25 @@
 #' )
 #' merged <- merge_topics(lda, merging_list2)
 #' sentopics_labels(merged)
-#' 
+#'
 #' # implemented for rJST
 #' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' rjst <- fit(rjst, 100)
 #' merge_topics(rjst, merging_list2)}
-merge_topics <- function(x, merging_list){
-  
-  if (!inherits(x, c("LDA", "rJST"))) stop("`merge_topics` is only implemented for LDA and rJST models.")
-  if (isTRUE(attr(x, "approx"))) stop("Not possible for approximated models")
+merge_topics <- function(x, merging_list) {
+  if (!inherits(x, c("LDA", "rJST"))) {
+    stop("`merge_topics` is only implemented for LDA and rJST models.")
+  }
+  if (isTRUE(attr(x, "approx"))) {
+    stop("Not possible for approximated models")
+  }
   ## TODO: check that merging list is numeric or character
-  if (length(merging_list) < 2) stop("The aggregation list should include at least two new topics.")
-  if (is.null(names(merging_list)) | any(is.na(names(merging_list))) ) names(merging_list) <- paste0("theme", 1:length(merging_list))
+  if (length(merging_list) < 2) {
+    stop("The aggregation list should include at least two new topics.")
+  }
+  if (is.null(names(merging_list)) | any(is.na(names(merging_list)))) {
+    names(merging_list) <- paste0("theme", 1:length(merging_list))
+  }
   flag <- all(
     length(unlist(merging_list)) == x$K,
     length(unique(unlist(merging_list))) == x$K
@@ -64,23 +69,51 @@ merge_topics <- function(x, merging_list){
     dups <- unname(unlist(merging_list)[duplicated(unlist(merging_list))])
     miss <- setdiff(1:x$K, unique(unlist(merging_list)))
 
-    if (length(dups) > 0) dup_mess <- paste0("\n    The following indice(s) are duplicated: ", paste0(dups, collapse = ", ")) else dup_mess <- ""
-    if (length(miss) > 0) miss_mess <- paste0("\n    The following indice(s) are missing: ", paste0(miss, collapse = ", ")) else miss_mess <- ""
-    error_message <- paste0("The aggregation list is not valid. Make sure to include all existing topics and to avoid duplicates.", dup_mess, miss_mess)
+    if (length(dups) > 0) {
+      dup_mess <- paste0(
+        "\n    The following indice(s) are duplicated: ",
+        paste0(dups, collapse = ", ")
+      )
+    } else {
+      dup_mess <- ""
+    }
+    if (length(miss) > 0) {
+      miss_mess <- paste0(
+        "\n    The following indice(s) are missing: ",
+        paste0(miss, collapse = ", ")
+      )
+    } else {
+      miss_mess <- ""
+    }
+    error_message <- paste0(
+      "The aggregation list is not valid. Make sure to include all existing topics and to avoid duplicates.",
+      dup_mess,
+      miss_mess
+    )
     stop(error_message)
   }
-  
+
   ## not super clean but recompute sentiment for rJST model if it was internal
-  if (!is.null(attr(x, "sentiment_not_external"))) sent_flag <- TRUE else
+  if (!is.null(attr(x, "sentiment_not_external"))) {
+    sent_flag <- TRUE
+  } else {
     sent_flag <- FALSE
+  }
   if (sent_flag) {
     sentopics_sentiment(x) <- NULL
   }
 
   newK <- length(merging_list)
 
-  reAssign <- rep(1:newK, times = lengths(merging_list))[order(unlist(merging_list, use.names = FALSE))]
-  if (is.null(x$S)) S <- 1 else S <- x$S
+  reAssign <- rep(1:newK, times = lengths(merging_list))[order(unlist(
+    merging_list,
+    use.names = FALSE
+  ))]
+  if (is.null(x$S)) {
+    S <- 1
+  } else {
+    S <- x$S
+  }
   reAssignZa <- as.integer(sapply(reAssign, function(y) (y - 1) * S + 1:S))
   x$za <- lapply(x$za, function(x) reAssignZa[x])
 
@@ -102,10 +135,15 @@ merge_topics <- function(x, merging_list){
     x$gamma <- gamma
   }
 
-  if (x$it > 0) x$theta <- matrix(1/newK, length(x$tokens), newK)
-  if (x$it > 0) x$phi <- array(1/nrow(x$vocabulary), dim = c(nrow(x$vocabulary), S, newK))
-  if (x$it > 0 & !is.null(x$pi)) x$pi <- array(1/S, dim = c(S, newK, length(x$tokens)))
-  
+  if (x$it > 0) {
+    x$theta <- matrix(1 / newK, length(x$tokens), newK)
+  }
+  if (x$it > 0) {
+    x$phi <- array(1 / nrow(x$vocabulary), dim = c(nrow(x$vocabulary), S, newK))
+  }
+  if (x$it > 0 & !is.null(x$pi)) {
+    x$pi <- array(1 / S, dim = c(S, newK, length(x$tokens)))
+  }
 
   x$K <- as.numeric(newK)
 
@@ -117,6 +155,6 @@ merge_topics <- function(x, merging_list){
     sentopics_sentiment(x)
     attr(x, "sentiment_not_external") <- TRUE
   }
-    
+
   x
 }

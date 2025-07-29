@@ -1,15 +1,20 @@
-
 # print -------------------------------------------------------------------
 
 sentopics_print_extend <- function(extended = FALSE) {
   methods = c("fit", "topics", "top_words", "plot")
-  explain <- c("Estimate the model using Gibbs sampling",
-               "Return the most important topic of each document",
-               "Return a data.table with the top words of each topic/sentiment",
-               "Plot a sunburst chart representing the estimated mixtures")
+  explain <- c(
+    "Estimate the model using Gibbs sampling",
+    "Return the most important topic of each document",
+    "Return a data.table with the top words of each topic/sentiment",
+    "Plot a sunburst chart representing the estimated mixtures"
+  )
   cat("------------------Useful methods------------------\n")
   cat(sprintf("%-10s:%s", methods, explain), sep = "\n")
-  if (!extended) cat("This message is displayed once per session, unless calling `print(x, extended = TRUE)`\n")
+  if (!extended) {
+    cat(
+      "This message is displayed once per session, unless calling `print(x, extended = TRUE)`\n"
+    )
+  }
 }
 
 #' Print method for sentopics models
@@ -29,8 +34,15 @@ sentopics_print_extend <- function(extended = FALSE) {
 #'
 #' @export
 print.sentopicmodel <- function(x, extended = FALSE, ...) {
-  cat("A sentopicmodel topic model with", x$L1, "topics and", x$L2, "sentiments. Currently fitted by",
-      x$it, "Gibbs sampling iterations.\n")
+  cat(
+    "A sentopicmodel topic model with",
+    x$L1,
+    "topics and",
+    x$L2,
+    "sentiments. Currently fitted by",
+    x$it,
+    "Gibbs sampling iterations.\n"
+  )
   if (getOption("sentopics_print_extended", TRUE) | extended) {
     sentopics_print_extend(extended)
     options(sentopics_print_extended = FALSE)
@@ -41,8 +53,15 @@ print.sentopicmodel <- function(x, extended = FALSE, ...) {
 #' @rdname print.sentopicmodel
 #' @export
 print.rJST <- function(x, extended = FALSE, ...) {
-  cat("A reversed-JST model with", x$K, "topics and", x$S, "sentiments. Currently fitted by",
-      x$it, "Gibbs sampling iterations.\n")
+  cat(
+    "A reversed-JST model with",
+    x$K,
+    "topics and",
+    x$S,
+    "sentiments. Currently fitted by",
+    x$it,
+    "Gibbs sampling iterations.\n"
+  )
   if (getOption("sentopics_print_extended", TRUE) | extended) {
     sentopics_print_extend(extended)
     options(sentopics_print_extended = FALSE)
@@ -52,8 +71,13 @@ print.rJST <- function(x, extended = FALSE, ...) {
 #' @rdname print.sentopicmodel
 #' @export
 print.LDA <- function(x, extended = FALSE, ...) {
-  cat("An LDA model with", x$K, "topics. Currently fitted by",
-      x$it, "Gibbs sampling iterations.\n")
+  cat(
+    "An LDA model with",
+    x$K,
+    "topics. Currently fitted by",
+    x$it,
+    "Gibbs sampling iterations.\n"
+  )
   if (getOption("sentopics_print_extended", TRUE) | extended) {
     sentopics_print_extend(extended)
     options(sentopics_print_extended = FALSE)
@@ -63,8 +87,15 @@ print.LDA <- function(x, extended = FALSE, ...) {
 #' @rdname print.sentopicmodel
 #' @export
 print.JST <- function(x, extended = FALSE, ...) {
-  cat("A JST model with", x$S, "sentiments and", x$K, "topics. Currently fitted by",
-      x$it, "Gibbs sampling iterations.\n")
+  cat(
+    "A JST model with",
+    x$S,
+    "sentiments and",
+    x$K,
+    "topics. Currently fitted by",
+    x$it,
+    "Gibbs sampling iterations.\n"
+  )
   if (getOption("sentopics_print_extended", TRUE) | extended) {
     sentopics_print_extend(extended)
     options(sentopics_print_extended = FALSE)
@@ -79,8 +110,10 @@ print.multi_chains <- function(x, ...) {
 
 #' @export
 print.top_words <- function(x, ...) {
-  if (!is.null(attr(x, "method"))) colnames(x)[colnames(x) == "value"] <-
+  if (!is.null(attr(x, "method"))) {
+    colnames(x)[colnames(x) == "value"] <-
       paste0("value[", attr(x, "method"), "]")
+  }
   NextMethod()
 }
 
@@ -115,13 +148,18 @@ print.top_words <- function(x, ...) {
 #' plot(lda, layers = 1)
 ## TODO: add other methods than probability?
 plot.sentopicmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
-
   mis <- missingSuggets(c("plotly", "RColorBrewer"))
-  if (length(mis) > 0) stop("Suggested packages are missing for the plot.sentopicmodel function.\n",
-                            "Please install first the following packages: ",
-                            paste0(mis, collapse = ", "),".\n",
-                            "Install command: install.packages(",
-                            paste0("'", mis, "'", collapse = ", "),")" )
+  if (length(mis) > 0) {
+    stop(
+      "Suggested packages are missing for the plot.sentopicmodel function.\n",
+      "Please install first the following packages: ",
+      paste0(mis, collapse = ", "),
+      ".\n",
+      "Install command: install.packages(",
+      paste0("'", mis, "'", collapse = ", "),
+      ")"
+    )
+  }
 
   class <- class(x)[1]
   x <- as.sentopicmodel(x)
@@ -133,22 +171,33 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
   # if (topicsOnly) method <- "topics" else method <- "probability"
 
   if (layers > 0) {
-    l1 <- mixtureStats[, list(value = sum(prob) / length(x$tokens)), by = L1_name]
+    l1 <- mixtureStats[,
+      list(value = sum(prob) / length(x$tokens)),
+      by = L1_name
+    ]
     # l1$name <- l1[[L1_name]]
     l1$name <- create_labels(x, class, flat = FALSE)[["L1"]]
     l1$parent <- ""
     l1$id <- paste0("l1_", as.numeric(l1[[L1_name]]))
     if (x$L1 < 10) {
-      if (x$L1 < 3) l1$color <- RColorBrewer::brewer.pal(3, "Set1")[seq(nrow(l1))]
-      else l1$color <- RColorBrewer::brewer.pal(nrow(l1), "Set1")
+      if (x$L1 < 3) {
+        l1$color <- RColorBrewer::brewer.pal(3, "Set1")[seq(nrow(l1))]
+      } else {
+        l1$color <- RColorBrewer::brewer.pal(nrow(l1), "Set1")
+      }
+    } else {
+      l1$color <- grDevices::colorRampPalette(
+        RColorBrewer::brewer.pal(7, "Set1")
+      )(x$L1)
     }
-    else l1$color <- grDevices::colorRampPalette(
-      RColorBrewer::brewer.pal(7, "Set1"))(x$L1)
 
     l1$real <- l1$value
   }
   if (layers > 1) {
-    l2 <- mixtureStats[, list(value = sum(prob) / length(x$tokens)), by = c(L1_name, L2_name)]
+    l2 <- mixtureStats[,
+      list(value = sum(prob) / length(x$tokens)),
+      by = c(L1_name, L2_name)
+    ]
     l2$name <- l2[[L2_name]]
     l2$parent <- paste0("l1_", as.numeric(l2[[L1_name]]))
     l2$id <- paste0(l2$parent, paste0("l2_", as.numeric(l2[[L2_name]])))
@@ -187,26 +236,27 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
   }
 
   # reorder data clockwise
-  if (sort)
+  if (sort) {
     data <- data[order(value)]
-  else
+  } else {
     data <- data[.N:1, ]
+  }
 
-    fig <- plotly::plot_ly(
-      ids = data$id,
-      labels = data$name,
-      parents = data$parent,
-      values = data$value,
-      type = "sunburst",
-      rotation = "180",
-      branchvalues = "total",
-      leaf = list(opacity = 1),
-      marker = list(colors = data$color),
-      sort = FALSE,
-      hovertemplate = "%{label}\n%{customdata:.2%}<extra></extra>",
-      customdata = data$real,
-      hoverlabel = list(font = list(size = 20))
-    )
+  fig <- plotly::plot_ly(
+    ids = data$id,
+    labels = data$name,
+    parents = data$parent,
+    values = data$value,
+    type = "sunburst",
+    rotation = "180",
+    branchvalues = "total",
+    leaf = list(opacity = 1),
+    marker = list(colors = data$color),
+    sort = FALSE,
+    hovertemplate = "%{label}\n%{customdata:.2%}<extra></extra>",
+    customdata = data$real,
+    hoverlabel = list(font = list(size = 20))
+  )
 
   fig
 }
@@ -232,8 +282,21 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
 #' models <- fit(models, 10, nChains = 5)
 #' plot(models)
 #' @export
-plot.multi_chains <- function(x, ..., method = c("euclidean", "hellinger", "cosine", "minMax", "naiveEuclidean", "invariantEuclidean")) {
-  if (attr(x, "nChains") < 3) stop("At least 3 chains are required for proper plotting.")
+plot.multi_chains <- function(
+  x,
+  ...,
+  method = c(
+    "euclidean",
+    "hellinger",
+    "cosine",
+    "minMax",
+    "naiveEuclidean",
+    "invariantEuclidean"
+  )
+) {
+  if (attr(x, "nChains") < 3) {
+    stop("At least 3 chains are required for proper plotting.")
+  }
   method <- match.arg(method)
   d <- stats::as.dist(chains_distances(x, method))
   coord <- stats::cmdscale(d)
@@ -245,7 +308,14 @@ plot.multi_chains <- function(x, ..., method = c("euclidean", "hellinger", "cosi
   #   coord
   #   print(ggplot(coord, aes(x = V1, y = V2, colour = lastLik)) + geom_point(size = 4))
   # })
-  plot(coord[, 1], coord[, 2], type = "n", xlab = "Coordinate 1", ylab = "Coordinate 2", main = paste0("Chains multidimensional scaling of ", deparse(substitute(x))))
+  plot(
+    coord[, 1],
+    coord[, 2],
+    type = "n",
+    xlab = "Coordinate 1",
+    ylab = "Coordinate 2",
+    main = paste0("Chains multidimensional scaling of ", deparse(substitute(x)))
+  )
   graphics::text(coord[, 1], coord[, 2], rownames(coord), cex = 0.8)
   graphics::abline(h = 0, v = 0, col = "gray75")
   invisible(coord)
@@ -305,52 +375,92 @@ NULL
 #' @rdname fit.sentopicmodel
 #' @export
 #' @usage NULL
-fit.LDA <- function(object, iterations = 100, nChains = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL, ...) {
-  if (isTRUE(attr(object, "approx"))) stop("Not possible for approximated models")
-  as.LDA(fit(as.sentopicmodel(object),
-            iterations = iterations,
-            nChains = nChains,
-            displayProgress = displayProgress,
-            computeLikelihood = computeLikelihood,
-            seed = seed))
+fit.LDA <- function(
+  object,
+  iterations = 100,
+  nChains = 1,
+  displayProgress = TRUE,
+  computeLikelihood = TRUE,
+  seed = NULL,
+  ...
+) {
+  if (isTRUE(attr(object, "approx"))) {
+    stop("Not possible for approximated models")
+  }
+  as.LDA(fit(
+    as.sentopicmodel(object),
+    iterations = iterations,
+    nChains = nChains,
+    displayProgress = displayProgress,
+    computeLikelihood = computeLikelihood,
+    seed = seed
+  ))
 }
 
 #' @rdname fit.sentopicmodel
 #' @export
 #' @usage NULL
-fit.rJST <- function(object, iterations = 100, nChains = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL, ...) {
-  as.rJST(fit(as.sentopicmodel(object),
-              iterations = iterations,
-              nChains = nChains,
-              displayProgress = displayProgress,
-              computeLikelihood = computeLikelihood,
-              seed = seed))
+fit.rJST <- function(
+  object,
+  iterations = 100,
+  nChains = 1,
+  displayProgress = TRUE,
+  computeLikelihood = TRUE,
+  seed = NULL,
+  ...
+) {
+  as.rJST(fit(
+    as.sentopicmodel(object),
+    iterations = iterations,
+    nChains = nChains,
+    displayProgress = displayProgress,
+    computeLikelihood = computeLikelihood,
+    seed = seed
+  ))
 }
 
 #' @rdname fit.sentopicmodel
 #' @export
 #' @usage NULL
-fit.JST <- function(object, iterations = 100, nChains = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL, ...) {
-  as.JST(fit(as.sentopicmodel(object),
-              iterations = iterations,
-              nChains = nChains,
-              displayProgress = displayProgress,
-              computeLikelihood = computeLikelihood,
-              seed = seed))
+fit.JST <- function(
+  object,
+  iterations = 100,
+  nChains = 1,
+  displayProgress = TRUE,
+  computeLikelihood = TRUE,
+  seed = NULL,
+  ...
+) {
+  as.JST(fit(
+    as.sentopicmodel(object),
+    iterations = iterations,
+    nChains = nChains,
+    displayProgress = displayProgress,
+    computeLikelihood = computeLikelihood,
+    seed = seed
+  ))
 }
 
 #' @rdname fit.sentopicmodel
 #' @export
-fit.sentopicmodel <- function(object, iterations = 100, nChains = 1,
-                               displayProgress = TRUE, computeLikelihood = TRUE,
-                               seed = NULL, ...) {
+fit.sentopicmodel <- function(
+  object,
+  iterations = 100,
+  nChains = 1,
+  displayProgress = TRUE,
+  computeLikelihood = TRUE,
+  seed = NULL,
+  ...
+) {
   start_time <- Sys.time()
 
   ## force deep copy
   object <- data.table::copy(object)
 
   if (nChains == 1) {
-    if (!is.null(seed)) set.seed(seed * (object$it + 1))
+    if (!is.null(seed)) {
+      set.seed(seed * (object$it + 1))
+    }
     ## rebuild c++ model
     base <- core(object) ## need to protect base$cleaned from gc
     cpp_model <- rebuild_cppModel(object, base)
@@ -359,14 +469,15 @@ fit.sentopicmodel <- function(object, iterations = 100, nChains = 1,
     object[names(tmp)] <- tmp
     reorder_sentopicmodel(object)
   } else if (nChains > 1) {
-
     ## CMD check
     chains <- NULL
 
     base <- core(object)
     core(object) <- NULL
 
-    if (!is.null(seed)) seed <- seed * (object$it + 1)
+    if (!is.null(seed)) {
+      seed <- seed * (object$it + 1)
+    }
 
     FUN <- function(i) {
       report_time <- Sys.time()
@@ -375,35 +486,49 @@ fit.sentopicmodel <- function(object, iterations = 100, nChains = 1,
       ## need to duplicate memory location of x$za. Otherwise, all chains
       ## share the same memory location
       object$za <- data.table::copy(object$za)
-      rebuild_cppModel <- get("rebuild_cppModel",
-                              envir = getNamespace("sentopics"))
+      rebuild_cppModel <- get(
+        "rebuild_cppModel",
+        envir = getNamespace("sentopics")
+      )
       cpp_model <- rebuild_cppModel(object, base)
       ## generate different initial assignment for each chain
-      if (object$it == 0 & i > 1) cpp_model$initAssignments()
+      if (object$it == 0 & i > 1) {
+        cpp_model$initAssignments()
+      }
       if (iterations > 0) {
-        for (chunk in c(rep(chunkProgress, iterations %/% chunkProgress),
-                        iterations %% chunkProgress)) {
+        for (chunk in c(
+          rep(chunkProgress, iterations %/% chunkProgress),
+          iterations %% chunkProgress
+        )) {
           cpp_model$iterate(chunk, FALSE, computeLikelihood)
 
           report_processed <- report_processed + chunk
-          if ((Sys.time() - report_time) > 1) { # not too often
+          if ((Sys.time() - report_time) > 1) {
+            # not too often
             difftime <- difftime(Sys.time(), start_time)
-            p(amount = report_processed,
-              message = sprintf("Elapsed: %.2f %s", difftime, units(difftime)))
+            p(
+              amount = report_processed,
+              message = sprintf("Elapsed: %.2f %s", difftime, units(difftime))
+            )
             report_time <- Sys.time()
             report_processed <- 0L
           }
         }
       }
 
-      if (report_processed > 0L) { # if remaining update
+      if (report_processed > 0L) {
+        # if remaining update
         difftime <- difftime(Sys.time(), start_time)
-        p(amount = report_processed,
-          message = sprintf("Elapsed: %.2f %s", difftime, units(difftime)))
+        p(
+          amount = report_processed,
+          message = sprintf("Elapsed: %.2f %s", difftime, units(difftime))
+        )
       }
 
-      extract_cppModel <- get("extract_cppModel",
-                              envir = getNamespace("sentopics"))
+      extract_cppModel <- get(
+        "extract_cppModel",
+        envir = getNamespace("sentopics")
+      )
       tmp <- extract_cppModel(cpp_model, base)
       object[names(tmp)] <- tmp
       object
@@ -411,21 +536,36 @@ fit.sentopicmodel <- function(object, iterations = 100, nChains = 1,
 
     expr <- quote({
       if (requireNamespace("future.apply", quietly = TRUE)) {
-        if (is.null(seed)) seed <- TRUE
+        if (is.null(seed)) {
+          seed <- TRUE
+        }
         environment(FUN) <- globalenv()
         chains <- future.apply::future_lapply(
-          1:nChains, FUN,  future.seed = seed, future.globals = list(
-            object = object, base = base, iterations = iterations,
+          1:nChains,
+          FUN,
+          future.seed = seed,
+          future.globals = list(
+            object = object,
+            base = base,
+            iterations = iterations,
             chunkProgress = chunkProgress,
             computeLikelihood = computeLikelihood,
-            p = p, start_time = start_time))
+            p = p,
+            start_time = start_time
+          )
+        )
       } else {
         if (requireNamespace("future", quietly = TRUE)) {
-          if (!inherits(class(future::plan()), "sequential"))
-            message("It seems that a parallel setup is registered, but `future.apply` is not installed. Did you omit installing it? Proceeding sequential computation...")
+          if (!inherits(class(future::plan()), "sequential")) {
+            message(
+              "It seems that a parallel setup is registered, but `future.apply` is not installed. Did you omit installing it? Proceeding sequential computation..."
+            )
+          }
         }
         ## TODO: align RNGs?
-        if (!is.null(seed)) set.seed(seed)
+        if (!is.null(seed)) {
+          set.seed(seed)
+        }
         chains <- lapply(1:nChains, FUN)
       }
 
@@ -437,7 +577,9 @@ fit.sentopicmodel <- function(object, iterations = 100, nChains = 1,
     })
 
     if (displayProgress & !requireNamespace("progressr", quietly = TRUE)) {
-      message("The `progressr` package is required to track progress of multiple chains.")
+      message(
+        "The `progressr` package is required to track progress of multiple chains."
+      )
       displayProgress <- FALSE
     }
 
@@ -445,15 +587,25 @@ fit.sentopicmodel <- function(object, iterations = 100, nChains = 1,
       ## determine how often the progress bar is refreshed (too high refresh rate can negatively affect performance)
       # chunkProgress <- min(max((iterations * nChains) %/% 10, 10), 1000, iterations)
       chunkProgress <- min(100, iterations)
-      progressr::with_progress({
-        p <- progressr::progressor(steps = nChains * iterations + 0.001, enable = displayProgress)
-        eval(expr)
-        difftime <- difftime(Sys.time(), start_time)
-        p(message = sprintf("Done! Elapsed: %.2f %s",
-                            difftime, units(difftime)),
-          amount = 0.001)
+      progressr::with_progress(
+        {
+          p <- progressr::progressor(
+            steps = nChains * iterations + 0.001,
+            enable = displayProgress
+          )
+          eval(expr)
+          difftime <- difftime(Sys.time(), start_time)
+          p(
+            message = sprintf(
+              "Done! Elapsed: %.2f %s",
+              difftime,
+              units(difftime)
+            ),
+            amount = 0.001
+          )
         },
-        handlers = custom_handler())
+        handlers = custom_handler()
+      )
     } else {
       chunkProgress <- iterations
       p <- function(...) {}
@@ -469,9 +621,15 @@ fit.sentopicmodel <- function(object, iterations = 100, nChains = 1,
 
 #' @rdname fit.sentopicmodel
 #' @export
-fit.multi_chains <- function(object, iterations = 100, nChains = NULL,
-                             displayProgress = TRUE, computeLikelihood = TRUE,
-                             seed = NULL, ...) {
+fit.multi_chains <- function(
+  object,
+  iterations = 100,
+  nChains = NULL,
+  displayProgress = TRUE,
+  computeLikelihood = TRUE,
+  seed = NULL,
+  ...
+) {
   start_time <- Sys.time()
 
   ## CMD check
@@ -486,40 +644,56 @@ fit.multi_chains <- function(object, iterations = 100, nChains = NULL,
 
   ## erase posterior in each chain to limit memory transfers
   for (i in seq_along(object)) {
-    object[[i]][["L1post"]] <- object[[i]][["L2post"]] <- object[[i]][["phi"]] <- NULL
+    object[[i]][["L1post"]] <- object[[i]][["L2post"]] <- object[[i]][[
+      "phi"
+    ]] <- NULL
   }
 
-  if (!is.null(seed)) seed <- seed * (object[[1]]$it + 1)
+  if (!is.null(seed)) {
+    seed <- seed * (object[[1]]$it + 1)
+  }
 
   FUN <- function(object) {
     report_time <- Sys.time()
     report_processed <- 0L
 
-    rebuild_cppModel <- get("rebuild_cppModel",
-                            envir = getNamespace("sentopics"))
+    rebuild_cppModel <- get(
+      "rebuild_cppModel",
+      envir = getNamespace("sentopics")
+    )
     cpp_model <- rebuild_cppModel(object, base)
 
-    for (chunk in c(rep(chunkProgress, iterations %/% chunkProgress),
-                    iterations %% chunkProgress)) {
+    for (chunk in c(
+      rep(chunkProgress, iterations %/% chunkProgress),
+      iterations %% chunkProgress
+    )) {
       cpp_model$iterate(chunk, FALSE, computeLikelihood)
 
       report_processed <- report_processed + chunk
-      if ((Sys.time() - report_time) > 1) { # not too often
+      if ((Sys.time() - report_time) > 1) {
+        # not too often
         difftime <- difftime(Sys.time(), start_time)
-        p(amount = report_processed,
-          message = sprintf("Elapsed: %.2f %s", difftime, units(difftime)))
+        p(
+          amount = report_processed,
+          message = sprintf("Elapsed: %.2f %s", difftime, units(difftime))
+        )
         report_time <- Sys.time()
         report_processed <- 0L
       }
     }
-    if (report_processed > 0L) { # if remaining update
+    if (report_processed > 0L) {
+      # if remaining update
       difftime <- difftime(Sys.time(), start_time)
-      p(amount = report_processed,
-        message = sprintf("Elapsed: %.2f %s", difftime, units(difftime)))
+      p(
+        amount = report_processed,
+        message = sprintf("Elapsed: %.2f %s", difftime, units(difftime))
+      )
     }
 
-    extract_cppModel <- get("extract_cppModel",
-                            envir = getNamespace("sentopics"))
+    extract_cppModel <- get(
+      "extract_cppModel",
+      envir = getNamespace("sentopics")
+    )
     tmp <- extract_cppModel(cpp_model, base)
     object[names(tmp)] <- tmp
     object
@@ -527,21 +701,36 @@ fit.multi_chains <- function(object, iterations = 100, nChains = NULL,
 
   expr <- quote({
     if (requireNamespace("future.apply", quietly = TRUE)) {
-      if (is.null(seed)) seed <- TRUE
+      if (is.null(seed)) {
+        seed <- TRUE
+      }
       environment(FUN) <- globalenv()
       chains <- future.apply::future_lapply(
-        object, FUN, future.seed = seed, future.globals = list(
-          object = object, base = base, iterations = iterations,
+        object,
+        FUN,
+        future.seed = seed,
+        future.globals = list(
+          object = object,
+          base = base,
+          iterations = iterations,
           chunkProgress = chunkProgress,
           computeLikelihood = computeLikelihood,
-          p = p, start_time = start_time))
+          p = p,
+          start_time = start_time
+        )
+      )
     } else {
       if (requireNamespace("future", quietly = TRUE)) {
-        if (!inherits(class(future::plan()), "sequential"))
-          message("It seems that a parallel setup is registered, but `future.apply` is not installed. Did you omit installing it? Proceeding sequential computation...")
+        if (!inherits(class(future::plan()), "sequential")) {
+          message(
+            "It seems that a parallel setup is registered, but `future.apply` is not installed. Did you omit installing it? Proceeding sequential computation..."
+          )
+        }
       }
       ## TODO: align RNGs?
-      if (!is.null(seed)) set.seed(seed)
+      if (!is.null(seed)) {
+        set.seed(seed)
+      }
       chains <- lapply(object, FUN)
     }
 
@@ -552,7 +741,9 @@ fit.multi_chains <- function(object, iterations = 100, nChains = NULL,
   })
 
   if (displayProgress & !requireNamespace("progressr", quietly = TRUE)) {
-    message("The `progressr` package is required to track progress of multiple chains.")
+    message(
+      "The `progressr` package is required to track progress of multiple chains."
+    )
     displayProgress <- FALSE
   }
 
@@ -560,15 +751,25 @@ fit.multi_chains <- function(object, iterations = 100, nChains = NULL,
     ## determine how often the progress bar is refreshed (too high refresh rate can negatively affect performance)
     # chunkProgress <- min(max((iterations * nChains) %/% 10, 10), 1000, iterations)
     chunkProgress <- min(100, iterations)
-    progressr::with_progress({
-      p <- progressr::progressor(steps = nChains * iterations + 0.001, enable = displayProgress)
-      eval(expr)
-      difftime <- difftime(Sys.time(), start_time)
-      p(message = sprintf("Done! Elapsed: %.2f %s",
-                          difftime, units(difftime)),
-        amount = 0.001)
-    },
-    handlers = custom_handler())
+    progressr::with_progress(
+      {
+        p <- progressr::progressor(
+          steps = nChains * iterations + 0.001,
+          enable = displayProgress
+        )
+        eval(expr)
+        difftime <- difftime(Sys.time(), start_time)
+        p(
+          message = sprintf(
+            "Done! Elapsed: %.2f %s",
+            difftime,
+            units(difftime)
+          ),
+          amount = 0.001
+        )
+      },
+      handlers = custom_handler()
+    )
   } else {
     chunkProgress <- iterations
     p <- function(...) {}
@@ -584,7 +785,15 @@ fit.multi_chains <- function(object, iterations = 100, nChains = NULL,
 #' @rdname fit.sentopicmodel
 #' @export
 #' @usage NULL
-grow <- function(object, iterations = 100, nChains = 1, displayProgress = TRUE, computeLikelihood = TRUE, seed = NULL, ...) {
+grow <- function(
+  object,
+  iterations = 100,
+  nChains = 1,
+  displayProgress = TRUE,
+  computeLikelihood = TRUE,
+  seed = NULL,
+  ...
+) {
   UseMethod("grow")
 }
 #' @rdname fit.sentopicmodel
@@ -629,7 +838,6 @@ grow.multi_chains <- fit.multi_chains
 #' model <- fit(model, 10)
 #' reset(model)
 reset <- function(object) {
-
   ## make copy or assignment are reset by reference
   object$za <- data.table::copy(object$za)
 
@@ -646,14 +854,12 @@ reset <- function(object) {
   tmp <- extract_cppModel(cpp_model, base)
   object[names(tmp)] <- tmp
 
-
   fun <- get(paste0("as.", class))
   fun(reorder_sentopicmodel(object))
 }
 
 
 # melt --------------------------------------------------------------------
-
 
 #' Replacement generic for [data.table::melt()]
 #'
@@ -681,7 +887,6 @@ melt.default <- function(data, ...) {
 # #' @importFrom data.table melt
 # #' @export
 # data.table::melt
-
 
 #' Melt for sentopicmodels
 #'
@@ -717,39 +922,83 @@ melt.default <- function(data, ...) {
 #' jst <- fit(jst, 10)
 #' melt(jst)
 melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
-  if (data$it <= 0) stop("Nothing to melt. Estimate the model with fit() first.")
+  if (data$it <= 0) {
+    stop("Nothing to melt. Estimate the model with fit() first.")
+  }
   class <- class(data)[1]
   data <- as.sentopicmodel(data)
   .id <- topic <- sentiment <- prob <- L1_prob <- L2_prob <- NULL # due to NSE notes in R CMD check
 
-  L1stats <- data.table::as.data.table(data$L1post, sorted = FALSE, keep.rownames = ".id")
+  L1stats <- data.table::as.data.table(
+    data$L1post,
+    sorted = FALSE,
+    keep.rownames = ".id"
+  )
   L1_name <- names(dimnames(data$L1post))[2]
-  L1stats <- melt(L1stats, id = ".id", variable.factor = TRUE,
-                  variable.name = L1_name, value.name = "L1_prob")
-  if (attr(data, "Sdim") == "L1") stopifnot(identical(levels(L1stats[[L1_name]]), levels(data$vocabulary$lexicon)))
+  L1stats <- melt(
+    L1stats,
+    id = ".id",
+    variable.factor = TRUE,
+    variable.name = L1_name,
+    value.name = "L1_prob"
+  )
+  if (attr(data, "Sdim") == "L1") {
+    stopifnot(identical(
+      levels(L1stats[[L1_name]]),
+      levels(data$vocabulary$lexicon)
+    ))
+  }
 
   if (class != "LDA") {
     L2stats <- data$L2post
     names(dimnames(L2stats))[3] <- ".id"
     L2_name <- names(dimnames(L2stats))[1]
 
-    L2stats <- data.table::as.data.table(L2stats, sorted = FALSE, value.name = "L2_prob")
+    L2stats <- data.table::as.data.table(
+      L2stats,
+      sorted = FALSE,
+      value.name = "L2_prob"
+    )
     for (i in 1:2) {
       L2stats[[i]] <- factor(L2stats[[i]])
     }
-    if (attr(data, "Sdim") == "L1") stopifnot(identical(levels(L1stats[[L1_name]]), levels(L1stats[[L1_name]])))
-    if (attr(data, "Sdim") == "L2") stopifnot(identical(levels(L2stats[[L2_name]]), levels(data$vocabulary$lexicon)))
+    if (attr(data, "Sdim") == "L1") {
+      stopifnot(identical(
+        levels(L1stats[[L1_name]]),
+        levels(L1stats[[L1_name]])
+      ))
+    }
+    if (attr(data, "Sdim") == "L2") {
+      stopifnot(identical(
+        levels(L2stats[[L2_name]]),
+        levels(data$vocabulary$lexicon)
+      ))
+    }
 
     mixtureStats <- L2stats[L1stats, on = c(".id", L1_name)]
     mixtureStats[, prob := L2_prob * L1_prob]
-    mixtureStats$`sentopic` <- interaction(mixtureStats[[L1_name]], mixtureStats[[L2_name]], sep = "_", lex.order = TRUE)
-    data.table::setcolorder(mixtureStats, c(colnames(mixtureStats)[1:2], "sentopic"))
+    mixtureStats$`sentopic` <- interaction(
+      mixtureStats[[L1_name]],
+      mixtureStats[[L2_name]],
+      sep = "_",
+      lex.order = TRUE
+    )
+    data.table::setcolorder(
+      mixtureStats,
+      c(colnames(mixtureStats)[1:2], "sentopic")
+    )
 
     ## quick integrity check
-    if (!all(isTRUE(all.equal(sum(L2stats$L2_prob), data$L1 * length(data$tokens))),
-             isTRUE(all.equal(sum(L1stats$L1_prob), length(data$tokens))),
-             isTRUE(all.equal(sum(mixtureStats$prob), length(data$tokens))))) {
-      stop("Issue found in the computation. Please verify that the input object is correct.")
+    if (
+      !all(
+        isTRUE(all.equal(sum(L2stats$L2_prob), data$L1 * length(data$tokens))),
+        isTRUE(all.equal(sum(L1stats$L1_prob), length(data$tokens))),
+        isTRUE(all.equal(sum(mixtureStats$prob), length(data$tokens)))
+      )
+    ) {
+      stop(
+        "Issue found in the computation. Please verify that the input object is correct."
+      )
     }
   } else {
     mixtureStats <- L1stats
@@ -771,7 +1020,6 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
 ## TODO: structure() for attributes ie structure(NextMethod(), class="foo")?
 #' @export
 `[[.multi_chains` <- function(x, i, ...) {
-
   base <- attr(x, "base")
   containedClass <- attr(x, "containedClass")
 
@@ -785,7 +1033,6 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
 ##TODO: add test for this?
 #' @export
 `$.multi_chains` <- function(x, name, ...) {
-
   if (!name %in% names(x)) {
     #### This wont work with "alpha" "gamma" because they are under sentopicmodel form
     x <- attr(x, "base")
@@ -804,7 +1051,6 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
 
 #' @export
 `[.multi_chains` <- function(x, i, ...) {
-
   base <- attr(x, "base")
   nChains <- length(i)
   rng <- attr(x, "rng")[i]
@@ -826,8 +1072,11 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
 `as.list.multi_chains` <- function(x, copy = TRUE, ...) {
   x <- unclass(x)
   for (i in seq_along(x)) {
-    if (copy) core(x[[i]]) <- data.table::copy(attr(x, "base"))
-    else core(x[[i]]) <- attr(x, "base")
+    if (copy) {
+      core(x[[i]]) <- data.table::copy(attr(x, "base"))
+    } else {
+      core(x[[i]]) <- attr(x, "base")
+    }
   }
 
   fun <- get(paste0("as.", attr(x, "containedClass")))
@@ -842,7 +1091,6 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
   # names(res) <- names(x)
   # res
 }
-
 
 
 # quanteda ----------------------------------------------------------------
@@ -860,4 +1108,3 @@ docvars.sentopicmodel <- function(x, field = NULL) {
 #' @importFrom quanteda tokens
 #' @export
 quanteda::tokens
-

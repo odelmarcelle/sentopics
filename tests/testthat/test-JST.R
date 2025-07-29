@@ -1,11 +1,13 @@
-
 context("testing JST")
 toks <- ECB_press_conferences_tokens[1:10]
 
 JST <- JST(toks, lexicon = LoughranMcDonald)
 
 test_that("JST works", {
-  expect_output(print(JST), "A JST model with 3 sentiments and 5 topics. Currently fitted by 0 Gibbs sampling iterations.")
+  expect_output(
+    print(JST),
+    "A JST model with 3 sentiments and 5 topics. Currently fitted by 0 Gibbs sampling iterations."
+  )
   tabl <- table(JST$vocabulary$lexicon)
   expect_length(tabl, 3)
   expect_gt(sum(tabl), 0)
@@ -40,8 +42,21 @@ test_that("functions works", {
 })
 
 test_that("test convergence", {
-  vocab <- generateVocab(nTopics = 3, nSentiments = 2, nWords = 3, nCommonWords = 1, hierarchy = "JST")
-  toks <- generateDocuments(vocab, nDocs = 100, L1prior = .1, L2prior = 5, nWords = 100, nClass = 1)
+  vocab <- generateVocab(
+    nTopics = 3,
+    nSentiments = 2,
+    nWords = 3,
+    nCommonWords = 1,
+    hierarchy = "JST"
+  )
+  toks <- generateDocuments(
+    vocab,
+    nDocs = 100,
+    L1prior = .1,
+    L2prior = 5,
+    nWords = 100,
+    nClass = 1
+  )
   lex <- generatePartialLexicon(toks, Sindex = 1:2)
 
   ## With lexicon
@@ -66,13 +81,17 @@ test_that("test convergence", {
   while (convergence == FALSE && retry < 10) {
     JST <- JST(toks, K = 3, S = 2, gamma = .1, alpha = 5)
     JST <- fit(JST, 100, nChains = 2, displayProgress = FALSE)
-    expect_message(distToGenerative(JST, vocab), "No lexicon detected, allowing")
+    expect_message(
+      distToGenerative(JST, vocab),
+      "No lexicon detected, allowing"
+    )
     count <- 0
     while (convergence == FALSE && count < 30) {
       JST <- fit(JST, 100, nChains = 2, displayProgress = FALSE)
       count <- count + 1
-      if (all(suppressMessages(distToGenerative(JST, vocab)) < .15))
+      if (all(suppressMessages(distToGenerative(JST, vocab)) < .15)) {
         convergence <- TRUE
+      }
     }
     retry <- retry + 1
   }

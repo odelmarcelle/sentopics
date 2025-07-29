@@ -1,16 +1,22 @@
-
-
 test_that("from STM", {
   skip_if_not_installed("stm")
   skip_if_not_installed("tm")
   library("stm")
-  temp <- textProcessor(documents = gadarian$open.ended.response,
-                             metadata = gadarian, verbose = FALSE)
-  out <- prepDocuments(temp$documents, temp$vocab, temp$meta,
-                            verbose = FALSE)
+  temp <- textProcessor(
+    documents = gadarian$open.ended.response,
+    metadata = gadarian,
+    verbose = FALSE
+  )
+  out <- prepDocuments(temp$documents, temp$vocab, temp$meta, verbose = FALSE)
   # set.seed(02138)
-  stm <- stm(out$documents, out$vocab, 3, verbose = FALSE,
-                  prevalence = ~treatment + s(pid_rep), data = out$meta)
+  stm <- stm(
+    out$documents,
+    out$vocab,
+    3,
+    verbose = FALSE,
+    prevalence = ~ treatment + s(pid_rep),
+    data = out$meta
+  )
 
   lda <- as.LDA(stm, out$documents)
 
@@ -19,7 +25,12 @@ test_that("from STM", {
 
   # check top words
   expect_identical(
-    unname(sentopics::top_words(lda, 7, out = "matrix", method = "probability")),
+    unname(sentopics::top_words(
+      lda,
+      7,
+      out = "matrix",
+      method = "probability"
+    )),
     t(labelTopics(stm)$prob)
   )
 
@@ -34,7 +45,10 @@ test_that("from STM", {
   expect_error(rJST(lda), "Not possible for approximated")
 
   expect_silent(sentopics_sentiment(lda) <- rnorm(length(lda$tokens)))
-  expect_error(sentopics_labels(lda) <- list(topic = 1:3), "Not possible for approximated")
+  expect_error(
+    sentopics_labels(lda) <- list(topic = 1:3),
+    "Not possible for approximated"
+  )
 })
 
 
@@ -44,12 +58,14 @@ test_that("from lda", {
   K <- 5 ## Num clusters
   data("cora.documents")
   data("cora.vocab")
-  lda <- lda.collapsed.gibbs.sampler(cora.documents,
-                                        K, ## Num clusters
-                                        cora.vocab,
-                                        100, ## Num iterations
-                                        0.1,
-                                        0.1)
+  lda <- lda.collapsed.gibbs.sampler(
+    cora.documents,
+    K, ## Num clusters
+    cora.vocab,
+    100, ## Num iterations
+    0.1,
+    0.1
+  )
 
   LDA <- as.LDA_lda(lda, cora.documents, alpha = .1, eta = .1)
 
@@ -78,8 +94,12 @@ test_that("from topicmodels", {
   skip_if_not_installed("topicmodels")
   library("topicmodels")
   data("AssociatedPress", package = "topicmodels")
-  lda <- topicmodels::LDA(AssociatedPress, method = "Gibbs",
-                          control = list(alpha = 0.1, iter = 100), k = 5)
+  lda <- topicmodels::LDA(
+    AssociatedPress,
+    method = "Gibbs",
+    control = list(alpha = 0.1, iter = 100),
+    k = 5
+  )
 
   LDA <- as.LDA(lda, docs = AssociatedPress)
 
@@ -94,11 +114,16 @@ test_that("from topicmodels", {
     check.attributes = FALSE
   )
 
-  vem <- topicmodels::LDA(AssociatedPress, method = "VEM",
-                          control = list(
-                            alpha = 0.1,
-                            var = list(iter.max = 10, tol = 0.01),
-                            em = list(iter.max = 10, tol = 0.01)), k = 5)
+  vem <- topicmodels::LDA(
+    AssociatedPress,
+    method = "VEM",
+    control = list(
+      alpha = 0.1,
+      var = list(iter.max = 10, tol = 0.01),
+      em = list(iter.max = 10, tol = 0.01)
+    ),
+    k = 5
+  )
 
   LDA <- as.LDA(vem, docs = AssociatedPress)
 
@@ -112,15 +137,17 @@ test_that("from topicmodels", {
     sentopics::top_words(LDA, output = "matrix", method = "probability"),
     check.attributes = FALSE
   )
-
 })
 
 
 test_that("from seededlda", {
   skip_if_not_installed("seededlda")
   library("seededlda")
-  lda <- textmodel_lda(quanteda::dfm(ECB_press_conferences_tokens),
-                       k = 6, max_iter = 100)
+  lda <- textmodel_lda(
+    quanteda::dfm(ECB_press_conferences_tokens),
+    k = 6,
+    max_iter = 100
+  )
   LDA <- as.LDA(lda)
 
   expect_true(check_integrity(LDA))
@@ -140,17 +167,19 @@ test_that("from seededlda", {
     check.attributes = FALSE
   )
 
-
   dict <- quanteda::dictionary(list(
     inflation = c("inflation", "price", "hicp"),
     council = c("governing_council", "staff", "ecb"),
-    credit = c("credit", "bank",  "loan"),
+    credit = c("credit", "bank", "loan"),
     growth = c("growth", "development", "increase"),
     `monetary policy` = c("monetary_policy", "monetary", "interest_rate")
   ))
-  slda <- textmodel_seededlda(quanteda::dfm(ECB_press_conferences_tokens),
-                              dict, residual = TRUE,
-                              max_iter = 100)
+  slda <- textmodel_seededlda(
+    quanteda::dfm(ECB_press_conferences_tokens),
+    dict,
+    residual = TRUE,
+    max_iter = 100
+  )
   LDA <- as.LDA(slda)
 
   expect_true(check_integrity(LDA))
@@ -169,7 +198,6 @@ test_that("from seededlda", {
     apply(slda$theta, 2, function(x) head(order(-x))),
     check.attributes = FALSE
   )
-
 })
 
 
@@ -180,7 +208,7 @@ test_that("from keyATM", {
 
   data(keyATM_data_bills)
   bills_keywords <- keyATM_data_bills$keywords
-  bills_dfm <- keyATM_data_bills$doc_dfm  # quanteda dfm object
+  bills_dfm <- keyATM_data_bills$doc_dfm # quanteda dfm object
   keyATM_docs <- keyATM_read(bills_dfm)
 
   # keyATM Base
@@ -217,9 +245,10 @@ test_that("LDAvis", {
 
   lda <- LDA(ECB_press_conferences_tokens)
   lda <- fit(lda, 10, displayProgress = FALSE)
-  if (interactive())
+  if (interactive()) {
     expect_message(LDAvis(lda), "To stop the server,")
-  else
+  } else {
     expect_silent(LDAvis(lda))
+  }
   servr::daemon_stop()
 })

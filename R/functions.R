@@ -1,4 +1,3 @@
-
 #' Extract the most representative words from topics
 #'
 #' @author Olivier Delmarcelle
@@ -69,102 +68,149 @@
 #' top_words(model)
 #' top_words(model, output = "matrix")
 #' top_words(model, method = "FREX")
-top_words <- function(x,
-                     nWords = 10,
-                     method = c("frequency", "probability", "term-score", "FREX"),
-                     output = c("data.frame", "plot", "matrix"),
-                     subset,
-                     w = .5) {
-
+top_words <- function(
+  x,
+  nWords = 10,
+  method = c("frequency", "probability", "term-score", "FREX"),
+  output = c("data.frame", "plot", "matrix"),
+  subset,
+  w = .5
+) {
   ## CMD check
   word <- value <- overall <- NULL
 
-  if (x$it < 1) stop("No top words yet. Iterate the model with fit() first.")
+  if (x$it < 1) {
+    stop("No top words yet. Iterate the model with fit() first.")
+  }
   class <- class(x)[1]
   method <- match.arg(method)
   output <- match.arg(output)
   x <- reorder_sentopicmodel(x)
   top <- top_words_dt(x, nWords, method, w)
   if (!missing(subset)) {
-    if (attr(x, "reversed")) env <- list(topic = quote(L1),
-                                         sentiment = quote(L2))
-    else env <- list(sentiment = quote(L1),
-                     topic = quote(L2))
-    subset <- do.call(substitute, list(
-      substitute(subset),
-      env))
+    if (attr(x, "reversed")) {
+      env <- list(topic = quote(L1), sentiment = quote(L2))
+    } else {
+      env <- list(sentiment = quote(L1), topic = quote(L2))
+    }
+    subset <- do.call(
+      substitute,
+      list(
+        substitute(subset),
+        env
+      )
+    )
     top <- subset(top, eval(subset))
   }
 
-  switch(output,
-         "matrix" = {
-           res <- matrix(top$word, nrow = nWords)
-           tmp <- top$L2 + (x$L2) * (top$L1 - 1)
-           colnames(res) <- create_labels(x, class)[unique(tmp)]
-           res
-         },
-         "plot" = {
-           mis <- missingSuggets(c("ggplot2", "RColorBrewer"))
-           if (length(mis) > 0) stop("Suggested packages are missing for the plot output.\n",
-                                     "Please install first the following packages: ",
-                                     paste0(mis, collapse = ", "),".\n",
-                                     "Install command: install.packages(",
-                                     paste0("'", mis, "'", collapse = ", "),")" )
-           tmp <- top$L2 + (x$L2) * (top$L1 - 1)
-           top$label <- factor(
-             tmp,
-             levels = seq_len(x$L1 * x$L2),
-             labels = create_labels(x, class)
-           )
-           p <- ggplot2::ggplot(
-             top,
-             ggplot2::aes(
-               reorder_within(
-                 reorder_within(word, value, L1),
-                 value, L2),
-               value, L1, fill = factor(L1))) +
-             {if (attr(top, "method") == "frequency")
-               ggplot2::geom_col(
-                 ggplot2::aes(y = overall),
-                 show.legend = FALSE,
-                 fill = "grey", alpha = .8
-               )} +
-             ggplot2::geom_col(show.legend = FALSE) +
-             ggplot2::facet_wrap(
-               . ~ label,
-               strip.position = "top",
-               scales = "free"
-             ) +
-             ggplot2::coord_flip() +
-             scale_x_reordered() +
-             ggplot2::labs(x = "word", y = attr(top, "method")) +
-             ggplot2::theme(
-               strip.text.x = ggplot2::element_text(
-                 margin = ggplot2::margin(.5,0,3,0)
-               ))
-           p
-         },
-         "data.frame" = {
-           params <- sentopicmodel_params(x)
-           labs <- create_labels(x, class, flat = FALSE)
-           for (i in names(labs)) {
-             top[[i]] <- factor(top[[i]], levels = seq_along(labs[[i]]), labels = labs[[i]])
-           }
-           if (class %in% c("rJST", "LDA")) colnames(top) <-
-             sub("L1", "topic", sub("L2", "sentiment", colnames(top), fixed = TRUE), fixed = TRUE)
-           if (class == "JST") colnames(top) <-
-             sub("L1", "sentiment", sub("L2", "topic", colnames(top), fixed = TRUE), fixed = TRUE)
-           if (class == "LDA") top$sentiment <- NULL
-           top
-         }
+  switch(
+    output,
+    "matrix" = {
+      res <- matrix(top$word, nrow = nWords)
+      tmp <- top$L2 + (x$L2) * (top$L1 - 1)
+      colnames(res) <- create_labels(x, class)[unique(tmp)]
+      res
+    },
+    "plot" = {
+      mis <- missingSuggets(c("ggplot2", "RColorBrewer"))
+      if (length(mis) > 0) {
+        stop(
+          "Suggested packages are missing for the plot output.\n",
+          "Please install first the following packages: ",
+          paste0(mis, collapse = ", "),
+          ".\n",
+          "Install command: install.packages(",
+          paste0("'", mis, "'", collapse = ", "),
+          ")"
+        )
+      }
+      tmp <- top$L2 + (x$L2) * (top$L1 - 1)
+      top$label <- factor(
+        tmp,
+        levels = seq_len(x$L1 * x$L2),
+        labels = create_labels(x, class)
+      )
+      p <- ggplot2::ggplot(
+        top,
+        ggplot2::aes(
+          reorder_within(
+            reorder_within(word, value, L1),
+            value,
+            L2
+          ),
+          value,
+          L1,
+          fill = factor(L1)
+        )
+      ) +
+        {
+          if (attr(top, "method") == "frequency") {
+            ggplot2::geom_col(
+              ggplot2::aes(y = overall),
+              show.legend = FALSE,
+              fill = "grey",
+              alpha = .8
+            )
+          }
+        } +
+        ggplot2::geom_col(show.legend = FALSE) +
+        ggplot2::facet_wrap(
+          . ~ label,
+          strip.position = "top",
+          scales = "free"
+        ) +
+        ggplot2::coord_flip() +
+        scale_x_reordered() +
+        ggplot2::labs(x = "word", y = attr(top, "method")) +
+        ggplot2::theme(
+          strip.text.x = ggplot2::element_text(
+            margin = ggplot2::margin(.5, 0, 3, 0)
+          )
+        )
+      p
+    },
+    "data.frame" = {
+      params <- sentopicmodel_params(x)
+      labs <- create_labels(x, class, flat = FALSE)
+      for (i in names(labs)) {
+        top[[i]] <- factor(
+          top[[i]],
+          levels = seq_along(labs[[i]]),
+          labels = labs[[i]]
+        )
+      }
+      if (class %in% c("rJST", "LDA")) {
+        colnames(top) <-
+          sub(
+            "L1",
+            "topic",
+            sub("L2", "sentiment", colnames(top), fixed = TRUE),
+            fixed = TRUE
+          )
+      }
+      if (class == "JST") {
+        colnames(top) <-
+          sub(
+            "L1",
+            "sentiment",
+            sub("L2", "topic", colnames(top), fixed = TRUE),
+            fixed = TRUE
+          )
+      }
+      if (class == "LDA") {
+        top$sentiment <- NULL
+      }
+      top
+    }
   )
 }
 
-top_words_dt <- function(x,
-                        nWords = 10,
-                        method = c("frequency", "probability", "term-score", "FREX"),
-                        w = .5) {
-
+top_words_dt <- function(
+  x,
+  nWords = 10,
+  method = c("frequency", "probability", "term-score", "FREX"),
+  w = .5
+) {
   ## CMD check
   word <- value <- prob <- tprob <- sprob <- exclusivity <- NULL
   phiStats <- x$phi
@@ -179,44 +225,68 @@ top_words_dt <- function(x,
   method <- match.arg(method)
 
   nClusters <- max(phiStats$L1) * max(phiStats$L2)
-  switch(method,
-         "frequency" = {
-           freq <- rebuild_zw(x, array = TRUE)
-           freq <- aperm(freq, c(3, 1, 2))
-           overall <- rowSums(freq)
-           freq <- data.table::as.data.table(freq, sort = FALSE)
-           colnames(freq) <- c("word", "L2", "L1", "value")
-           freq$overall <- rep(overall, times = x$L1 * x$L2)
-           freq$word <- phiStats$word
-           phiStats <- freq
-         },
-         "term-score" = {phiStats <-
-           phiStats[ #apply smoothing on value to avoid 0 probability from lexicon words
-             , list(word, L1, L2, value = value + .Machine$double.eps)][
-               , list(L1, L2, value = value * log(value / prod(value)^(1/nClusters))), by = word]},
-         "FREX" = {
+  switch(
+    method,
+    "frequency" = {
+      freq <- rebuild_zw(x, array = TRUE)
+      freq <- aperm(freq, c(3, 1, 2))
+      overall <- rowSums(freq)
+      freq <- data.table::as.data.table(freq, sort = FALSE)
+      colnames(freq) <- c("word", "L2", "L1", "value")
+      freq$overall <- rep(overall, times = x$L1 * x$L2)
+      freq$word <- phiStats$word
+      phiStats <- freq
+    },
+    "term-score" = {
+      phiStats <-
+        phiStats[
+          #apply smoothing on value to avoid 0 probability from lexicon words
+          ,
+          list(word, L1, L2, value = value + .Machine$double.eps)
+        ][,
+          list(
+            L1,
+            L2,
+            value = value * log(value / prod(value)^(1 / nClusters))
+          ),
+          by = word
+        ]
+    },
+    "FREX" = {
+      if (w < 0 | w > 1) {
+        stop("The argument 'w' should be constrained between 0 and 1.")
+      }
 
-           if (w < 0 | w > 1) stop("The argument 'w' should be constrained between 0 and 1.")
-
-           phiStats[, "exclusivity" := value / sum(value), by = word]
-           phiStats <-
-             phiStats[, list(word, value = (
-               w / (data.table::frank(exclusivity) / .N) +
-                 (1 - w) / (data.table::frank(value) / .N)
-               )^-1 ), by = c("L1", "L2")]
-         },
-         "topics" = {
-           ## TODO: to update?
-           #### disregard sentiments and compute probability mass for each L1
-           tmp <- melt(x)[, list(prob = mean(prob), tprob = mean(tprob)), by = list(L1, L2)]
-           tmp[, sprob := prob/tprob]
-           phiStats <- phiStats[tmp, on = c("L1", "L2")][, value := value*sprob]
-           phiStats <- phiStats[, list(value = sum(value)), by = list(word, L1)]
-           phiStats[, L2 := 1L]
-         }
+      phiStats[, "exclusivity" := value / sum(value), by = word]
+      phiStats <-
+        phiStats[,
+          list(
+            word,
+            value = (w /
+              (data.table::frank(exclusivity) / .N) +
+              (1 - w) / (data.table::frank(value) / .N))^-1
+          ),
+          by = c("L1", "L2")
+        ]
+    },
+    "topics" = {
+      ## TODO: to update?
+      #### disregard sentiments and compute probability mass for each L1
+      tmp <- melt(x)[,
+        list(prob = mean(prob), tprob = mean(tprob)),
+        by = list(L1, L2)
+      ]
+      tmp[, sprob := prob / tprob]
+      phiStats <- phiStats[tmp, on = c("L1", "L2")][, value := value * sprob]
+      phiStats <- phiStats[, list(value = sum(value)), by = list(word, L1)]
+      phiStats[, L2 := 1L]
+    }
   )
-  top_words <- phiStats[order(-value, word), utils::head(.SD, nWords),
-                       by = list(L1, L2)][order(L1, L2)]
+  top_words <- phiStats[
+    order(-value, word),
+    utils::head(.SD, nWords),
+    by = list(L1, L2)
+  ][order(L1, L2)]
   class(top_words) <- c("top_words", class(phiStats))
   attr(top_words, "method") <- method
   top_words
@@ -232,11 +302,13 @@ top_words_dt <- function(x,
 #' jst <- fit(jst, 10)
 #' plot_top_words(jst)
 #' plot_top_words(jst, subset = topic %in% 1:2 & sentiment == 3)
-plot_top_words <- function(x,
-                          nWords = 10,
-                          method = c("frequency", "probability", "term-score", "FREX"),
-                          subset,
-                          w = .5) {
+plot_top_words <- function(
+  x,
+  nWords = 10,
+  method = c("frequency", "probability", "term-score", "FREX"),
+  subset,
+  w = .5
+) {
   eval(substitute(
     top_words(x, nWords, method, output = "plot", e, w),
     list(e = substitute(subset))
@@ -278,26 +350,56 @@ plot_top_words <- function(x,
 #'   of the Eighth ACM International Conference on Web Search and Data Mining*,
 #'   399-–408.
 #' @export
-coherence <- function(x, nWords = 10, method = c("C_NPMI", "C_V"), window = NULL, NPMIs = NULL) {
+coherence <- function(
+  x,
+  nWords = 10,
+  method = c("C_NPMI", "C_V"),
+  window = NULL,
+  NPMIs = NULL
+) {
   UseMethod("coherence")
 }
 #' @export
-coherence.LDA <- function(x, nWords = 10, method = c("C_NPMI", "C_V"), window = NULL, NPMIs = NULL) {
+coherence.LDA <- function(
+  x,
+  nWords = 10,
+  method = c("C_NPMI", "C_V"),
+  window = NULL,
+  NPMIs = NULL
+) {
   res <- coherence(as.sentopicmodel(x), nWords, method, window, NPMIs)
   rowSums(res)
 }
 #' @export
-coherence.JST <- function(x, nWords = 10, method = c("C_NPMI", "C_V"), window = NULL, NPMIs = NULL) {
+coherence.JST <- function(
+  x,
+  nWords = 10,
+  method = c("C_NPMI", "C_V"),
+  window = NULL,
+  NPMIs = NULL
+) {
   ### TODO: need to make this more robust
   coherence(as.sentopicmodel(x), nWords, method, window, NPMIs)
 }
 #' @export
-coherence.rJST <- function(x, nWords = 10, method = c("C_NPMI", "C_V"), window = NULL, NPMIs = NULL) {
+coherence.rJST <- function(
+  x,
+  nWords = 10,
+  method = c("C_NPMI", "C_V"),
+  window = NULL,
+  NPMIs = NULL
+) {
   coherence(as.sentopicmodel(x), nWords, method, window, NPMIs)
 }
 
 #' @export
-coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"), window = NULL, NPMIs = NULL) {
+coherence.sentopicmodel <- function(
+  x,
+  nWords = 10,
+  method = c("C_NPMI", "C_V"),
+  window = NULL,
+  NPMIs = NULL
+) {
   method <- match.arg(method)
 
   if (is.null(window)) {
@@ -309,12 +411,16 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 
   stopifnot(is.numeric(nWords))
   nWords <- as.integer(nWords)
-  if (nWords < 2) stop("The number of words must be at least 2.")
+  if (nWords < 2) {
+    stop("The number of words must be at least 2.")
+  }
   if (inherits(x, "sentopicmodel")) {
-    switch(method,
-            C_NPMI = C_NPMI(x, nWords, window_C_NPMI, NPMIs = NPMIs),
-            C_V = C_V(x, nWords, window_C_V, NPMIs = NPMIs),
-            stop("Undefined method"))
+    switch(
+      method,
+      C_NPMI = C_NPMI(x, nWords, window_C_NPMI, NPMIs = NPMIs),
+      C_V = C_V(x, nWords, window_C_V, NPMIs = NPMIs),
+      stop("Undefined method")
+    )
   } else {
     stop("Please provide a correct sentopicmodel object")
   }
@@ -367,24 +473,36 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 #'   *Proceedings of the 31st International Conference on Machine Learning*, 32,
 #'   90--198.
 #' @export
-chains_distances <- function(x,
-                            method = c("euclidean", "hellinger", "cosine", "minMax", "naiveEuclidean", "invariantEuclidean"),
-                            ...) {
-  if (!inherits(x, "multi_chains")) stop("Please provide a correct multi_chains object")
+chains_distances <- function(
+  x,
+  method = c(
+    "euclidean",
+    "hellinger",
+    "cosine",
+    "minMax",
+    "naiveEuclidean",
+    "invariantEuclidean"
+  ),
+  ...
+) {
+  if (!inherits(x, "multi_chains")) {
+    stop("Please provide a correct multi_chains object")
+  }
 
   x <- as.sentopicmodel(x)
   # avoid copying base to each chain
   x <- as.list(x, copy = FALSE)
 
   method <- match.arg(method)
-  switch(method,
-         "cosine" = cosineDistances(x),
-         "hellinger" = hellingerDistances(x),
-         "euclidean" = euclideanDistances(x),
-         "naiveEuclidean" = naiveEuclideanDistances(x),
-         "minMax" = minMaxEuclidean(x),
-         "invariantEuclidean" = invariantEuclideanOptim(x, ...),
-         stop("Error in distance method")
+  switch(
+    method,
+    "cosine" = cosineDistances(x),
+    "hellinger" = hellingerDistances(x),
+    "euclidean" = euclideanDistances(x),
+    "naiveEuclidean" = naiveEuclideanDistances(x),
+    "minMax" = minMaxEuclidean(x),
+    "invariantEuclidean" = invariantEuclideanOptim(x, ...),
+    stop("Error in distance method")
   )
 }
 
@@ -426,7 +544,9 @@ chains_distances <- function(x,
 #'
 #' @export
 chains_scores <- function(x, window = 110, nWords = 10) {
-  if (!inherits(x, "multi_chains")) stop("Please provide a correct multi_chains object")
+  if (!inherits(x, "multi_chains")) {
+    stop("Please provide a correct multi_chains object")
+  }
 
   ## CMD check
   name <- NULL
@@ -448,22 +568,36 @@ chains_scores <- function(x, window = 110, nWords = 10) {
       max_logLikelihood = max(x$logLikelihood)
     )
     if (score$logLikelihood == 0) {
-      multLikelihood <- get("multLikelihood",
-                            envir = getNamespace("sentopics"))
+      multLikelihood <- get("multLikelihood", envir = getNamespace("sentopics"))
       score$logLikelihood <- multLikelihood(x)[1, 1]
     }
     ## Coherence measures
-    score$C_NPMI <- mean(sentopics::coherence(x, nWords, method = "C_NPMI", NPMIs = NPMIs10))
-    score$C_V <- mean(sentopics::coherence(x, nWords, method = "C_V", NPMIs = NPMIsW))
+    score$C_NPMI <- mean(sentopics::coherence(
+      x,
+      nWords,
+      method = "C_NPMI",
+      NPMIs = NPMIs10
+    ))
+    score$C_V <- mean(sentopics::coherence(
+      x,
+      nWords,
+      method = "C_V",
+      NPMIs = NPMIsW
+    ))
     score
   }
   if (requireNamespace("future.apply", quietly = TRUE)) {
     environment(FUN) <- globalenv()
     chains_scores <- future.apply::future_sapply(
-      x, FUN, future.seed = FALSE,
+      x,
+      FUN,
+      future.seed = FALSE,
       future.globals = list(
-        nWords = nWords, NPMIsW = NPMIsW, NPMIs10 = NPMIs10
-      ))
+        nWords = nWords,
+        NPMIsW = NPMIsW,
+        NPMIs10 = NPMIs10
+      )
+    )
   } else {
     chains_scores <- sapply(x, FUN)
   }

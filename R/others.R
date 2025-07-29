@@ -17,25 +17,46 @@
 #'
 #' @return Depending on the arguments, returns either a data.frame or a
 #'   [quanteda::tokens] object containing speeches of the ECB.
-get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, compute_sentiment = TRUE, tokenize_w_POS = FALSE) { # nocov start
+get_ECB_speeches <- function(
+  filter_english = TRUE,
+  clean_footnotes = TRUE,
+  compute_sentiment = TRUE,
+  tokenize_w_POS = FALSE
+) {
+  # nocov start
   ## CMD check
   pos <- NULL
 
   mis <- c()
-  if (filter_english) mis <- c("textcat")
-  if (clean_footnotes) mis <- c("stringr")
-  if (compute_sentiment) mis <- c(mis, "sentometrics")
-  if (tokenize_w_POS) mis <- c(mis, "spacyr")
+  if (filter_english) {
+    mis <- c("textcat")
+  }
+  if (clean_footnotes) {
+    mis <- c("stringr")
+  }
+  if (compute_sentiment) {
+    mis <- c(mis, "sentometrics")
+  }
+  if (tokenize_w_POS) {
+    mis <- c(mis, "spacyr")
+  }
   mis <- missingSuggets(mis)
-  if (length(mis) > 0) stop("Suggested packages are missing for the function with the current arguments.\n",
-                            "Please install first the following packages: ",
-                            paste0(mis, collapse = ", "),".\n",
-                            "Install command: install.packages(",
-                            paste0("'", mis, "'", collapse = ", "),")" )
+  if (length(mis) > 0) {
+    stop(
+      "Suggested packages are missing for the function with the current arguments.\n",
+      "Please install first the following packages: ",
+      paste0(mis, collapse = ", "),
+      ".\n",
+      "Install command: install.packages(",
+      paste0("'", mis, "'", collapse = ", "),
+      ")"
+    )
+  }
 
   utils::download.file(
     "https://www.ecb.europa.eu/press/key/shared/data/all_ECB_speeches.csv",
-    file <- tempfile())
+    file <- tempfile()
+  )
 
   ECB_speeches <- utils::read.table(
     file,
@@ -59,17 +80,37 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
   if (clean_footnotes) {
     ## Attempts to clear footnotes
     {
-      references1 <- stringr::str_match(ECB_speeches$contents, stringr::regex("\\[1\\].+(\\[1\\].+)", ignore_case = TRUE))[, 2, drop = FALSE]
-      clean <- stringr::str_replace(ECB_speeches$contents, stringr::regex("(\\[1\\].+)(\\[1\\].+)", ignore_case = TRUE), "\\1")
+      references1 <- stringr::str_match(
+        ECB_speeches$contents,
+        stringr::regex("\\[1\\].+(\\[1\\].+)", ignore_case = TRUE)
+      )[, 2, drop = FALSE]
+      clean <- stringr::str_replace(
+        ECB_speeches$contents,
+        stringr::regex("(\\[1\\].+)(\\[1\\].+)", ignore_case = TRUE),
+        "\\1"
+      )
       clean[is.na(references1)] <- stringr::str_replace(
         ECB_speeches$contents[is.na(references1)],
-        stringr::regex("(([A-z][a-z]*, [^[,]]{0,50}?)|([A-z]+ [^[,]]{0,20}?))\\([0-9]{4}\\)[,:\\.].*",
-                       ignore_case = TRUE), "")
+        stringr::regex(
+          "(([A-z][a-z]*, [^[,]]{0,50}?)|([A-z]+ [^[,]]{0,20}?))\\([0-9]{4}\\)[,:\\.].*",
+          ignore_case = TRUE
+        ),
+        ""
+      )
 
       if (FALSE) {
         check <- data.table(
-          check1 = stringr::str_match(clean, stringr::regex("\\[1\\].+(\\[1\\].+)", ignore_case = TRUE))[, 2],
-          check2 = stringr::str_extract(clean, stringr::regex("(([A-z][a-z]*, [^[,]]{0,50}?)|([A-z]+ [^[,]]{0,20}?))\\([0-9]{4}\\)[,:\\.].*", ignore_case = TRUE))
+          check1 = stringr::str_match(
+            clean,
+            stringr::regex("\\[1\\].+(\\[1\\].+)", ignore_case = TRUE)
+          )[, 2],
+          check2 = stringr::str_extract(
+            clean,
+            stringr::regex(
+              "(([A-z][a-z]*, [^[,]]{0,50}?)|([A-z]+ [^[,]]{0,20}?))\\([0-9]{4}\\)[,:\\.].*",
+              ignore_case = TRUE
+            )
+          )
         )
         View(check)
         dt <- data.table(
@@ -79,7 +120,11 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
         dt
       }
 
-      clean <- stringr::str_replace_all(clean, stringr::regex("[\\(\\[][0-9]+[\\)\\]]", ignore_case = TRUE), "")
+      clean <- stringr::str_replace_all(
+        clean,
+        stringr::regex("[\\(\\[][0-9]+[\\)\\]]", ignore_case = TRUE),
+        ""
+      )
       ECB_speeches$contents <- clean
       rm(clean, references1)
     }
@@ -88,22 +133,31 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
   if (compute_sentiment) {
     s <- sentometrics::compute_sentiment(
       ECB_speeches$contents,
-      lexicons = sentometrics::sento_lexicons(sentometrics::list_lexicons["LM_en"],
-                                              sentometrics::list_valence_shifters$en),
+      lexicons = sentometrics::sento_lexicons(
+        sentometrics::list_lexicons["LM_en"],
+        sentometrics::list_valence_shifters$en
+      ),
       how = "proportionalPol"
     )
     ECB_speeches$sentiment <- s$LM_en
     rm(s)
   }
 
-
   if (tokenize_w_POS) {
     spacyr::spacy_initialize(entity = FALSE)
-    (parsed <- spacyr::spacy_parse(ECB_speeches$contents,
-                                   entity = FALSE, nounphrase = FALSE))
-    toks <- quanteda::as.tokens(subset(parsed, pos %in% c("NOUN", "ADJ", "PROPN")), use_lemma = TRUE)
+    (parsed <- spacyr::spacy_parse(
+      ECB_speeches$contents,
+      entity = FALSE,
+      nounphrase = FALSE
+    ))
+    toks <- quanteda::as.tokens(
+      subset(parsed, pos %in% c("NOUN", "ADJ", "PROPN")),
+      use_lemma = TRUE
+    )
     toks$.date <- as.Date(ECB_speeches$date)
-    if (compute_sentiment) toks$.sentiment <- ECB_speeches$sentiment
+    if (compute_sentiment) {
+      toks$.sentiment <- ECB_speeches$sentiment
+    }
     ECB_speeches <- toks
   }
 
@@ -124,48 +178,70 @@ get_ECB_speeches <- function(filter_english = TRUE, clean_footnotes = TRUE, comp
 #'
 #' @return Depending on the arguments, returns either a data.frame or a
 #'   [quanteda::tokens] object containing press conferences of the ECB.
-get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.table = TRUE) {
-
+get_ECB_press_conferences <- function(
+  years = 1998:2021,
+  language = "en",
+  data.table = TRUE
+) {
   # R CMD check:
   paragraph_id <- doc_id <- sections <- NULL
 
   res <- lapply(stats::setNames(nm = years), function(year) {
-
     ## Get index page
     utils::download.file(
-      sprintf("https://www.ecb.europa.eu/press/press_conference/monetary-policy-statement/%s/html/index_include.en.html", year),
+      sprintf(
+        "https://www.ecb.europa.eu/press/press_conference/monetary-policy-statement/%s/html/index_include.en.html",
+        year
+      ),
       file <- tempfile(),
-      quiet = TRUE)
+      quiet = TRUE
+    )
     html <- readChar(file, file.info(file)$size)
     # html <- readLines(file, encoding = "UTF-8", warn = FALSE) |> paste0(collapse = "")
     unlink(file)
 
     ## Get press conferences
     message(year)
-    LIST <- regmatches(html, gregexpr(sprintf("/press.*?\\.%s\\.html", language), html, perl = TRUE))[[1]]
-    if (length(LIST) == 0) return(list())
+    LIST <- regmatches(
+      html,
+      gregexpr(sprintf("/press.*?\\.%s\\.html", language), html, perl = TRUE)
+    )[[1]]
+    if (length(LIST) == 0) {
+      return(list())
+    }
     LIST <- unique(paste0("https://www.ecb.europa.eu", LIST))
     # LIST <- paste0(
     #   "https://www.ecb.europa.eu",
     #   regmatches(html, gregexpr(sprintf(r"(/press.*?\.%s\.html)", language), html, perl = TRUE))[[1]]
     # ) |> unique()
     LIST <- lapply(
-      stats::setNames(LIST, as.Date(
-        regmatches(LIST, regexpr("[0-9]{6}", LIST, perl = TRUE)), format = "%y%m%d")),
+      stats::setNames(
+        LIST,
+        as.Date(
+          regmatches(LIST, regexpr("[0-9]{6}", LIST, perl = TRUE)),
+          format = "%y%m%d"
+        )
+      ),
       function(url) {
-      utils::download.file(
-        url,
-        file <- tempfile(),
-        quiet = TRUE)
-      # html <- readChar(file, file.info(file)$size)
-      html <- paste0(readLines(file, encoding = "UTF-8", warn = FALSE), collapse = "")
-      unlink(file)
-      html
-    })
+        utils::download.file(
+          url,
+          file <- tempfile(),
+          quiet = TRUE
+        )
+        # html <- readChar(file, file.info(file)$size)
+        html <- paste0(
+          readLines(file, encoding = "UTF-8", warn = FALSE),
+          collapse = ""
+        )
+        unlink(file)
+        html
+      }
+    )
 
     ## Get main content of the page
-    cleaned <- lapply(LIST, function(html)
-      regmatches(html, gregexpr("<main >(?s).*</main>", html, perl = TRUE))[[1]])
+    cleaned <- lapply(LIST, function(html) {
+      regmatches(html, gregexpr("<main >(?s).*</main>", html, perl = TRUE))[[1]]
+    })
 
     ## Correct html tags
     {
@@ -175,50 +251,106 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
         html <- gsub("&eacute;", "\u00C9", html, fixed = TRUE)
         html <- gsub("&auml;", "\u00E4", html, fixed = TRUE)
         html <- gsub("&uuml;", "\u00FC", html, fixed = TRUE)
-        html <- gsub("&szlig;", "\u00DF", html,fixed = TRUE)
+        html <- gsub("&szlig;", "\u00DF", html, fixed = TRUE)
         html <- gsub("&oacute;", "\u00F3", html, fixed = TRUE)
         html <- gsub("&egrave;", "\u00E8", html, fixed = TRUE)
         html <- gsub("&ccedil;", "\u00E7", html, fixed = TRUE)
         html <- gsub("&atilde;", "\u00E3", html, fixed = TRUE)
       })
 
-      check <- lapply(cleaned, function(html)
-        regmatches(html, gregexpr("&[A-Za-z]*?;", html, perl = TRUE))[[1]])
-      if ( any(lengths(check) > 0) ) warning("Unknown html entity detected.: ", check)
+      check <- lapply(cleaned, function(html) {
+        regmatches(html, gregexpr("&[A-Za-z]*?;", html, perl = TRUE))[[1]]
+      })
+      if (any(lengths(check) > 0)) {
+        warning("Unknown html entity detected.: ", check)
+      }
     }
 
-    lapply(LIST, function(html)
-      regmatches(html, gregexpr("&[A-Za-z]*?;", html, perl = TRUE))[[1]])
+    lapply(LIST, function(html) {
+      regmatches(html, gregexpr("&[A-Za-z]*?;", html, perl = TRUE))[[1]]
+    })
 
     cleaned <- lapply(cleaned, function(html) {
-
       ## Remove address-box at the end of the page
-      html <- regmatches(html, gregexpr("<div class=\"address-box -top-arrow\">(?s).*", html, perl = TRUE), invert = TRUE)[[1]][1]
+      html <- regmatches(
+        html,
+        gregexpr(
+          "<div class=\"address-box -top-arrow\">(?s).*",
+          html,
+          perl = TRUE
+        ),
+        invert = TRUE
+      )[[1]][1]
 
       ## First attempt at removing questions
-      html <- sub("<p>[ ]?(<em>)?[ ]?(<strong>)?[ ]?(<em>)?[ ]?\"?[ ]?Question[ ]?(\\(translation\\))?:.*", "", html, perl = TRUE)
+      html <- sub(
+        "<p>[ ]?(<em>)?[ ]?(<strong>)?[ ]?(<em>)?[ ]?\"?[ ]?Question[ ]?(\\(translation\\))?:.*",
+        "",
+        html,
+        perl = TRUE
+      )
       # regmatches(html, gregexpr(r"(<p>(<em>)?(<strong>)?(<em>)?"?[ ]?Question[ ]?(\(translation\))?:)", html, perl = TRUE), invert = FALSE)
 
       ## First attempt but based on last line of statement
-      html <- sub("<p>[ ]?We are now at your disposal for questions.[ ]?</p>\\K.*", "", html, perl = TRUE)
-      html <- sub("<p>[ ]?We are now ready to take your questions.[ ]?</p>\\K.*", "", html, perl = TRUE)
+      html <- sub(
+        "<p>[ ]?We are now at your disposal for questions.[ ]?</p>\\K.*",
+        "",
+        html,
+        perl = TRUE
+      )
+      html <- sub(
+        "<p>[ ]?We are now ready to take your questions.[ ]?</p>\\K.*",
+        "",
+        html,
+        perl = TRUE
+      )
 
       ## Second attempt at removing questions
-      html <- sub("<h2[A-Za-z \"=:]*?>(<strong>)?[ ]?Transcript of the [Qq]uestions.*?</h2>.*", "", html, perl = TRUE)
+      html <- sub(
+        "<h2[A-Za-z \"=:]*?>(<strong>)?[ ]?Transcript of the [Qq]uestions.*?</h2>.*",
+        "",
+        html,
+        perl = TRUE
+      )
 
       ## Third attempt based on specific cases detected with kwic()
-      html <- sub("<p>[ ]?(<strong>)?[ ]?My (first )?question would be.*", "", html, perl = TRUE)
+      html <- sub(
+        "<p>[ ]?(<strong>)?[ ]?My (first )?question would be.*",
+        "",
+        html,
+        perl = TRUE
+      )
 
-
-
-      title <- gsub("<.*?>", "", regmatches(html, gregexpr("<h1.*?>(?s).*?</h1>", html, perl = TRUE))[[1]])
+      title <- gsub(
+        "<.*?>",
+        "",
+        regmatches(html, gregexpr("<h1.*?>(?s).*?</h1>", html, perl = TRUE))[[
+          1
+        ]]
+      )
       rest <- gsub("<h1.*?>(?s).*?</h1>", "", html, perl = TRUE)
-      sections <- lapply(rest, function(html)
-        strsplit(html, "(<div class=\"titlepage\">)|(\\* \\* \\*)", perl = TRUE)[[1]])[[1]]
+      sections <- lapply(rest, function(html) {
+        strsplit(
+          html,
+          "(<div class=\"titlepage\">)|(\\* \\* \\*)",
+          perl = TRUE
+        )[[1]]
+      })[[1]]
       sections <- lapply(sections, function(html) {
         list(
-          section_title = gsub("<.*?>", "", regmatches(html, gregexpr("<h2.*?>(?s).*?</h2>", html, perl = TRUE))[[1]])[1],
-          content = gsub("<.*?>", "", regmatches(html, gregexpr("<p>(?s).*?</p>", html, perl = TRUE))[[1]])
+          section_title = gsub(
+            "<.*?>",
+            "",
+            regmatches(
+              html,
+              gregexpr("<h2.*?>(?s).*?</h2>", html, perl = TRUE)
+            )[[1]]
+          )[1],
+          content = gsub(
+            "<.*?>",
+            "",
+            regmatches(html, gregexpr("<p>(?s).*?</p>", html, perl = TRUE))[[1]]
+          )
         )
       })
 
@@ -249,21 +381,34 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
     #     content = gsub("<.*?>", "", regmatches(html, gregexpr("<p>(?s).*?</p>", html, perl = TRUE))[[1]])
     #   )
     # )
-
   })
 
   res <- unlist(unname(res), recursive = FALSE, use.names = TRUE)
   res <- res[order(names(res))]
-  res <- mapply(function(x, date) {x$date <- date; x}, x = res, date = names(res), SIMPLIFY = FALSE)
+  res <- mapply(
+    function(x, date) {
+      x$date <- date
+      x
+    },
+    x = res,
+    date = names(res),
+    SIMPLIFY = FALSE
+  )
   names(res) <- seq_along(res)
   if (data.table) {
     res <- data.table::rbindlist(res, idcol = "doc_id")
-    res <- res[, c({tmp <- data.table::rbindlist(sections); tmp[, paragraph_id := paste0(doc_id, "_", .I)]; tmp}), by = c("date", "doc_id", "title") ]
+    res <- res[,
+      c({
+        tmp <- data.table::rbindlist(sections)
+        tmp[, paragraph_id := paste0(doc_id, "_", .I)]
+        tmp
+      }),
+      by = c("date", "doc_id", "title")
+    ]
     # res[grepl("Transcript", section_title)] |> View()
   }
   res
 }
-
 
 
 #' Compute scores using the Picault-Renault lexicon
@@ -306,10 +451,19 @@ get_ECB_press_conferences <- function(years = 1998:2021, language = "en", data.t
 #'
 #' # on paragraphs
 #' compute_PicaultRenault_scores(ECB_press_conferences)}
-compute_PicaultRenault_scores <- function(x, min_ngram = 2, return_dfm = FALSE) {
+compute_PicaultRenault_scores <- function(
+  x,
+  min_ngram = 2,
+  return_dfm = FALSE
+) {
   PicaultRenault <- PicaultRenault[PicaultRenault$ngram >= min_ngram, ]
-  x <- quanteda::tokens(x, remove_numbers = TRUE, remove_punct = TRUE,
-                        remove_symbols = TRUE, remove_separators = FALSE)
+  x <- quanteda::tokens(
+    x,
+    remove_numbers = TRUE,
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_separators = FALSE
+  )
   x <- quanteda::tokens_remove(x, " ")
   x <- quanteda::tokens_wordstem(x)
   x <- quanteda::tokens_tolower(x)
@@ -317,45 +471,64 @@ compute_PicaultRenault_scores <- function(x, min_ngram = 2, return_dfm = FALSE) 
   x <- quanteda::tokens_compound(
     x,
     quanteda::phrase(PicaultRenault$keyword),
-    concatenator = " ")
+    concatenator = " "
+  )
 
   dfm <- quanteda::dfm(x)
   dfm <- dfm[, intersect(colnames(dfm), PicaultRenault$keyword)]
 
-  weight <- PicaultRenault[match(colnames(dfm), PicaultRenault$keyword),
-                           -c("keyword", "ngram", "total_class")]
+  weight <- PicaultRenault[
+    match(colnames(dfm), PicaultRenault$keyword),
+    -c("keyword", "ngram", "total_class")
+  ]
   weight <- lapply(weight, stats::setNames, nm = colnames(dfm))
 
-  weighted_dfms <- lapply(weight, function(w)
-    quanteda::dfm_weight(dfm, weight = w))
+  weighted_dfms <- lapply(weight, function(w) {
+    quanteda::dfm_weight(dfm, weight = w)
+  })
 
   MP <- quanteda::as.dfm(weighted_dfms$mp_rest - weighted_dfms$mp_acco)
   # MP <- MP/sum(Reduce(`+`, weighted_dfms[c("mp_acco", "mp_neut", "mp_rest")]))
-  denom <- as.matrix(Reduce(`+`, weighted_dfms[c("mp_acco", "mp_neut", "mp_rest")]))
-  denom <- stats::aggregate(rowSums(denom), mean, by = list(doc = quanteda::docid(dfm)))
+  denom <- as.matrix(Reduce(
+    `+`,
+    weighted_dfms[c("mp_acco", "mp_neut", "mp_rest")]
+  ))
+  denom <- stats::aggregate(
+    rowSums(denom),
+    mean,
+    by = list(doc = quanteda::docid(dfm))
+  )
   ## Prevents 0 denominator
   denom$x[denom$x < sqrt(.Machine$double.eps)] <- sqrt(.Machine$double.eps)
   MP <- as.matrix(MP)
   for (i in seq_len(nrow(MP))) {
-    MP[i, ] <- MP[i, ] /  denom[match(quanteda::docid(dfm)[i], denom$doc), ]$x
+    MP[i, ] <- MP[i, ] / denom[match(quanteda::docid(dfm)[i], denom$doc), ]$x
   }
   MP <- quanteda::as.dfm(MP)
   quanteda::docvars(MP) <- quanteda::docvars(dfm)
 
   EC <- quanteda::as.dfm(weighted_dfms$ec_posi - weighted_dfms$ec_nega)
-  denom <- as.matrix(Reduce(`+`, weighted_dfms[c("ec_nega", "ec_neut", "ec_posi")]))
-  denom <- stats::aggregate(rowSums(denom), mean, by = list(doc = quanteda::docid(dfm)))
+  denom <- as.matrix(Reduce(
+    `+`,
+    weighted_dfms[c("ec_nega", "ec_neut", "ec_posi")]
+  ))
+  denom <- stats::aggregate(
+    rowSums(denom),
+    mean,
+    by = list(doc = quanteda::docid(dfm))
+  )
   ## Prevents 0 denominator
   denom$x[denom$x < sqrt(.Machine$double.eps)] <- sqrt(.Machine$double.eps)
   EC <- as.matrix(EC)
   for (i in seq_len(nrow(EC))) {
-    EC[i, ] <- EC[i, ] /  denom[match(quanteda::docid(dfm)[i], denom$doc), ]$x
+    EC[i, ] <- EC[i, ] / denom[match(quanteda::docid(dfm)[i], denom$doc), ]$x
   }
   EC <- quanteda::as.dfm(EC)
   quanteda::docvars(EC) <- quanteda::docvars(dfm)
 
-  if (return_dfm) return(list(MP = MP, EC = EC))
-  else cbind(MP = rowSums(as.matrix(MP)), EC = rowSums(as.matrix(EC)))
+  if (return_dfm) {
+    return(list(MP = MP, EC = EC))
+  } else {
+    cbind(MP = rowSums(as.matrix(MP)), EC = rowSums(as.matrix(EC)))
+  }
 }
-
-

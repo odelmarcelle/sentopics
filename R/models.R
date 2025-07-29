@@ -1,5 +1,3 @@
-
-
 #' Create a Latent Dirichlet Allocation model
 #'
 #' @description This function initialize a Latent Dirichlet Allocation model.
@@ -21,7 +19,15 @@
 #' lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- fit(lda, 100)}
 LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
-  as.LDA(sentopicmodel(x, lexicon = NULL, L1 = K, L2 = 1, L1prior = alpha, L2prior = 0, beta = beta))
+  as.LDA(sentopicmodel(
+    x,
+    lexicon = NULL,
+    L1 = K,
+    L2 = 1,
+    L1prior = alpha,
+    L2prior = 0,
+    beta = beta
+  ))
 }
 
 #' Create a Reversed Joint Sentiment/Topic model
@@ -76,10 +82,29 @@ rJST <- function(x, ...) {
 }
 #' @rdname rJST
 #' @export
-rJST.default <- function(x, lexicon = NULL, K = 5, S = 3,
-                 alpha = 1, gamma = 5, beta = 0.01,
-                 alphaCycle = 0, gammaCycle = 0, ...) {
-  as.rJST(sentopicmodel(x, lexicon, K, S, alpha, gamma, beta, alphaCycle, gammaCycle))
+rJST.default <- function(
+  x,
+  lexicon = NULL,
+  K = 5,
+  S = 3,
+  alpha = 1,
+  gamma = 5,
+  beta = 0.01,
+  alphaCycle = 0,
+  gammaCycle = 0,
+  ...
+) {
+  as.rJST(sentopicmodel(
+    x,
+    lexicon,
+    K,
+    S,
+    alpha,
+    gamma,
+    beta,
+    alphaCycle,
+    gammaCycle
+  ))
 }
 #' @rdname rJST
 #' @details The `rJST.LDA` methods enable the transition from a previously
@@ -88,21 +113,26 @@ rJST.default <- function(x, lexicon = NULL, K = 5, S = 3,
 #'   every word of the corpus. The new model will retain the iteration count of
 #'   the initial [LDA] model.
 #' @export
-rJST.LDA <- function(x,
-                     lexicon = NULL,
-                     S = 3,
-                     gamma = 5, ...) {
-
-  if (x$it < 1) stop("Requires an estimated LDA model.")
-  if (isTRUE(attr(x, "approx"))) stop("Not possible for approximated models")
+rJST.LDA <- function(x, lexicon = NULL, S = 3, gamma = 5, ...) {
+  if (x$it < 1) {
+    stop("Requires an estimated LDA model.")
+  }
+  if (isTRUE(attr(x, "approx"))) {
+    stop("Not possible for approximated models")
+  }
   x <- as.sentopicmodel(x)
   x$L2 <- as.numeric(S)
 
-  if (length(gamma) == 1L) gamma <- matrix(gamma, x$L1 * x$L2, 1)
-  if (length(gamma) == x$L2) gamma <- matrix(rep(gamma, times = x$L1), x$L1 * x$L2, 1)
+  if (length(gamma) == 1L) {
+    gamma <- matrix(gamma, x$L1 * x$L2, 1)
+  }
+  if (length(gamma) == x$L2) {
+    gamma <- matrix(rep(gamma, times = x$L1), x$L1 * x$L2, 1)
+  }
 
-  if (length(gamma) != x$L1 * x$L2)
+  if (length(gamma) != x$L1 * x$L2) {
     stop("Incorrect prior dimension. Please check input gamma.")
+  }
 
   dim(gamma) <- c(x$L1 * x$L2, 1)
   x$L2prior <- gamma
@@ -113,7 +143,6 @@ rJST.LDA <- function(x,
 
   reAssignZa <- as.integer(seq(x$L1) * S - 1)
   # x$za <- lapply(x$za, function(x) reAssignZa[x])
-
 
   clean <- cleanPadding(x$tokens)
   for (i in seq_along(x$za)) {
@@ -126,11 +155,8 @@ rJST.LDA <- function(x,
       } else {
         x$za[[i]][j] <- set[as.integer(x$vocabulary$lexicon[clean[[i]][j]])]
       }
-
     }
   }
-
-
 
   beta <- matrix(0, x$L1 * x$L2, ncol(x$beta))
   for (i in 1:(x$L1 * x$L2)) {
@@ -139,13 +165,24 @@ rJST.LDA <- function(x,
   for (i in 1:nrow(x$vocabulary)) {
     if (!is.na(x$vocabulary$lexicon[i])) {
       zero <- setdiff(1:x$L2, as.integer(x$vocabulary$lexicon[i]))
-      zeros <- c(sapply(zero, function(j) j + (1:x$L1 - 1) * x$L2, USE.NAMES = FALSE))
+      zeros <- c(sapply(
+        zero,
+        function(j) j + (1:x$L1 - 1) * x$L2,
+        USE.NAMES = FALSE
+      ))
       beta[zeros, i] <- 0
     }
   }
   x$beta <- beta
-  if (x$it > 0) x$phi <- array(1/nrow(x$vocabulary), dim = c(nrow(x$vocabulary), x$L2, x$L1))
-  if (x$it > 0 & !is.null(x$L2post)) x$L2post <- array(1/x$L2, dim = c(x$L2, x$L1, length(x$tokens)))
+  if (x$it > 0) {
+    x$phi <- array(
+      1 / nrow(x$vocabulary),
+      dim = c(nrow(x$vocabulary), x$L2, x$L1)
+    )
+  }
+  if (x$it > 0 & !is.null(x$L2post)) {
+    x$L2post <- array(1 / x$L2, dim = c(x$L2, x$L1, length(x$tokens)))
+  }
 
   stopifnot(check_integrity(x))
   x <- fit(x, 0, displayProgress = FALSE)
@@ -178,13 +215,30 @@ rJST.LDA <- function(x,
 #' # estimating a JST model including a lexicon
 #' jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' jst <- fit(jst, 100)}
-JST <- function(x, lexicon = NULL, S = 3, K = 5,
-                 gamma = 1, alpha = 5, beta = 0.01,
-                 gammaCycle = 0, alphaCycle = 0) {
-
-  as.JST(sentopicmodel(x, lexicon, S, K, gamma, alpha, beta, gammaCycle, alphaCycle, reversed = FALSE))
+JST <- function(
+  x,
+  lexicon = NULL,
+  S = 3,
+  K = 5,
+  gamma = 1,
+  alpha = 5,
+  beta = 0.01,
+  gammaCycle = 0,
+  alphaCycle = 0
+) {
+  as.JST(sentopicmodel(
+    x,
+    lexicon,
+    S,
+    K,
+    gamma,
+    alpha,
+    beta,
+    gammaCycle,
+    alphaCycle,
+    reversed = FALSE
+  ))
 }
-
 
 
 #' Create a sentopic model
@@ -238,19 +292,44 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #' @examples
 #' LDA(ECB_press_conferences_tokens)
 #' rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
-sentopicmodel <- function(x, lexicon = NULL, L1 = 5, L2 = 3,
-                 L1prior = 1, L2prior = 5, beta = 0.01,
-                 L1cycle = 0, L2cycle = 0, reversed = TRUE) {
+sentopicmodel <- function(
+  x,
+  lexicon = NULL,
+  L1 = 5,
+  L2 = 3,
+  L1prior = 1,
+  L2prior = 5,
+  beta = 0.01,
+  L1cycle = 0,
+  L2cycle = 0,
+  reversed = TRUE
+) {
   count <- index <- word <- NULL # due to NSE notes in R CMD check
 
   ## Check arguments
-  if (L1 < 1 || L2 < 1) stop("The number of topic and sentiments should be equal or greater than 1.")
-  if ((L1 * L2) == 1L) stop("Impossible to run a model without having multiple topics or sentiments.")
+  if (L1 < 1 || L2 < 1) {
+    stop(
+      "The number of topic and sentiments should be equal or greater than 1."
+    )
+  }
+  if ((L1 * L2) == 1L) {
+    stop(
+      "Impossible to run a model without having multiple topics or sentiments."
+    )
+  }
 
   x <- quanteda::as.tokens(x)
 
-  if (reversed) S <- L2 else S <- L1
-  if (reversed) Sdim <- "L2" else Sdim <- "L1"
+  if (reversed) {
+    S <- L2
+  } else {
+    S <- L1
+  }
+  if (reversed) {
+    Sdim <- "L2"
+  } else {
+    Sdim <- "L1"
+  }
 
   vocabulary <- makeVocabulary(x, lexicon, S)
   x <- vocabulary$toks
@@ -258,25 +337,48 @@ sentopicmodel <- function(x, lexicon = NULL, L1 = 5, L2 = 3,
 
   clean <- cleanPadding(x)
 
-  if (length(L1prior) == 1L) L1prior <- matrix(L1prior, L1, 1)
-  if (length(L2prior) == 1L) L2prior <- matrix(L2prior, L1 * L2, 1)
-  if (length(L2prior) == L2) L2prior <- matrix(rep(L2prior, times = L1), L1 * L2, 1)
+  if (length(L1prior) == 1L) {
+    L1prior <- matrix(L1prior, L1, 1)
+  }
+  if (length(L2prior) == 1L) {
+    L2prior <- matrix(L2prior, L1 * L2, 1)
+  }
+  if (length(L2prior) == L2) {
+    L2prior <- matrix(rep(L2prior, times = L1), L1 * L2, 1)
+  }
 
-  if (length(L1prior) != L1 | length(L2prior) != L1 * L2)
+  if (length(L1prior) != L1 | length(L2prior) != L1 * L2) {
     stop("Incorrect prior dimension. Please check input alpha or gamma.")
+  }
 
   ## set as matrix incoming vectors
   dim(L1prior) <- c(L1, 1)
   dim(L2prior) <- c(L1 * L2, 1)
 
-  model <- list(vocabulary = vocabulary, tokens = x, za = lapply(lengths(clean), integer), L1 = L1, L2 = L2,
-                L1cycle = L1cycle, L2cycle = L2cycle)
+  model <- list(
+    vocabulary = vocabulary,
+    tokens = x,
+    za = lapply(lengths(clean), integer),
+    L1 = L1,
+    L2 = L2,
+    L1cycle = L1cycle,
+    L2cycle = L2cycle
+  )
 
   cpp_model <- methods::new(cpp_sentopicmodel, reversed)
 
   cpp_model$init(
-    clean, model$za, nrow(vocabulary), L1, L2, as.integer(vocabulary$lexicon) - 1,
-    L1prior, beta, L2prior, L1cycle, L2cycle
+    clean,
+    model$za,
+    nrow(vocabulary),
+    L1,
+    L2,
+    as.integer(vocabulary$lexicon) - 1,
+    L1prior,
+    beta,
+    L2prior,
+    L1cycle,
+    L2cycle
   )
 
   # extract alpha beta and gamma arrays only once
@@ -295,4 +397,3 @@ sentopicmodel <- function(x, lexicon = NULL, L1 = 5, L2 = 3,
   # if (length(dictVal) > 0) attr(model$vocabulary, "compounds") <- compounds
   reorder_sentopicmodel(model)
 }
-

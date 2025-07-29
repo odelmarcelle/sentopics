@@ -6,14 +6,13 @@ test_that("get_ECB_conferences works", {
 })
 
 test_that("compute_PicaultRenault_scores works", {
-  
   docs <- quanteda::corpus_reshape(ECB_press_conferences, "documents")
   res1 <- compute_PicaultRenault_scores(docs)
-  
-  
+
   res2 <- compute_PicaultRenault_scores(ECB_press_conferences)
-  res2 <- apply(res2, 2, function(x) aggregate(x, by = list(quanteda::docid(ECB_press_conferences)), mean)$x)
-  
+  res2 <- apply(res2, 2, function(x) {
+    aggregate(x, by = list(quanteda::docid(ECB_press_conferences)), mean)$x
+  })
+
   expect_equal(res1, res2, check.attributes = FALSE)
 })
-

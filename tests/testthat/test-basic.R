@@ -1,11 +1,9 @@
-
 context("Basic tests")
 toks <- ECB_press_conferences_tokens[1:20]
 sentopicmodel <- sentopicmodel(toks, lex = LoughranMcDonald)
 
 
 test_that("creating a sentopicmodel works", {
-
   expect_true(check_integrity(sentopicmodel, fast = FALSE))
   expect_s3_class(sentopicmodel, "sentopicmodel")
 })
@@ -31,7 +29,10 @@ test_that("reset works", {
 })
 
 test_that("print and plot methods work", {
-  expect_output(print(sentopicmodel), "A sentopicmodel topic model with 5 topics and 3 sentiments. Currently fitted by 5 Gibbs sampling iterations.")
+  expect_output(
+    print(sentopicmodel),
+    "A sentopicmodel topic model with 5 topics and 3 sentiments. Currently fitted by 5 Gibbs sampling iterations."
+  )
 })
 
 test_that("output functions works", {
@@ -44,13 +45,25 @@ test_that("output functions works", {
 })
 
 test_that("top_words subset works", {
-  expect_silent(tops <- top_words(sentopicmodel, output = "matrix", subset = topic %in% 1))
+  expect_silent(
+    tops <- top_words(sentopicmodel, output = "matrix", subset = topic %in% 1)
+  )
   expect_equal(dim(tops), c(10L, 3L))
-  expect_silent(tops <- top_words(sentopicmodel, output = "matrix",
-                                 subset = topic %in% 1 & sentiment == 3L))
+  expect_silent(
+    tops <- top_words(
+      sentopicmodel,
+      output = "matrix",
+      subset = topic %in% 1 & sentiment == 3L
+    )
+  )
   expect_equal(dim(tops), c(10L, 1L))
-  expect_silent(tops <- top_words(sentopicmodel, output = "matrix",
-                                 subset = topic %in% 1 & sentiment == 9L))
+  expect_silent(
+    tops <- top_words(
+      sentopicmodel,
+      output = "matrix",
+      subset = topic %in% 1 & sentiment == 9L
+    )
+  )
   expect_equal(dim(tops), c(10L, 0L))
 })
 
@@ -81,4 +94,3 @@ test_that("Updates works", {
 })
 
 ### TODO: add test for utils functions such as getTheta()
-

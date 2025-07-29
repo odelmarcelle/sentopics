@@ -80,32 +80,47 @@
 #' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' rjst <- fit(rjst, 100)
 #' sentopics_sentiment(rjst, override = TRUE)}
-sentopics_sentiment <- function(x,
-                      method = c("proportional", "proportionalPol"),
-                      override = FALSE,
-                      quiet = FALSE,
-                      include_docvars = FALSE) {
+sentopics_sentiment <- function(
+  x,
+  method = c("proportional", "proportionalPol"),
+  override = FALSE,
+  quiet = FALSE,
+  include_docvars = FALSE
+) {
   ## CMD check
   .id <- positive <- negative <- topic <- L1_prob <- NULL
 
   docvars <- attr(x$tokens, "docvars")
 
   if (!override & ".sentiment" %in% names(docvars)) {
-    if (!quiet & !inherits(x, "LDA")) message("'.sentiment' docvars found. Returning these values. To re-compute sentiment, please set `override = TRUE`.")
+    if (!quiet & !inherits(x, "LDA")) {
+      message(
+        "'.sentiment' docvars found. Returning these values. To re-compute sentiment, please set `override = TRUE`."
+      )
+    }
     if (include_docvars) {
       res <- data.table(.id = names(x$tokens), docvars(x$tokens))
-      if (".sentiment_scaled" %in% names(docvars))
-        data.table::setcolorder(res, c(".id", ".sentiment", ".sentiment_scaled")) else
-          data.table::setcolorder(res, c(".id", ".sentiment"))
+      if (".sentiment_scaled" %in% names(docvars)) {
+        data.table::setcolorder(
+          res,
+          c(".id", ".sentiment", ".sentiment_scaled")
+        )
+      } else {
+        data.table::setcolorder(res, c(".id", ".sentiment"))
+      }
     } else {
       if (".sentiment_scaled" %in% names(docvars)) {
         res <-
-          data.table(.id = names(x$tokens),
-                     .sentiment = docvars$`.sentiment`,
-                     .sentiment_scaled = docvars$`.sentiment_scaled`)
-      }  else  {
-        res <- data.table(.id = names(x$tokens),
-                     .sentiment = docvars$`.sentiment`)
+          data.table(
+            .id = names(x$tokens),
+            .sentiment = docvars$`.sentiment`,
+            .sentiment_scaled = docvars$`.sentiment_scaled`
+          )
+      } else {
+        res <- data.table(
+          .id = names(x$tokens),
+          .sentiment = docvars$`.sentiment`
+        )
       }
       if (attr(x, "Sdim") == "L2") {
         idx <- grepl("^\\.s_", names(docvars))
@@ -115,33 +130,49 @@ sentopics_sentiment <- function(x,
     return(res[])
   }
 
-  if (inherits(x, "LDA")) stop("Impossible to compute sentiment for an LDA model. Please input first a '.sentiment' docvars by either\n\t1: ensuring the presence of a '.sentiment' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_sentiment(x) <- value` to register a vector of sentiment values in the topic model object.")
-  if (any(!c("positive", "negative") %in% levels(x$vocabulary$lexicon))) stop("Sentiment computation requires defined positive and negative sentiment. Ensure that a lexicon containing negative and positive categories was provided when creating the model or input a '.sentiment' docvars by either\n\t1: ensuring the presence of a '.sentiment' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_sentiment(x) <- value` to register a vector of sentiment values in the topic model object.")
+  if (inherits(x, "LDA")) {
+    stop(
+      "Impossible to compute sentiment for an LDA model. Please input first a '.sentiment' docvars by either\n\t1: ensuring the presence of a '.sentiment' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_sentiment(x) <- value` to register a vector of sentiment values in the topic model object."
+    )
+  }
+  if (any(!c("positive", "negative") %in% levels(x$vocabulary$lexicon))) {
+    stop(
+      "Sentiment computation requires defined positive and negative sentiment. Ensure that a lexicon containing negative and positive categories was provided when creating the model or input a '.sentiment' docvars by either\n\t1: ensuring the presence of a '.sentiment' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_sentiment(x) <- value` to register a vector of sentiment values in the topic model object."
+    )
+  }
 
   method <- match.arg(method)
   melted <- melt(x, include_docvars = FALSE)
   ## store order to reverse dcast ordering
   # ord <- order(unique(melted$.id))
 
-  switch(method,
-         proportionalPol = {
-           fn <- function(dt) {
-             dt[, list(.id, .sentiment = (positive - negative) / (positive + negative))]
-           }
-         },
-         proportional = {
-           fn <- function(dt) {
-             dt[, list(.id, .sentiment = (positive - negative))]
-           }
-         }
-         )
+  switch(
+    method,
+    proportionalPol = {
+      fn <- function(dt) {
+        dt[, list(
+          .id,
+          .sentiment = (positive - negative) / (positive + negative)
+        )]
+      }
+    },
+    proportional = {
+      fn <- function(dt) {
+        dt[, list(.id, .sentiment = (positive - negative))]
+      }
+    }
+  )
 
-  if ( attr(x, "Sdim") == "L1" ) { ## then it is JST
+  if (attr(x, "Sdim") == "L1") {
+    ## then it is JST
 
     ## discard topics, only need L1_prob
     # res <- dcast(melted, .id ~ sent, value.var = "L1_prob", fun.aggregate = mean)
-    res <- dcast(melted[, list("L1_prob" = mean(L1_prob)), by = c("sent", ".id")],
-          .id ~ sent, value.var = "L1_prob")
+    res <- dcast(
+      melted[, list("L1_prob" = mean(L1_prob)), by = c("sent", ".id")],
+      .id ~ sent,
+      value.var = "L1_prob"
+    )
     res <- fn(res)
 
     ## recover initial ordering
@@ -153,13 +184,16 @@ sentopics_sentiment <- function(x,
     docvars$`.sentiment` <- res$`.sentiment`
     data.table::setattr(x$tokens, "docvars", docvars)
     message("Sentiment computed and assigned internally")
-
   } else {
     LIST <- lapply(
-      stats::setNames(levels(melted$topic), nm = paste0(".s_", levels(melted$topic))),
+      stats::setNames(
+        levels(melted$topic),
+        nm = paste0(".s_", levels(melted$topic))
+      ),
       function(t) {
         fn(dcast(melted[topic == t], .id ~ sent, value.var = "prob"))
-      })
+      }
+    )
     res <- data.table::rbindlist(LIST, idcol = "topic")
     res <- dcast(res, .id ~ topic, value.var = ".sentiment")
 
@@ -179,7 +213,9 @@ sentopics_sentiment <- function(x,
   ## to recompute at the end of merge_topics, need this attribute
   data.table::setattr(x, "sentiment_not_external", TRUE)
 
-  if (include_docvars) { res <- cbind(res, docvars(x$tokens)) }
+  if (include_docvars) {
+    res <- cbind(res, docvars(x$tokens))
+  }
 
   res[]
 }
@@ -189,18 +225,29 @@ sentopics_sentiment <- function(x,
 #' @param value a numeric vector of sentiment to input into the model.
 #' @export
 `sentopics_sentiment<-` <- function(x, value) {
-  if (!inherits(x, "sentopicmodel")) stop("Replacement of internal sentiment is only possible for topic models of package `sentopics`")
-  if (anyNA(value)) stop("NA sentiment not allowed.")
+  if (!inherits(x, "sentopicmodel")) {
+    stop(
+      "Replacement of internal sentiment is only possible for topic models of package `sentopics`"
+    )
+  }
+  if (anyNA(value)) {
+    stop("NA sentiment not allowed.")
+  }
 
   docvars <- attr(x$tokens, "docvars")
   if (".sentiment" %in% names(docvars) & !is.null(value)) {
     message("Replacing existing '.sentiment' docvars")
   }
 
-  if (!is.null(value)) x$tokens$`.sentiment` <- value
+  if (!is.null(value)) {
+    x$tokens$`.sentiment` <- value
+  }
   if (is.null(value)) {
     x$tokens$`.sentiment` <- NULL
-    idx <- names(docvars)[names(docvars) %in% paste0(".s_", sentopics_labels(x, flat = FALSE)[["topic"]])]
+    idx <- names(docvars)[
+      names(docvars) %in%
+        paste0(".s_", sentopics_labels(x, flat = FALSE)[["topic"]])
+    ]
     if (length(idx) > 0) {
       for (i in idx) {
         eval(substitute(x$tokens$y <- NULL, list(y = i)))
@@ -241,7 +288,11 @@ sentopics_sentiment <- function(x,
 #' sentopics_date(lda) <- docvars(ECB_press_conferences_tokens, ".date")
 sentopics_date <- function(x, include_docvars = FALSE) {
   docvars <- quanteda::docvars(x$tokens)
-  if (!".date" %in% names(docvars)) stop("No dates stored internally. Please add dates to the documents by either\n\t1: ensuring the presence of a '.date' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_date(x) <- value` to register a vector of Dates in the topic model object.")
+  if (!".date" %in% names(docvars)) {
+    stop(
+      "No dates stored internally. Please add dates to the documents by either\n\t1: ensuring the presence of a '.date' docvars in the dfm or tokens object used to create the model.\n\t2: using `sentopics_date(x) <- value` to register a vector of Dates in the topic model object."
+    )
+  }
   if (include_docvars) {
     res <- data.table(.id = names(x$tokens), docvars(x$tokens))
     data.table::setcolorder(res, c(".id", ".date"))
@@ -254,16 +305,26 @@ sentopics_date <- function(x, include_docvars = FALSE) {
 #' @param value a `Date`-coercible vector of dates to input into the model.
 #' @export
 `sentopics_date<-` <- function(x, value) {
-  if (!inherits(x, "sentopicmodel")) stop("Replacement of internal date is only possible for topic models of package `sentopics`")
-  if (anyNA(value)) stop("NA date not allowed.")
+  if (!inherits(x, "sentopicmodel")) {
+    stop(
+      "Replacement of internal date is only possible for topic models of package `sentopics`"
+    )
+  }
+  if (anyNA(value)) {
+    stop("NA date not allowed.")
+  }
 
   docvars <- attr(x$tokens, "docvars")
   if (".date" %in% names(docvars) & !is.null(value)) {
     message("Replacing existing '.date' docvars")
   }
 
-  if (!is.null(value)) x$tokens$`.date` <- as.Date(value)
-  if (is.null(value)) x$tokens$`.date` <- NULL
+  if (!is.null(value)) {
+    x$tokens$`.date` <- as.Date(value)
+  }
+  if (is.null(value)) {
+    x$tokens$`.date` <- NULL
+  }
 
   x
 }
@@ -321,29 +382,54 @@ sentopics_labels <- function(x, flat = TRUE) {
 #'   examples for a correct usage.
 #' @export
 `sentopics_labels<-` <- function(x, value) {
-
   if (is.null(value)) {
     attr(x, "labels") <- NULL
     x <- fit(x, 0, displayProgress = FALSE)
     return(x)
   }
 
-  if (!is.list(x)) stop("Only accepts list as input")
-  if ( length( setdiff(names(value), c("topic", "sentiment")) ) > 0 ) stop("List should only contain named components 'topic' or 'sentiment'.")
-  if (length(value) < 1) warning("Empty input, nothing is replaced.")
-  if (length(names(value)) < 1) warning("Input list should be named.")
+  if (!is.list(x)) {
+    stop("Only accepts list as input")
+  }
+  if (length(setdiff(names(value), c("topic", "sentiment"))) > 0) {
+    stop("List should only contain named components 'topic' or 'sentiment'.")
+  }
+  if (length(value) < 1) {
+    warning("Empty input, nothing is replaced.")
+  }
+  if (length(names(value)) < 1) {
+    warning("Input list should be named.")
+  }
 
   params <- sentopicmodel_params(x)
-  if (is.null(attr(x, "labels"))) attr(x, "labels") <- list()
-  if ( params$L1_name %in% names(value) ) {
-    if ( length(value[[params$L1_name]]) != params$L1 ) stop("The number of ", params$L1_name, " labels should match the number of topics.")
-    attr(x, "labels")[["L1"]] <- value[[params$L1_name]]
-    if (params$Sdim == "L1") levels(x$vocabulary$lexicon) <- value[[params$L1_name]]
+  if (is.null(attr(x, "labels"))) {
+    attr(x, "labels") <- list()
   }
-  if ( params$L2_name %in% names(value) ) {
-    if ( length(value[[params$L2_name]]) != params$L2 ) stop("The number of ", params$L2_name, " labels should match the number of topics.")
+  if (params$L1_name %in% names(value)) {
+    if (length(value[[params$L1_name]]) != params$L1) {
+      stop(
+        "The number of ",
+        params$L1_name,
+        " labels should match the number of topics."
+      )
+    }
+    attr(x, "labels")[["L1"]] <- value[[params$L1_name]]
+    if (params$Sdim == "L1") {
+      levels(x$vocabulary$lexicon) <- value[[params$L1_name]]
+    }
+  }
+  if (params$L2_name %in% names(value)) {
+    if (length(value[[params$L2_name]]) != params$L2) {
+      stop(
+        "The number of ",
+        params$L2_name,
+        " labels should match the number of topics."
+      )
+    }
     attr(x, "labels")[["L2"]] <- value[[params$L2_name]]
-    if (params$Sdim == "L2") levels(x$vocabulary$lexicon) <- value[[params$L2_name]]
+    if (params$Sdim == "L2") {
+      levels(x$vocabulary$lexicon) <- value[[params$L2_name]]
+    }
   }
 
   ## force update of labels on theta phi ect..
@@ -357,11 +443,8 @@ sentopics_labels <- function(x, flat = TRUE) {
     attr(x$tokens, "docvars") <- docvars
   }
 
-
   x
 }
-
-
 
 
 #' Compute a sentiment time series
@@ -397,27 +480,39 @@ sentopics_labels <- function(x, flat = TRUE) {
 #' # in the initial object
 #' sentopics_sentiment(lda)
 #' sentopics_sentiment(rjst)
-sentiment_series <- function(x,
-                             period = c("year", "quarter", "month", "day"),
-                             rolling_window = 1,
-                             scale =  TRUE,
-                             scaling_period = c("1900-01-01", "2099-12-31"),
-                             as.xts = TRUE,
-                             ...) {
+sentiment_series <- function(
+  x,
+  period = c("year", "quarter", "month", "day"),
+  rolling_window = 1,
+  scale = TRUE,
+  scaling_period = c("1900-01-01", "2099-12-31"),
+  as.xts = TRUE,
+  ...
+) {
   ## CMD check
   .date <- .sentiment <- sentiment <- NULL
 
   period <- match.arg(period)
 
   mis <- c()
-  if (rolling_window > 1) mis <- c("zoo")
-  if (as.xts) mis <- c(mis, "xts")
+  if (rolling_window > 1) {
+    mis <- c("zoo")
+  }
+  if (as.xts) {
+    mis <- c(mis, "xts")
+  }
   mis <- missingSuggets(mis)
-  if (length(mis) > 0) stop("Suggested packages are missing for the sentiment_series function.\n",
-                            "Please install first the following packages: ",
-                            paste0(mis, collapse = ", "),".\n",
-                            "Install command: install.packages(",
-                            paste0("'", mis, "'", collapse = ", "),")" )
+  if (length(mis) > 0) {
+    stop(
+      "Suggested packages are missing for the sentiment_series function.\n",
+      "Please install first the following packages: ",
+      paste0(mis, collapse = ", "),
+      ".\n",
+      "Install command: install.packages(",
+      paste0("'", mis, "'", collapse = ", "),
+      ")"
+    )
+  }
 
   res <- cbind(
     sentopics_sentiment(x, quiet = TRUE),
@@ -427,48 +522,80 @@ sentiment_series <- function(x,
   # res <- res[, lapply(.SD, mean),
   #            keyby = list(date = floor_date(.date, period)),
   #            .SDcols = ".sentiment"]
-  res <- res[, list(sentiment = mean(.sentiment)),
-             keyby = list(date = floor_date(.date, period))]
+  res <- res[,
+    list(sentiment = mean(.sentiment)),
+    keyby = list(date = floor_date(.date, period))
+  ]
 
   if (rolling_window > 1) {
     ## Store existing dates
     idx <- res$date
     ## Fill empty periods
-    res <- merge(data.table(date = seq(min(res$date),
-                                       max(res$date),
-                                       by = period)),
-                 res, by = "date",
-                 all.x = TRUE)
+    res <- merge(
+      data.table(date = seq(min(res$date), max(res$date), by = period)),
+      res,
+      by = "date",
+      all.x = TRUE
+    )
 
     ## Set default parameter for rolling
     dots <- list(...)
-    if (is.null(dots$FUN)) dots$FUN <- mean
-    if (is.null(dots$na.rm)) dots$na.rm <- TRUE
-    if (is.null(dots$fill)) dots$fill <- NA
-    if (is.null(dots$align)) dots$align <- "right"
+    if (is.null(dots$FUN)) {
+      dots$FUN <- mean
+    }
+    if (is.null(dots$na.rm)) {
+      dots$na.rm <- TRUE
+    }
+    if (is.null(dots$fill)) {
+      dots$fill <- NA
+    }
+    if (is.null(dots$align)) {
+      dots$align <- "right"
+    }
 
     # res <- res[, list(date, sentiment = zoo::rollapply(sentiment, rolling_window, FUN = FUN, na.rm = na.rm, fill = fill, align = align, ...))]
-    res <- res[, list(date, sentiment = do.call(zoo::rollapply, c(
-      list(data = sentiment, width = rolling_window),
-      dots)))]
+    res <- res[, list(
+      date,
+      sentiment = do.call(
+        zoo::rollapply,
+        c(
+          list(data = sentiment, width = rolling_window),
+          dots
+        )
+      )
+    )]
 
     res <- res[date %in% idx]
   }
 
   if (scale) {
-    if (nrow(res) < 2) stop("At least two periods are required to scale de series. Please the date range of documents or use a shorter period.")
+    if (nrow(res) < 2) {
+      stop(
+        "At least two periods are required to scale de series. Please the date range of documents or use a shorter period."
+      )
+    }
     ## Set default parameter for scaling
     dots <- list(...)
-    if (is.null(dots$na.rm)) na.rm <- TRUE
-    if (is.null(dots$trim)) trim <- 0
-    params <- res[date >= scaling_period[1] & date <= scaling_period[2],
-                    c(sigma = stats::sd(sentiment, na.rm = na.rm), mu = mean(sentiment, na.rm = na.rm, trim = trim))]
+    if (is.null(dots$na.rm)) {
+      na.rm <- TRUE
+    }
+    if (is.null(dots$trim)) {
+      trim <- 0
+    }
+    params <- res[
+      date >= scaling_period[1] & date <= scaling_period[2],
+      c(
+        sigma = stats::sd(sentiment, na.rm = na.rm),
+        mu = mean(sentiment, na.rm = na.rm, trim = trim)
+      )
+    ]
 
-    res[, sentiment := (sentiment - params["mu"]) / params["sigma"] ]
+    res[, sentiment := (sentiment - params["mu"]) / params["sigma"]]
     ## Add scaled sentiment at the document level by reference
     {
       docvars <- attr(x$tokens, "docvars")
-      docvars$`.sentiment_scaled` <- (docvars$`.sentiment` - params["mu"]) / params["sigma"]
+      docvars$`.sentiment_scaled` <- (docvars$`.sentiment` - params["mu"]) /
+        params["sigma"]
 
       ## dealing with multiple values for rJST
       idx <- grepl("^\\.s_", names(docvars), perl = TRUE) &
@@ -476,7 +603,8 @@ sentiment_series <- function(x,
       if (any(idx)) {
         idx <- names(docvars)[idx]
         for (s in idx) {
-          docvars[[paste0(s, "_scaled")]] <- (docvars[[s]] - params["mu"]) / params["sigma"]
+          docvars[[paste0(s, "_scaled")]] <- (docvars[[s]] - params["mu"]) /
+            params["sigma"]
         }
       }
 
@@ -486,10 +614,13 @@ sentiment_series <- function(x,
   }
 
   # res <- res[, list(s = mean(s)), by = list(date = floor_date(res[[date_docvar]], period))]
-  if (as.xts & length(missingSuggets("xts")) == 0)
+  if (as.xts & length(missingSuggets("xts")) == 0) {
     res <- xts::as.xts(res, dateFormat = "Date")
+  }
 
-  if (scale) data.table::setattr(res, "scaling_parameters", params)
+  if (scale) {
+    data.table::setattr(res, "scaling_parameters", params)
+  }
   res[]
 }
 
@@ -531,20 +662,24 @@ sentiment_series <- function(x,
 #' rjst <- fit(rjst, 100)
 #' sentopics_sentiment(rjst, override = TRUE)
 #' plot_sentiment_breakdown(rjst)}
-sentiment_breakdown <- function(x,
-                                period = c("year", "quarter", "month", "day", "identity"),
-                                rolling_window = 1,
-                                scale =  TRUE,
-                                scaling_period = c("1900-01-01", "2099-12-31"),
-                                plot = c(FALSE, TRUE, "silent"),
-                                as.xts = TRUE,
-                                ...) {
+sentiment_breakdown <- function(
+  x,
+  period = c("year", "quarter", "month", "day", "identity"),
+  rolling_window = 1,
+  scale = TRUE,
+  scaling_period = c("1900-01-01", "2099-12-31"),
+  plot = c(FALSE, TRUE, "silent"),
+  as.xts = TRUE,
+  ...
+) {
   ## CMD check
   .id <- .date <- .sentiment <- .sentiment_scaled <- sentiment <- value <-
     variable <- width <- Topic <- date_center <- theta <- s <- ..cols <-
-    prob <- NULL
+      prob <- NULL
 
-  if (!inherits(x, c("LDA", "rJST"))) stop("`sentiment_breakdown` is only implemented for LDA and rJST models.")
+  if (!inherits(x, c("LDA", "rJST"))) {
+    stop("`sentiment_breakdown` is only implemented for LDA and rJST models.")
+  }
 
   period <- match.arg(period)
   plot <- as.character(plot)
@@ -552,62 +687,109 @@ sentiment_breakdown <- function(x,
   plot <- as.logical(plot)
 
   mis <- c()
-  if (rolling_window > 1) mis <- c("zoo")
-  if (as.xts) mis <- c(mis, "xts")
-  if (!isFALSE(plot)) mis <- c(mis, "ggplot2")
+  if (rolling_window > 1) {
+    mis <- c("zoo")
+  }
+  if (as.xts) {
+    mis <- c(mis, "xts")
+  }
+  if (!isFALSE(plot)) {
+    mis <- c(mis, "ggplot2")
+  }
   mis <- missingSuggets(mis)
-  if (length(mis) > 0) stop("Suggested packages are missing for the sentiment_breakdown function.\n",
-                            "Please install first the following packages: ",
-                            paste0(mis, collapse = ", "),".\n",
-                            "Install command: install.packages(",
-                            paste0("'", mis, "'", collapse = ", "),")" )
+  if (length(mis) > 0) {
+    stop(
+      "Suggested packages are missing for the sentiment_breakdown function.\n",
+      "Please install first the following packages: ",
+      paste0(mis, collapse = ", "),
+      ".\n",
+      "Install command: install.packages(",
+      paste0("'", mis, "'", collapse = ", "),
+      ")"
+    )
+  }
 
   # proportions <- dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
-  proportions <- dcast(melt(x)[, list(prob = sum(prob)), by = c("topic", ".id")],
-                       .id ~ topic, value.var = "prob")
+  proportions <- dcast(
+    melt(x)[, list(prob = sum(prob)), by = c("topic", ".id")],
+    .id ~ topic,
+    value.var = "prob"
+  )
 
   if (scale & period != "identity") {
-    invisible(sentiment_series(x, period = period, rolling_window = rolling_window, scale = scale, scaling_period = scaling_period, ...))
+    invisible(sentiment_series(
+      x,
+      period = period,
+      rolling_window = rolling_window,
+      scale = scale,
+      scaling_period = scaling_period,
+      ...
+    ))
     tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
     cols <- grepl("^\\.s", names(tmp_sent)) & grepl("_scaled$", names(tmp_sent))
     cols <- names(tmp_sent)[cols]
-    tmp_sent <- eval(substitute(tmp_sent[, c(".id", ..cols)], list(..cols = cols)))
+    tmp_sent <- eval(substitute(
+      tmp_sent[, c(".id", ..cols)],
+      list(..cols = cols)
+    ))
     # TODO: re-activate once data.table 1.14.3 is released.
     # tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
-    names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
+    names(tmp_sent) <- gsub(
+      "(^\\.(?!id))|(_scaled$)",
+      "",
+      names(tmp_sent),
+      perl = TRUE
+    )
   } else {
     tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
-    cols <- grepl("^\\.s", names(tmp_sent)) & !grepl("_scaled$", names(tmp_sent))
+    cols <- grepl("^\\.s", names(tmp_sent)) &
+      !grepl("_scaled$", names(tmp_sent))
     cols <- names(tmp_sent)[cols]
-    tmp_sent <- eval(substitute(tmp_sent[, c(".id", ..cols)], list(..cols = cols)))
+    tmp_sent <- eval(substitute(
+      tmp_sent[, c(".id", ..cols)],
+      list(..cols = cols)
+    ))
     # TODO: re-activate once data.table 1.14.3 is released.
     # tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
-     names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
+    names(tmp_sent) <- gsub(
+      "(^\\.(?!id))|(_scaled$)",
+      "",
+      names(tmp_sent),
+      perl = TRUE
+    )
   }
-
 
   proportions <- merge(
     merge(
       sentopics_date(x),
       tmp_sent,
-      by = ".id", sort = FALSE
+      by = ".id",
+      sort = FALSE
     ),
     proportions,
-    by = ".id", sort = FALSE
+    by = ".id",
+    sort = FALSE
   )
 
   ## early return
   if (period == "identity") {
     sCols <- names(proportions)[grepl("^s_", names(proportions))]
-    if (length(sCols) == 0) sCols <- "sentiment"
+    if (length(sCols) == 0) {
+      sCols <- "sentiment"
+    }
     thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
     breakdown <- eval(substitute(
       proportions[, c(
         list(.id = .id, date = .date, sentiment = sentiment),
-        mapply(function(s_i, theta_i) s_i * theta_i,
-               theta_i = .SD[, theta], s_i = .SD[, s],
-               SIMPLIFY = FALSE))],
-      list( s = sCols, theta = thetaCols)))
+        mapply(
+          function(s_i, theta_i) s_i * theta_i,
+          theta_i = .SD[, theta],
+          s_i = .SD[, s],
+          SIMPLIFY = FALSE
+        )
+      )],
+      list(s = sCols, theta = thetaCols)
+    ))
     # TODO: re-activate once data.table 1.14.3 is released.
     # breakdown <- proportions[, c(
     #   list(.id = .id, date = .date, sentiment = sentiment),
@@ -620,21 +802,38 @@ sentiment_breakdown <- function(x,
 
   if (length(tmp_sent) <= 2) {
     ## then there is only one sentiment column
-    if (inherits(x, "rJST")) warning("Sentiment for the rJST model comes from an external source. This means that the sentiment layer of the model is ignored. Was it really your intent? Perhaps should you run `sentopics_sentiment(x, override = TRUE)` on the model before calling this function, or instead remove the sentiment layer by using an LDA model.")
-    breakdown <- proportions[, c(list(sentiment = mean(sentiment)),
-                                 lapply(.SD, function(x) mean(x * sentiment) )), .SDcols = -c(".id", ".date", "sentiment"),
-                             by = list(date = floor_date(.date, period))]
+    if (inherits(x, "rJST")) {
+      warning(
+        "Sentiment for the rJST model comes from an external source. This means that the sentiment layer of the model is ignored. Was it really your intent? Perhaps should you run `sentopics_sentiment(x, override = TRUE)` on the model before calling this function, or instead remove the sentiment layer by using an LDA model."
+      )
+    }
+    breakdown <- proportions[,
+      c(
+        list(sentiment = mean(sentiment)),
+        lapply(.SD, function(x) mean(x * sentiment))
+      ),
+      .SDcols = -c(".id", ".date", "sentiment"),
+      by = list(date = floor_date(.date, period))
+    ]
   } else {
     ## deal with topical sentiment values (rJST)
     sCols <- names(proportions)[grepl("^s_", names(proportions))]
     thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
     breakdown <- eval(substitute(
-      proportions[, c(list(sentiment = mean(sentiment)),
-                      mapply(function(s_i, theta_i) mean(s_i * theta_i),
-                             theta_i = .SD[, theta], s_i = .SD[, s],
-                             SIMPLIFY = FALSE)),
-                  by = list(date = floor_date(.date, period))],
-      list( s = sCols, theta = thetaCols)))
+      proportions[,
+        c(
+          list(sentiment = mean(sentiment)),
+          mapply(
+            function(s_i, theta_i) mean(s_i * theta_i),
+            theta_i = .SD[, theta],
+            s_i = .SD[, s],
+            SIMPLIFY = FALSE
+          )
+        ),
+        by = list(date = floor_date(.date, period))
+      ],
+      list(s = sCols, theta = thetaCols)
+    ))
     # TODO: re-activate once data.table 1.14.3 is released.
     # breakdown <- proportions[, c(list(sentiment = mean(sentiment)),
     #                              mapply(function(s_i, theta_i) mean(s_i * theta_i),
@@ -644,40 +843,61 @@ sentiment_breakdown <- function(x,
     #                          env = I(list( s = sCols, theta = thetaCols))]
   }
 
-
   breakdown <- breakdown[order(date)]
 
   ## quick check
-  if (!isTRUE(all.equal(
-              breakdown$sentiment - rowSums(breakdown[, -c("date", "sentiment")]),
-              rep(0, nrow(breakdown)))))
-    stop("Computation of breakdown failed. Please contact the author of the package to work on a solution.")
+  if (
+    !isTRUE(all.equal(
+      breakdown$sentiment - rowSums(breakdown[, -c("date", "sentiment")]),
+      rep(0, nrow(breakdown))
+    ))
+  ) {
+    stop(
+      "Computation of breakdown failed. Please contact the author of the package to work on a solution."
+    )
+  }
 
   if (rolling_window > 1) {
     ## Store existing dates
     idx <- breakdown$date
     ## Fill empty periods
-    breakdown <- merge(data.table(date = seq(min(breakdown$date),
-                                       max(breakdown$date),
-                                       by = period)),
-                 breakdown, by = "date",
-                 all.x = TRUE)
+    breakdown <- merge(
+      data.table(
+        date = seq(min(breakdown$date), max(breakdown$date), by = period)
+      ),
+      breakdown,
+      by = "date",
+      all.x = TRUE
+    )
 
     ## Set default parameter for rolling
     dots <- list(...)
-    if (is.null(dots$FUN)) dots$FUN <- mean
-    if (is.null(dots$na.rm)) dots$na.rm <- TRUE
-    if (is.null(dots$fill)) dots$fill <- NA
-    if (is.null(dots$align)) dots$align <- "right"
+    if (is.null(dots$FUN)) {
+      dots$FUN <- mean
+    }
+    if (is.null(dots$na.rm)) {
+      dots$na.rm <- TRUE
+    }
+    if (is.null(dots$fill)) {
+      dots$fill <- NA
+    }
+    if (is.null(dots$align)) {
+      dots$align <- "right"
+    }
 
     cols <- setdiff(names(breakdown), c("date"))
     breakdown[,
-      (cols) := lapply(.SD, function(col)
-        do.call(zoo::rollapply, c(
-          list(data = col, width = rolling_window),
-          dots))
-        ),
-      .SDcols = cols]
+      (cols) := lapply(.SD, function(col) {
+        do.call(
+          zoo::rollapply,
+          c(
+            list(data = col, width = rolling_window),
+            dots
+          )
+        )
+      }),
+      .SDcols = cols
+    ]
 
     breakdown <- breakdown[date %in% idx]
   }
@@ -687,20 +907,41 @@ sentiment_breakdown <- function(x,
     ## Store existing dates
     idx <- breakdown$date
     ## Fill empty periods
-    breakdown <- merge(data.table(date = seq(min(breakdown$date),
-                                             max(breakdown$date),
-                                             by = period)),
-                       breakdown, by = "date",
-                       all.x = TRUE)
+    breakdown <- merge(
+      data.table(
+        date = seq(min(breakdown$date), max(breakdown$date), by = period)
+      ),
+      breakdown,
+      by = "date",
+      all.x = TRUE
+    )
 
     plot_data <- breakdown[, lapply(.SD, nafill, type = "locf")]
-    plot_data <- stats::na.omit(melt(plot_data, id.vars = "date", variable.name = "Topic"))
+    plot_data <- stats::na.omit(melt(
+      plot_data,
+      id.vars = "date",
+      variable.name = "Topic"
+    ))
     plot_data[, width := days_period(date, period)]
-    plot_data[, date_center := as.POSIXct(date) + as.difftime(width / 2, units = "days")]
+    plot_data[,
+      date_center := as.POSIXct(date) + as.difftime(width / 2, units = "days")
+    ]
 
-    p_breakdown <- ggplot2::ggplot(plot_data[Topic != "sentiment"], ggplot2::aes(x = date_center, y = value, fill = Topic)) +
-      ggplot2::geom_col(alpha = .8, position = ggplot2::position_stack(reverse = TRUE), width = plot_data[Topic != "sentiment"]$width*24*60*60) +
-      ggplot2::geom_line(data = plot_data[Topic == "sentiment"], ggplot2::aes(x = date_center, y = value, group = 1L), inherit.aes = FALSE, linewidth = .8) +
+    p_breakdown <- ggplot2::ggplot(
+      plot_data[Topic != "sentiment"],
+      ggplot2::aes(x = date_center, y = value, fill = Topic)
+    ) +
+      ggplot2::geom_col(
+        alpha = .8,
+        position = ggplot2::position_stack(reverse = TRUE),
+        width = plot_data[Topic != "sentiment"]$width * 24 * 60 * 60
+      ) +
+      ggplot2::geom_line(
+        data = plot_data[Topic == "sentiment"],
+        ggplot2::aes(x = date_center, y = value, group = 1L),
+        inherit.aes = FALSE,
+        linewidth = .8
+      ) +
       ggplot2::scale_fill_manual(values = make_colors(x, "L1")) +
       ggplot2::ylab("Sentiment") +
       ggplot2::xlab("Date") +
@@ -709,30 +950,43 @@ sentiment_breakdown <- function(x,
       # theme_classic(base_size = 12) +
       # theme(legend.position = "bottom") +
       ggplot2::ggtitle("Sentiment breakdown")
-    if (isTRUE(plot)) print(p_breakdown)
+    if (isTRUE(plot)) {
+      print(p_breakdown)
+    }
     breakdown <- breakdown[date %in% idx]
   }
 
-
-  if (as.xts & length(missingSuggets("xts")) == 0)
+  if (as.xts & length(missingSuggets("xts")) == 0) {
     breakdown <- xts::as.xts(breakdown, dateFormat = "Date")
+  }
 
-  if (!isFALSE(plot)) attr(breakdown, "plot") <- p_breakdown
+  if (!isFALSE(plot)) {
+    attr(breakdown, "plot") <- p_breakdown
+  }
 
   breakdown
-
 }
 #' @rdname sentiment_breakdown
 #' @export
-plot_sentiment_breakdown <- function(x,
-                                     period = c("year", "quarter", "month", "day"),
-                                     rolling_window = 1,
-                                     scale =  TRUE,
-                                     scaling_period = c("1900-01-01", "2099-12-31"),
-                                     ...) {
+plot_sentiment_breakdown <- function(
+  x,
+  period = c("year", "quarter", "month", "day"),
+  rolling_window = 1,
+  scale = TRUE,
+  scaling_period = c("1900-01-01", "2099-12-31"),
+  ...
+) {
   period <- match.arg(period)
-  res <- sentiment_breakdown(x, period, rolling_window, scale, scaling_period,
-                             plot = "silent", as.xts = FALSE, ...)
+  res <- sentiment_breakdown(
+    x,
+    period,
+    rolling_window,
+    scale,
+    scaling_period,
+    plot = "silent",
+    as.xts = FALSE,
+    ...
+  )
   attr(res, "plot")
 }
 
@@ -805,20 +1059,24 @@ plot_sentiment_breakdown <- function(x,
 #' rjst <- fit(rjst, 100)
 #' sentopics_sentiment(rjst, override = TRUE)
 #' sentiment_topics(rjst)}
-sentiment_topics <- function(x,
-                             period = c("year", "quarter", "month", "day", "identity"),
-                             rolling_window = 1,
-                             scale =  TRUE,
-                             scaling_period = c("1900-01-01", "2099-12-31"),
-                             plot = c(FALSE,  TRUE, "silent"),
-                             plot_ridgelines = TRUE,
-                             as.xts = TRUE,
-                             ...) {
+sentiment_topics <- function(
+  x,
+  period = c("year", "quarter", "month", "day", "identity"),
+  rolling_window = 1,
+  scale = TRUE,
+  scaling_period = c("1900-01-01", "2099-12-31"),
+  plot = c(FALSE, TRUE, "silent"),
+  plot_ridgelines = TRUE,
+  as.xts = TRUE,
+  ...
+) {
   ## CMD check
   .id <- .date <- .sentiment <- .sentiment_scaled <- sentiment <- value <-
-    variable <- theta <- s <- ..cols <- prob <-  NULL
+    variable <- theta <- s <- ..cols <- prob <- NULL
 
-  if (!inherits(x, c("LDA", "rJST"))) stop("`sentiment_topics` is only implemented for LDA and rJST models.")
+  if (!inherits(x, c("LDA", "rJST"))) {
+    stop("`sentiment_topics` is only implemented for LDA and rJST models.")
+  }
 
   period <- match.arg(period)
   plot <- as.character(plot)
@@ -826,63 +1084,115 @@ sentiment_topics <- function(x,
   plot <- as.logical(plot)
 
   mis <- c()
-  if (rolling_window > 1) mis <- c("zoo")
-  if (as.xts) mis <- c(mis, "xts")
-  if (!isFALSE(plot)) mis <- c(mis, "ggplot2")
-  if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) plot_ridgelines <- FALSE
-  if (plot_ridgelines & !isFALSE(plot)) mis <- c(mis, "ggridges")
+  if (rolling_window > 1) {
+    mis <- c("zoo")
+  }
+  if (as.xts) {
+    mis <- c(mis, "xts")
+  }
+  if (!isFALSE(plot)) {
+    mis <- c(mis, "ggplot2")
+  }
+  if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) {
+    plot_ridgelines <- FALSE
+  }
+  if (plot_ridgelines & !isFALSE(plot)) {
+    mis <- c(mis, "ggridges")
+  }
   mis <- missingSuggets(mis)
-  if (length(mis) > 0) stop("Suggested packages are missing for the sentiment_topics function.\n",
-                            "Please install first the following packages: ",
-                            paste0(mis, collapse = ", "),".\n",
-                            "Install command: install.packages(",
-                            paste0("'", mis, "'", collapse = ", "),")" )
+  if (length(mis) > 0) {
+    stop(
+      "Suggested packages are missing for the sentiment_topics function.\n",
+      "Please install first the following packages: ",
+      paste0(mis, collapse = ", "),
+      ".\n",
+      "Install command: install.packages(",
+      paste0("'", mis, "'", collapse = ", "),
+      ")"
+    )
+  }
 
   # proportions <- dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
-  proportions <- dcast(melt(x)[, list(prob = sum(prob)), by = c("topic", ".id")],
-                       .id ~ topic, value.var = "prob")
+  proportions <- dcast(
+    melt(x)[, list(prob = sum(prob)), by = c("topic", ".id")],
+    .id ~ topic,
+    value.var = "prob"
+  )
 
   if (scale & period != "identity") {
-    invisible(sentiment_series(x, period = period, rolling_window = rolling_window, scale = scale, scaling_period = scaling_period, ...))
+    invisible(sentiment_series(
+      x,
+      period = period,
+      rolling_window = rolling_window,
+      scale = scale,
+      scaling_period = scaling_period,
+      ...
+    ))
     tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
     cols <- grepl("^\\.s", names(tmp_sent)) & grepl("_scaled$", names(tmp_sent))
     cols <- names(tmp_sent)[cols]
-    tmp_sent <- eval(substitute(tmp_sent[, c(".id", ..cols)], list(..cols = cols)))
+    tmp_sent <- eval(substitute(
+      tmp_sent[, c(".id", ..cols)],
+      list(..cols = cols)
+    ))
     # TODO: re-activate once data.table 1.14.3 is released.
     # tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
-    names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
+    names(tmp_sent) <- gsub(
+      "(^\\.(?!id))|(_scaled$)",
+      "",
+      names(tmp_sent),
+      perl = TRUE
+    )
   } else {
     tmp_sent <- sentopics_sentiment(x, quiet = TRUE)
-    cols <- grepl("^\\.s", names(tmp_sent)) & !grepl("_scaled$", names(tmp_sent))
+    cols <- grepl("^\\.s", names(tmp_sent)) &
+      !grepl("_scaled$", names(tmp_sent))
     cols <- names(tmp_sent)[cols]
-    tmp_sent <- eval(substitute(tmp_sent[, c(".id", ..cols)], list(..cols = cols)))
+    tmp_sent <- eval(substitute(
+      tmp_sent[, c(".id", ..cols)],
+      list(..cols = cols)
+    ))
     # TODO: re-activate once data.table 1.14.3 is released.
     # tmp_sent <- tmp_sent[, c(".id", ..cols), env = I(list(..cols = cols))]
-    names(tmp_sent) <- gsub("(^\\.(?!id))|(_scaled$)", "", names(tmp_sent), perl = TRUE)
+    names(tmp_sent) <- gsub(
+      "(^\\.(?!id))|(_scaled$)",
+      "",
+      names(tmp_sent),
+      perl = TRUE
+    )
   }
 
   proportions <- merge(
     merge(
       sentopics_date(x),
       tmp_sent,
-      by = ".id", sort = FALSE
+      by = ".id",
+      sort = FALSE
     ),
     proportions,
-    by = ".id", sort = FALSE
+    by = ".id",
+    sort = FALSE
   )
 
   ## early return
   if (period == "identity") {
     sCols <- names(proportions)[grepl("^s_", names(proportions))]
-    if (length(sCols) == 0) sCols <- "sentiment"
+    if (length(sCols) == 0) {
+      sCols <- "sentiment"
+    }
     thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
     topical_sent <- eval(substitute(
       proportions[, c(
         list(.id = .id, date = .date),
-        mapply(function(s_i, theta_i) s_i * theta_i,
-               theta_i = .SD[, theta], s_i = .SD[, s],
-               SIMPLIFY = FALSE))],
-      list( s = sCols, theta = thetaCols)))
+        mapply(
+          function(s_i, theta_i) s_i * theta_i,
+          theta_i = .SD[, theta],
+          s_i = .SD[, s],
+          SIMPLIFY = FALSE
+        )
+      )],
+      list(s = sCols, theta = thetaCols)
+    ))
     # TODO: re-activate once data.table 1.14.3 is released.
     # topical_sent <- proportions[, c(
     #   list(.id = .id, date = .date),
@@ -891,26 +1201,36 @@ sentiment_topics <- function(x,
     #          SIMPLIFY = FALSE)),
     #   env = I(list( s = sCols, theta = thetaCols))]
     return(topical_sent)
-
-
   }
 
   if (length(tmp_sent) <= 2) {
     ## then there is only one sentiment column
-    if (inherits(x, "rJST")) warning("Sentiment for the rJST model comes from an external source. This means that the sentiment layer of the model is ignored. Was it really your intent? Perhaps should you run `sentopics_sentiment(x, override = TRUE)` on the model before calling this function, or instead remove the sentiment layer by using an LDA.")
-    topical_sent <- proportions[, c(lapply(.SD, function(w) sum(w * sentiment) / sum(w) )),
-                                .SDcols = -c(".id", ".date", "sentiment"),
-                                by = list(date = floor_date(.date, period))]
+    if (inherits(x, "rJST")) {
+      warning(
+        "Sentiment for the rJST model comes from an external source. This means that the sentiment layer of the model is ignored. Was it really your intent? Perhaps should you run `sentopics_sentiment(x, override = TRUE)` on the model before calling this function, or instead remove the sentiment layer by using an LDA."
+      )
+    }
+    topical_sent <- proportions[,
+      c(lapply(.SD, function(w) sum(w * sentiment) / sum(w))),
+      .SDcols = -c(".id", ".date", "sentiment"),
+      by = list(date = floor_date(.date, period))
+    ]
   } else {
     ## deal with topical sentiment values (rJST)
     sCols <- names(proportions)[grepl("^s_", names(proportions))]
     thetaCols <- sentopics_labels(x, flat = FALSE)[["topic"]]
     topical_sent <- eval(substitute(
-      proportions[, mapply(function(s_i, theta_i) sum(s_i * theta_i) / sum(theta_i),
-                           theta_i = .SD[, theta], s_i = .SD[, s],
-                           SIMPLIFY = FALSE),
-                  by = list(date = floor_date(.date, period))],
-      list( s = sCols, theta = thetaCols)))
+      proportions[,
+        mapply(
+          function(s_i, theta_i) sum(s_i * theta_i) / sum(theta_i),
+          theta_i = .SD[, theta],
+          s_i = .SD[, s],
+          SIMPLIFY = FALSE
+        ),
+        by = list(date = floor_date(.date, period))
+      ],
+      list(s = sCols, theta = thetaCols)
+    ))
     # TODO: re-activate once data.table 1.14.3 is released.
     # topical_sent <- proportions[, mapply(function(s_i, theta_i) sum(s_i * theta_i) / sum(theta_i),
     #                                      theta_i = .SD[, theta], s_i = .SD[, s],
@@ -925,27 +1245,43 @@ sentiment_topics <- function(x,
     ## Store existing dates
     idx <- topical_sent$date
     ## Fill empty periods
-    topical_sent <- merge(data.table(date = seq(min(topical_sent$date),
-                                                max(topical_sent$date),
-                                                by = period)),
-                          topical_sent, by = "date",
-                          all.x = TRUE)
+    topical_sent <- merge(
+      data.table(
+        date = seq(min(topical_sent$date), max(topical_sent$date), by = period)
+      ),
+      topical_sent,
+      by = "date",
+      all.x = TRUE
+    )
 
     ## Set default parameter for rolling
     dots <- list(...)
-    if (is.null(dots$FUN)) dots$FUN <- mean
-    if (is.null(dots$na.rm)) dots$na.rm <- TRUE
-    if (is.null(dots$fill)) dots$fill <- NA
-    if (is.null(dots$align)) dots$align <- "right"
+    if (is.null(dots$FUN)) {
+      dots$FUN <- mean
+    }
+    if (is.null(dots$na.rm)) {
+      dots$na.rm <- TRUE
+    }
+    if (is.null(dots$fill)) {
+      dots$fill <- NA
+    }
+    if (is.null(dots$align)) {
+      dots$align <- "right"
+    }
 
     cols <- setdiff(names(topical_sent), c("date"))
     topical_sent[,
-              (cols) := lapply(.SD, function(col)
-                do.call(zoo::rollapply, c(
-                  list(data = col, width = rolling_window),
-                  dots))
-              ),
-              .SDcols = cols]
+      (cols) := lapply(.SD, function(col) {
+        do.call(
+          zoo::rollapply,
+          c(
+            list(data = col, width = rolling_window),
+            dots
+          )
+        )
+      }),
+      .SDcols = cols
+    ]
 
     topical_sent <- topical_sent[date %in% idx]
   }
@@ -956,55 +1292,85 @@ sentiment_topics <- function(x,
     plot_data <- stats::na.omit(melt(plot_data, id.vars = "date"))
 
     if (plot_ridgelines) {
-      plot_data <- plot_data[, list(date, value = value / max(abs(value)), variable)]
+      plot_data <- plot_data[, list(
+        date,
+        value = value / max(abs(value)),
+        variable
+      )]
 
       p_topical_sent <-
-        ggplot2::ggplot(plot_data, ggplot2::aes(date, height = value, y = variable, group = variable, fill = variable)) +
-        ggridges::geom_ridgeline(min_height = -100, scale = 1/2) +
+        ggplot2::ggplot(
+          plot_data,
+          ggplot2::aes(
+            date,
+            height = value,
+            y = variable,
+            group = variable,
+            fill = variable
+          )
+        ) +
+        ggridges::geom_ridgeline(min_height = -100, scale = 1 / 2) +
         ggplot2::scale_fill_manual(values = make_colors(x, "L1")) +
         # ggplot2::scale_x_date(expand = c(0,0)) +
         ggplot2::guides(fill = "none") +
         ggplot2::ylab("Topical sentiment") +
         ggplot2::xlab("Date")
     } else {
-
       p_topical_sent <-
-        ggplot2::ggplot(plot_data, ggplot2::aes(date, value, color = variable)) +
+        ggplot2::ggplot(
+          plot_data,
+          ggplot2::aes(date, value, color = variable)
+        ) +
         ggplot2::geom_line(linewidth = 1.5) +
         # ggplot2::guides(color = ggplot2::guide_legend(reverse = TRUE, title = "Topic")) +
         ggplot2::guides(color = "none") +
         ggplot2::scale_color_manual(values = make_colors(x, "L1")) +
         # ggplot2::scale_y_continuous(expand = c(0,0), labels = function(breaks) sprintf("%.f%%", breaks * 100) ) +
-        ggplot2::scale_x_date(expand = c(0,0)) +
+        ggplot2::scale_x_date(expand = c(0, 0)) +
         ggplot2::ylab("Topical sentiment") +
         ggplot2::xlab("Date") +
-        ggplot2::facet_wrap(. ~variable)
+        ggplot2::facet_wrap(. ~ variable)
     }
 
     if (isTRUE(plot)) print(p_topical_sent)
   }
 
-  if (as.xts & length(missingSuggets("xts")) == 0)
+  if (as.xts & length(missingSuggets("xts")) == 0) {
     topical_sent <- xts::as.xts(topical_sent, dateFormat = "Date")
+  }
 
-  if (!isFALSE(plot)) attr(topical_sent, "plot") <- p_topical_sent
+  if (!isFALSE(plot)) {
+    attr(topical_sent, "plot") <- p_topical_sent
+  }
 
   topical_sent
-
 }
 #' @rdname sentiment_topics
 #' @export
-plot_sentiment_topics <- function(x,
-                                  period = c("year", "quarter", "month", "day"),
-                                  rolling_window = 1,
-                                  scale =  TRUE,
-                                  scaling_period = c("1900-01-01", "2099-12-31"),
-                                  plot_ridgelines = TRUE,
-                                  ...) {
+plot_sentiment_topics <- function(
+  x,
+  period = c("year", "quarter", "month", "day"),
+  rolling_window = 1,
+  scale = TRUE,
+  scaling_period = c("1900-01-01", "2099-12-31"),
+  plot_ridgelines = TRUE,
+  ...
+) {
   period <- match.arg(period)
-  if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) plot_ridgelines <- FALSE
-  res <- sentiment_topics(x, period, rolling_window, scale, scaling_period,
-                          plot_ridgelines, plot = "silent", as.xts = FALSE, ...)
+  if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) {
+    plot_ridgelines <- FALSE
+  }
+  res <- sentiment_topics(
+    x,
+    period,
+    rolling_window,
+    scale,
+    scaling_period,
+    plot_ridgelines,
+    plot = "silent",
+    as.xts = FALSE,
+    ...
+  )
   attr(res, "plot")
 }
 
@@ -1044,14 +1410,16 @@ plot_sentiment_topics <- function(x,
 #' proportion_topics(jst)
 #' # or not
 #' proportion_topics(jst, complete = FALSE)}
-proportion_topics <- function(x,
-                              period = c("year", "quarter", "month", "day", "identity"),
-                              rolling_window = 1,
-                              complete = TRUE,
-                              plot = c(FALSE,  TRUE, "silent"),
-                              plot_ridgelines = TRUE,
-                              as.xts = TRUE,
-                              ...) {
+proportion_topics <- function(
+  x,
+  period = c("year", "quarter", "month", "day", "identity"),
+  rolling_window = 1,
+  complete = TRUE,
+  plot = c(FALSE, TRUE, "silent"),
+  plot_ridgelines = TRUE,
+  as.xts = TRUE,
+  ...
+) {
   ## CMD check
   .date <- value <- variable <- prob <- NULL
 
@@ -1061,46 +1429,79 @@ proportion_topics <- function(x,
   plot <- as.logical(plot)
 
   mis <- c()
-  if (rolling_window > 1) mis <- c("zoo")
-  if (as.xts) mis <- c(mis, "xts")
-  if (!isFALSE(plot)) mis <- c(mis, "ggplot2")
-  if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) plot_ridgelines <- FALSE
-  if (plot_ridgelines & !isFALSE(plot)) mis <- c(mis, "ggridges")
+  if (rolling_window > 1) {
+    mis <- c("zoo")
+  }
+  if (as.xts) {
+    mis <- c(mis, "xts")
+  }
+  if (!isFALSE(plot)) {
+    mis <- c(mis, "ggplot2")
+  }
+  if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) {
+    plot_ridgelines <- FALSE
+  }
+  if (plot_ridgelines & !isFALSE(plot)) {
+    mis <- c(mis, "ggridges")
+  }
   mis <- missingSuggets(mis)
-  if (length(mis) > 0) stop("Suggested packages are missing for the proportion_topics function.\n",
-                            "Please install first the following packages: ",
-                            paste0(mis, collapse = ", "),".\n",
-                            "Install command: install.packages(",
-                            paste0("'", mis, "'", collapse = ", "),")" )
-
-  if (complete) {
-    proportions <- switch(class(x)[1],
-                          LDA = {dcast(melt(x), .id ~ topic, value.var = "prob")},
-                          rJST = {dcast(melt(x), .id ~ topic + sent, value.var = "prob")},
-                          JST = {dcast(melt(x), .id ~ sent + topic, value.var = "prob")},
-                          stop("Undefined input"))
-  } else {
-    proportions <- switch(class(x)[1],
-                          LDA = {dcast(melt(x), .id ~ topic, value.var = "prob")},
-                          rJST = {
-                            # dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
-                            dcast(melt(x)[, list(prob = sum(prob)), by = c("topic", ".id")],
-                                  .id ~ topic, value.var = "prob")
-                          },
-                          JST = {
-                            # dcast(melt(x), .id ~ sent, value.var = "prob", fun.aggregate = sum)
-                            dcast(melt(x)[, list(prob = sum(prob)), by = c("sent", ".id")],
-                                  .id ~ sent, value.var = "prob")
-                          },
-                          stop("Undefined input"))
+  if (length(mis) > 0) {
+    stop(
+      "Suggested packages are missing for the proportion_topics function.\n",
+      "Please install first the following packages: ",
+      paste0(mis, collapse = ", "),
+      ".\n",
+      "Install command: install.packages(",
+      paste0("'", mis, "'", collapse = ", "),
+      ")"
+    )
   }
 
-
+  if (complete) {
+    proportions <- switch(
+      class(x)[1],
+      LDA = {
+        dcast(melt(x), .id ~ topic, value.var = "prob")
+      },
+      rJST = {
+        dcast(melt(x), .id ~ topic + sent, value.var = "prob")
+      },
+      JST = {
+        dcast(melt(x), .id ~ sent + topic, value.var = "prob")
+      },
+      stop("Undefined input")
+    )
+  } else {
+    proportions <- switch(
+      class(x)[1],
+      LDA = {
+        dcast(melt(x), .id ~ topic, value.var = "prob")
+      },
+      rJST = {
+        # dcast(melt(x), .id ~ topic, value.var = "prob", fun.aggregate = sum)
+        dcast(
+          melt(x)[, list(prob = sum(prob)), by = c("topic", ".id")],
+          .id ~ topic,
+          value.var = "prob"
+        )
+      },
+      JST = {
+        # dcast(melt(x), .id ~ sent, value.var = "prob", fun.aggregate = sum)
+        dcast(
+          melt(x)[, list(prob = sum(prob)), by = c("sent", ".id")],
+          .id ~ sent,
+          value.var = "prob"
+        )
+      },
+      stop("Undefined input")
+    )
+  }
 
   proportions <- merge(
     sentopics_date(x),
     proportions,
-    by = ".id", sort = FALSE
+    by = ".id",
+    sort = FALSE
   )
 
   ## early return
@@ -1109,42 +1510,66 @@ proportion_topics <- function(x,
     return(proportions)
   }
 
-  proportions <- proportions[, c(lapply(.SD, mean)),
-                              .SDcols = -c(".id", ".date"),
-                              by = list(date = floor_date(`.date`, period))]
+  proportions <- proportions[,
+    c(lapply(.SD, mean)),
+    .SDcols = -c(".id", ".date"),
+    by = list(date = floor_date(`.date`, period))
+  ]
   proportions <- proportions[order(date)]
 
   ## quick check
-  if (!isTRUE(all.equal(
-    rowSums(proportions[, -c("date")]),
-    rep(1, nrow(proportions)))))
-    stop("Computation of breakdown failed. Please contact the author of the package to work on a solution.")
+  if (
+    !isTRUE(all.equal(
+      rowSums(proportions[, -c("date")]),
+      rep(1, nrow(proportions))
+    ))
+  ) {
+    stop(
+      "Computation of breakdown failed. Please contact the author of the package to work on a solution."
+    )
+  }
 
   if (rolling_window > 1) {
     ## Store existing dates
     idx <- proportions$date
     ## Fill empty periods
-    proportions <- merge(data.table(date = seq(min(proportions$date),
-                                                max(proportions$date),
-                                                by = period)),
-                          proportions, by = "date",
-                          all.x = TRUE)
+    proportions <- merge(
+      data.table(
+        date = seq(min(proportions$date), max(proportions$date), by = period)
+      ),
+      proportions,
+      by = "date",
+      all.x = TRUE
+    )
 
     ## Set default parameter for rolling
     dots <- list(...)
-    if (is.null(dots$FUN)) dots$FUN <- mean
-    if (is.null(dots$na.rm)) dots$na.rm <- TRUE
-    if (is.null(dots$fill)) dots$fill <- NA
-    if (is.null(dots$align)) dots$align <- "right"
+    if (is.null(dots$FUN)) {
+      dots$FUN <- mean
+    }
+    if (is.null(dots$na.rm)) {
+      dots$na.rm <- TRUE
+    }
+    if (is.null(dots$fill)) {
+      dots$fill <- NA
+    }
+    if (is.null(dots$align)) {
+      dots$align <- "right"
+    }
 
     cols <- setdiff(names(proportions), c("date"))
     proportions[,
-                 (cols) := lapply(.SD, function(col)
-                   do.call(zoo::rollapply, c(
-                     list(data = col, width = rolling_window),
-                     dots))
-                 ),
-                 .SDcols = cols]
+      (cols) := lapply(.SD, function(col) {
+        do.call(
+          zoo::rollapply,
+          c(
+            list(data = col, width = rolling_window),
+            dots
+          )
+        )
+      }),
+      .SDcols = cols
+    ]
 
     proportions <- proportions[date %in% idx]
   }
@@ -1154,23 +1579,42 @@ proportion_topics <- function(x,
     plot_data <- proportions[, lapply(.SD, nafill, type = "locf")]
     plot_data <- stats::na.omit(melt(plot_data, id.vars = "date"))
 
-    if (inherits(x, "LDA") | !complete) colorScope <- "L1" else colorScope <- c("L1", "L2")
+    if (inherits(x, "LDA") | !complete) {
+      colorScope <- "L1"
+    } else {
+      colorScope <- c("L1", "L2")
+    }
 
     # if (plot_ridgelines & length(missingSuggets("ggridges")) == 0) {
     if (plot_ridgelines) {
-      plot_data <- plot_data[, list(date, value = value / max(abs(`value`)), `variable`)]
+      plot_data <- plot_data[, list(
+        date,
+        value = value / max(abs(`value`)),
+        `variable`
+      )]
 
       p_proportions <-
-        ggplot2::ggplot(plot_data, ggplot2::aes(date, height = value, y = variable, group = variable, fill = variable)) +
-        ggridges::geom_ridgeline(min_height = 0, scale = 1/1.1) +
+        ggplot2::ggplot(
+          plot_data,
+          ggplot2::aes(
+            date,
+            height = value,
+            y = variable,
+            group = variable,
+            fill = variable
+          )
+        ) +
+        ggridges::geom_ridgeline(min_height = 0, scale = 1 / 1.1) +
         # ggplot2::scale_x_date(expand = c(0,0)) +
         ggplot2::scale_fill_manual(values = make_colors(x, colorScope)) +
         ggplot2::guides(fill = "none") +
-        ggplot2::ylab(ifelse(inherits(x, "JST"), "Sentiment proportion", "Topical proportion")) +
+        ggplot2::ylab(ifelse(
+          inherits(x, "JST"),
+          "Sentiment proportion",
+          "Topical proportion"
+        )) +
         ggplot2::xlab("Date")
-
     } else {
-
       # if (plot_ridgelines) message("Package `ggridges` is missing. Defaulting to standard ggplot.")
 
       # plot_data[, cum_value := cumsum(value), by = "date"]
@@ -1181,20 +1625,27 @@ proportion_topics <- function(x,
         #                                              title = ifelse(inherits(x, "JST"), "Sentiment", "Topic"))) +
         ggplot2::guides(fill = "none") +
         ggplot2::scale_fill_manual(values = make_colors(x, colorScope)) +
-        ggplot2::scale_y_continuous(expand = c(0,0), labels = function(breaks) sprintf("%.f%%", breaks * 100),
-                                    limits = c(0, NA)) +
-        ggplot2::scale_x_date(expand = c(0,0)) +
-        ggplot2::ylab(ifelse(inherits(x, "JST"), "Sentiment proportion", "Topical proportion")) +
+        ggplot2::scale_y_continuous(
+          expand = c(0, 0),
+          labels = function(breaks) sprintf("%.f%%", breaks * 100),
+          limits = c(0, NA)
+        ) +
+        ggplot2::scale_x_date(expand = c(0, 0)) +
+        ggplot2::ylab(ifelse(
+          inherits(x, "JST"),
+          "Sentiment proportion",
+          "Topical proportion"
+        )) +
         ggplot2::xlab("Date") +
-        ggplot2::facet_wrap(. ~variable)
+        ggplot2::facet_wrap(. ~ variable)
 
       # for non-LDA models, draw line only at intersection between upper layer
       # labels
       ## With the update and the built-in facet wrap, the distinction no longer
       ## make sense
       # if (inherits(x, "LDA") | !complete) {
-        p_proportions <- p_proportions +
-          ggplot2::geom_line(position = ggplot2::position_stack(reverse = TRUE))
+      p_proportions <- p_proportions +
+        ggplot2::geom_line(position = ggplot2::position_stack(reverse = TRUE))
       # } else {
       #   tmp <- create_labels(x, flat = FALSE)
       #   tmp <- sapply(tmp$L1, paste0, "_", tmp$L2[length(tmp$L2)], USE.NAMES = FALSE)
@@ -1203,44 +1654,57 @@ proportion_topics <- function(x,
       #   p_proportions <- p_proportions +
       #     ggplot2::geom_line(data = plot_data_alt)
       # }
-
-
-
     }
-
 
     if (isTRUE(plot)) print(p_proportions)
   }
 
-  if (as.xts & length(missingSuggets("xts")) == 0)
+  if (as.xts & length(missingSuggets("xts")) == 0) {
     proportions <- xts::as.xts(proportions, dateFormat = "Date")
+  }
 
-  if (!isFALSE(plot)) attr(proportions, "plot") <- p_proportions
+  if (!isFALSE(plot)) {
+    attr(proportions, "plot") <- p_proportions
+  }
 
   proportions
-
 }
 #' @rdname proportion_topics
 #' @export
-plot_proportion_topics <- function(x,
-                                   period = c("year", "quarter", "month", "day"),
-                                   rolling_window = 1,
-                                   complete = TRUE,
-                                   plot_ridgelines = TRUE,
-                                   ...) {
+plot_proportion_topics <- function(
+  x,
+  period = c("year", "quarter", "month", "day"),
+  rolling_window = 1,
+  complete = TRUE,
+  plot_ridgelines = TRUE,
+  ...
+) {
   period <- match.arg(period)
-  if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) plot_ridgelines <- FALSE
-  res <- proportion_topics(x, period, rolling_window, complete, plot_ridgelines,
-                             plot = "silent", as.xts = FALSE, ...)
+  if (missing(plot_ridgelines) & length(missingSuggets("ggridges") > 0)) {
+    plot_ridgelines <- FALSE
+  }
+  res <- proportion_topics(
+    x,
+    period,
+    rolling_window,
+    complete,
+    plot_ridgelines,
+    plot = "silent",
+    as.xts = FALSE,
+    ...
+  )
   attr(res, "plot")
 }
 
 #' @keywords internal
 days_period <- function(date, period) {
-  if (period == "day") return(rep(1, length(date)))
+  if (period == "day") {
+    return(rep(1, length(date)))
+  }
   attributes(date)
   tmp <- data.table::transpose(
-    lapply(date, function(x)  rev(seq(x, by = period, length.out = 2)) ))
+    lapply(date, function(x) rev(seq(x, by = period, length.out = 2)))
+  )
   for (i in seq_along(tmp)) {
     class(tmp[[i]]) <- "Date"
   }
@@ -1250,13 +1714,26 @@ days_period <- function(date, period) {
 #' @keywords internal
 make_colors <- function(x, dimrange = c("L1", "L2")) {
   params <- sentopicmodel_params(x)
-  if (!("L2" %in% dimrange)) params$L2 <- 1L
-  if (params$L1 < 10) {
-    cols <- unlist(lapply(RColorBrewer::brewer.pal(max(params$L1, 3), "Set1"), spreadColor, params$L2, range = .2))
+  if (!("L2" %in% dimrange)) {
+    params$L2 <- 1L
   }
-  else cols <- unlist(lapply(
-    grDevices::colorRampPalette(RColorBrewer::brewer.pal(7, "Set1"))(params$L1),
-    spreadColor, params$L2, range = .2))
+  if (params$L1 < 10) {
+    cols <- unlist(lapply(
+      RColorBrewer::brewer.pal(max(params$L1, 3), "Set1"),
+      spreadColor,
+      params$L2,
+      range = .2
+    ))
+  } else {
+    cols <- unlist(lapply(
+      grDevices::colorRampPalette(RColorBrewer::brewer.pal(7, "Set1"))(
+        params$L1
+      ),
+      spreadColor,
+      params$L2,
+      range = .2
+    ))
+  }
   cols
 }
 
@@ -1264,12 +1741,15 @@ make_colors <- function(x, dimrange = c("L1", "L2")) {
 sentopicmodel_params <- function(x) {
   x <- as.sentopicmodel(x)
   c(
-    x[c("L1", "L2",
-        # "L1prior", "L2prior", "beta",
-        "L1cycle", "L2cycle")],
+    x[c(
+      "L1",
+      "L2",
+      # "L1prior", "L2prior", "beta",
+      "L1cycle",
+      "L2cycle"
+    )],
     attributes(x)[c("reversed", "Sdim")],
     L1_name = ifelse(attr(x, "reversed") == TRUE, "topic", "sentiment"),
     L2_name = ifelse(attr(x, "reversed") == FALSE, "topic", "sentiment")
   )
 }
-

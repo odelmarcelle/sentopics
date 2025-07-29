@@ -6,12 +6,12 @@
 \alias{fit.LDA}
 \alias{fit.rJST}
 \alias{fit.JST}
-\alias{fit.multiChains}
+\alias{fit.multi_chains}
 \alias{grow.LDA}
 \alias{grow.rJST}
 \alias{grow.JST}
 \alias{grow.sentopicmodel}
-\alias{grow.multiChains}
+\alias{grow.multi_chains}
 \title{Estimate a topic model}
 \usage{
 \method{fit}{sentopicmodel}(
@@ -24,7 +24,7 @@
   ...
 )
 
-\method{fit}{multiChains}(
+\method{fit}{multi_chains}(
   object,
   iterations = 100,
   nChains = NULL,
@@ -57,7 +57,7 @@ at each iteration. This can slightly decrease the computing time.}
 }
 \value{
 a \code{sentopicmodel} of the relevant model class if \code{nChains} is
-unspecified or equal to 1. A \code{multiChains} object if \code{nChains} is greater
+unspecified or equal to 1. A \code{multi_chains} object if \code{nChains} is greater
 than 1.
 }
 \description{

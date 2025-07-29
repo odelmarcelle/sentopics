@@ -20,11 +20,13 @@ estimated with \code{\link[=fit.sentopicmodel]{fit()}}}
 
 \item{method}{the coherence method used.}
 
-\item{window}{optional. If \code{NULL}, use the default window for each coherence
-metric (10 for C_NPMI and 110 for C_V). It is possible to override these
-default windows by providing an integer or \code{"boolean"} to this argument,
-determining a new window size for all measures. No effect is the \code{NPMIs}
-argument is also provided.}
+\item{window}{optional. The maximum distance between two tokens to be
+considered \emph{co-occuring} for the coherence measure. Distance is expressed in
+token positions. If \code{NULL}, use the default window for each coherence
+metric (10 for C_NPMI and 110 for C_V). Providing an integer or \code{"boolean"}
+to this argument will override the default. If \code{"boolean"}, co-occurences
+will simply take place if the two words are present in the same document.
+This argument has no effect if the \code{NPMIs} argument is also provided.}
 
 \item{NPMIs}{optional NPMI matrix. If provided, skip the computation of NPMI
 between words, substantially decreasing computing time.}

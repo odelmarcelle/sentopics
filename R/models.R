@@ -12,7 +12,7 @@
 #' @export
 #' @family topic models
 #' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}}, extracting
-#'   top words: [topWords()]
+#'   top words: [top_words()]
 #' @examples
 #' \donttest{# creating a model
 #' LDA(ECB_press_conferences_tokens, K = 5, alpha = 0.1, beta = 0.01)
@@ -51,7 +51,7 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #'
 #' @export
 #' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}}, extracting
-#'   top words: [topWords()]
+#'   top words: [top_words()]
 #' @family topic models
 #' @examples
 #' \donttest{# simple rJST model
@@ -169,7 +169,7 @@ rJST.LDA <- function(x,
 #' @inherit rJST
 #' @export
 #' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}},
-#'   extracting top words: [topWords()]
+#'   extracting top words: [top_words()]
 #' @family topic models
 #' @examples
 #' \donttest{# creating a JST model
@@ -212,7 +212,7 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #'  the second layer of the document mixture (as in a reversed-JST model).
 #'
 #' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}},
-#'   extracting top words: [topWords()]
+#'   extracting top words: [top_words()]
 #' @family topic models
 #'
 #' @keywords internal
@@ -231,7 +231,7 @@ JST <- function(x, lexicon = NULL, S = 3, K = 5,
 #'     with a breakdown of the likelihood into hierarchical components as
 #'     attribute
 #'
-#'   The [topWords()] function easily extract the most probables words of each
+#'   The [top_words()] function easily extract the most probables words of each
 #'   topic/sentiment.
 #'
 #' @export

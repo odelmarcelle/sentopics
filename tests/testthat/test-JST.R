@@ -25,9 +25,9 @@ test_that("JST works", {
 JST <- fit(JST, 2, displayProgress = FALSE)
 
 test_that("functions works", {
-  expect_s3_class(topWords(JST), "data.table")
-  expect_true(is.matrix(topWords(JST, output = "matrix")))
-  expect_silent(p <- topWords(JST, output = "plot"))
+  expect_s3_class(top_words(JST), "data.table")
+  expect_true(is.matrix(top_words(JST, output = "matrix")))
+  expect_silent(p <- top_words(JST, output = "plot"))
   expect_s3_class(p, "ggplot")
   expect_silent(print(p))
   expect_silent(m <- melt(JST))
@@ -81,12 +81,12 @@ test_that("test convergence", {
 
 #
 #
-# topWords(JST$chain1, output = "plot")
-# topWords(JST$chain2, output = "plot")
+# top_words(JST$chain1, output = "plot")
+# top_words(JST$chain2, output = "plot")
 #
 # e <- JST$chain2
 # e <- fit(e, 10000)
-# topWords(e, output = "plot")
+# top_words(e, output = "plot")
 # plot(e$logLikelihood)
 # rebuild_zw(as.sentopicmodel(JST$chain2))
 # rebuild_zw(as.sentopicmodel(e))

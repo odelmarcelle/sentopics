@@ -25,9 +25,9 @@ test_that("rJST works", {
 rJST <- fit(rJST, 2, displayProgress = FALSE)
 
 test_that("functions works", {
-  expect_s3_class(topWords(rJST), "data.table")
-  expect_true(is.matrix(topWords(rJST, output = "matrix")))
-  expect_silent(p <- topWords(rJST, output = "plot"))
+  expect_s3_class(top_words(rJST), "data.table")
+  expect_true(is.matrix(top_words(rJST, output = "matrix")))
+  expect_silent(p <- top_words(rJST, output = "plot"))
   expect_s3_class(p, "ggplot")
   expect_silent(print(p))
   expect_silent(m <- melt(rJST))

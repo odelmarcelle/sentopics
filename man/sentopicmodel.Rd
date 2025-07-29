@@ -57,7 +57,7 @@ with a breakdown of the likelihood into hierarchical components as
 attribute
 }
 
-The \code{\link[=topWords]{topWords()}} function easily extract the most probables words of each
+The \code{\link[=top_words]{top_words()}} function easily extract the most probables words of each
 topic/sentiment.
 }
 \description{
@@ -72,11 +72,11 @@ rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 }
 \seealso{
 Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}},
-extracting top words: \code{\link[=topWords]{topWords()}}
+extracting top words: \code{\link[=top_words]{top_words()}}
 
 Other topic models: 
 \code{\link{JST}()},
-\code{\link{LDA}()},
+\code{\link{LDA}},
 \code{\link{rJST}()}
 }
 \author{

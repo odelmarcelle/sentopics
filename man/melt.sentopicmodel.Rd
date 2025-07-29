@@ -38,7 +38,7 @@ jst <- fit(jst, 10)
 melt(jst)
 }
 \seealso{
-\code{\link[=topWords]{topWords()}} for extracting representative words,
+\code{\link[=top_words]{top_words()}} for extracting representative words,
 \code{\link[data.table:melt.data.table]{data.table::melt()}} and \code{\link[data.table:dcast.data.table]{data.table::dcast()}}
 }
 \author{

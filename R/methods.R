@@ -2,7 +2,7 @@
 # print -------------------------------------------------------------------
 
 sentopics_print_extend <- function(extended = FALSE) {
-  methods = c("fit", "topics", "topWords", "plot")
+  methods = c("fit", "topics", "top_words", "plot")
   explain <- c("Estimate the model using Gibbs sampling",
                "Return the most important topic of each document",
                "Return a data.table with the top words of each topic/sentiment",
@@ -72,13 +72,13 @@ print.JST <- function(x, extended = FALSE, ...) {
 }
 
 #' @export
-print.multiChains <- function(x, ...) {
+print.multi_chains <- function(x, ...) {
   x <- lapply(x, identity)
   NextMethod()
 }
 
 #' @export
-print.topWords <- function(x, ...) {
+print.top_words <- function(x, ...) {
   if (!is.null(attr(x, "method"))) colnames(x)[colnames(x) == "value"] <-
       paste0("value[", attr(x, "method"), "]")
   NextMethod()
@@ -105,7 +105,7 @@ print.topWords <- function(x, ...) {
 #' @return A `plotly` sunburst chart.
 #'
 #' @export
-#' @seealso [topWords()] [LDAvis()]
+#' @seealso [top_words()] [LDAvis()]
 #' @examples
 #' lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- fit(lda, 100)
@@ -162,7 +162,7 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
     }
   }
   if (layers > 2 | (layers > 1 & class == "LDA")) {
-    l3 <- topWords_dt(x, nWords, "probability")
+    l3 <- top_words_dt(x, nWords, "probability")
     l3$name <- l3$word
     l3$parent <- paste0("l1_", l3$L1, "l2_", l3$L2)
     l3$id <- paste0(l3$parent, l3$name)
@@ -215,14 +215,14 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
 #' Plot the distances between topic models (chains)
 #'
 #' @description Plot the results of `chainsDistance(x)` using multidimensional
-#'   scaling. See [chainsDistances()] for details on the distance computation
+#'   scaling. See [chains_distances()] for details on the distance computation
 #'   and [stats::cmdscale()] for the implementation of the multidimensional
 #'   scaling.
 #'
-#' @inheritParams chainsDistances
+#' @inheritParams chains_distances
 #'
 #' @param ... not used
-#' @seealso [chainsDistances()] [cmdscale()]
+#' @seealso [chains_distances()] [cmdscale()]
 #'
 #' @return Invisibly, the coordinates of each topic model resulting from the
 #'   multidimensional scaling.
@@ -232,10 +232,10 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
 #' models <- fit(models, 10, nChains = 5)
 #' plot(models)
 #' @export
-plot.multiChains <- function(x, ..., method = c("euclidean", "hellinger", "cosine", "minMax", "naiveEuclidean", "invariantEuclidean")) {
+plot.multi_chains <- function(x, ..., method = c("euclidean", "hellinger", "cosine", "minMax", "naiveEuclidean", "invariantEuclidean")) {
   if (attr(x, "nChains") < 3) stop("At least 3 chains are required for proper plotting.")
   method <- match.arg(method)
-  d <- stats::as.dist(chainsDistances(x, method))
+  d <- stats::as.dist(chains_distances(x, method))
   coord <- stats::cmdscale(d)
   ## Possible ggplot2 way of doing it
   # local({
@@ -280,7 +280,7 @@ generics::fit
 #' @param ... arguments passed to other methods. Not used.
 #'
 #' @return a `sentopicmodel` of the relevant model class if `nChains` is
-#'   unspecified or equal to 1. A `multiChains` object if `nChains` is greater
+#'   unspecified or equal to 1. A `multi_chains` object if `nChains` is greater
 #'   than 1.
 #'
 #' @section Parallelism: When `nChains > 1`, the function can take advantage of
@@ -430,7 +430,7 @@ fit.sentopicmodel <- function(object, iterations = 100, nChains = 1,
       }
 
       names(chains) <- paste0("chain", 1:nChains)
-      class(chains) <- "multiChains"
+      class(chains) <- "multi_chains"
       attr(chains, "nChains") <- nChains
       attr(chains, "base") <- base
       attr(chains, "containedClass") <- "sentopicmodel"
@@ -469,7 +469,7 @@ fit.sentopicmodel <- function(object, iterations = 100, nChains = 1,
 
 #' @rdname fit.sentopicmodel
 #' @export
-fit.multiChains <- function(object, iterations = 100, nChains = NULL,
+fit.multi_chains <- function(object, iterations = 100, nChains = NULL,
                              displayProgress = TRUE, computeLikelihood = TRUE,
                              seed = NULL, ...) {
   start_time <- Sys.time()
@@ -481,7 +481,7 @@ fit.multiChains <- function(object, iterations = 100, nChains = NULL,
   base <- attr(object, "base")
   containedClass <- attr(object, "containedClass")
 
-  object <- unclass(object) ## unclass to prevent usage of `[[.multiChains`
+  object <- unclass(object) ## unclass to prevent usage of `[[.multi_chains`
   object <- lapply(object, as.sentopicmodel) ## return to sentopicmodel objects
 
   ## erase posterior in each chain to limit memory transfers
@@ -545,7 +545,7 @@ fit.multiChains <- function(object, iterations = 100, nChains = NULL,
       chains <- lapply(object, FUN)
     }
 
-    class(chains) <- "multiChains"
+    class(chains) <- "multi_chains"
     attr(chains, "nChains") <- nChains
     attr(chains, "base") <- base
     attr(chains, "containedClass") <- containedClass
@@ -606,7 +606,7 @@ grow.sentopicmodel <- fit.sentopicmodel
 #' @rdname fit.sentopicmodel
 #' @export
 #' @usage NULL
-grow.multiChains <- fit.multiChains
+grow.multi_chains <- fit.multi_chains
 
 #' Re-initialize a topic model
 #'
@@ -696,7 +696,7 @@ melt.default <- function(data, ...) {
 #' @param include_docvars if `TRUE`, the melted result will also include the
 #'   *docvars* stored in the [tokens] object provided at model initialization
 #'
-#' @seealso [topWords()] for extracting representative words,
+#' @seealso [top_words()] for extracting representative words,
 #'   [data.table::melt()] and [data.table::dcast()]
 #'
 #' @return A [data.table::data.table] in the long format, where each line is the estimated
@@ -770,7 +770,7 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
 
 ## TODO: structure() for attributes ie structure(NextMethod(), class="foo")?
 #' @export
-`[[.multiChains` <- function(x, i, ...) {
+`[[.multi_chains` <- function(x, i, ...) {
 
   base <- attr(x, "base")
   containedClass <- attr(x, "containedClass")
@@ -784,7 +784,7 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
 
 ##TODO: add test for this?
 #' @export
-`$.multiChains` <- function(x, name, ...) {
+`$.multi_chains` <- function(x, name, ...) {
 
   if (!name %in% names(x)) {
     #### This wont work with "alpha" "gamma" because they are under sentopicmodel form
@@ -803,7 +803,7 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
 }
 
 #' @export
-`[.multiChains` <- function(x, i, ...) {
+`[.multi_chains` <- function(x, i, ...) {
 
   base <- attr(x, "base")
   nChains <- length(i)
@@ -817,13 +817,13 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
   attr(x, "containedClass") <- containedClass
   # TODO : check attributes?
 
-  class(x) <- "multiChains"
+  class(x) <- "multi_chains"
 
   x
 }
 
 #' @export
-`as.list.multiChains` <- function(x, copy = TRUE, ...) {
+`as.list.multi_chains` <- function(x, copy = TRUE, ...) {
   x <- unclass(x)
   for (i in seq_along(x)) {
     if (copy) core(x[[i]]) <- data.table::copy(attr(x, "base"))

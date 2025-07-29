@@ -176,7 +176,7 @@ sentopics_sentiment <- function(x,
     data.table::setattr(x$tokens, "docvars", docvars)
     message("Sentiment computed and assigned internally")
   }
-  ## to recompute at the end of mergeTopics, need this attribute
+  ## to recompute at the end of merge_topics, need this attribute
   data.table::setattr(x, "sentiment_not_external", TRUE)
 
   if (include_docvars) { res <- cbind(res, docvars(x$tokens)) }
@@ -280,7 +280,7 @@ sentopics_date <- function(x, include_docvars = FALSE) {
 #' @param flat if FALSE, return a list of dimension labels instead of a
 #'   character vector.
 #' @export
-#' @seealso mergeTopics
+#' @seealso merge_topics
 #' @return a character vector of topic/sentiment labels.
 #' @examples
 #' # by default, sentopics_labels() generate standard topic names

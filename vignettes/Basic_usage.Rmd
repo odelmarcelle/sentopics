@@ -68,11 +68,11 @@ str(lda, max.level = 1, give.attr = FALSE)
 ```
 `tokens` is the initial tokens object used to create the model. `vocabulary` is a data.frame indexing the set of words. `K` is the number of topics. `alpha` is the hyperparameter of the document-topic mixtures. `beta` is the hyperparameter of the topic-word mixtures. `it` is the number of iterations of the model. `za` contains the topic assignments of each word of the corpus. `theta` are the estimated document-topic mixtures. `phi` are the estimated topic-word mixtures. `logLikelihood` is the log-likelihood of the model at each iteration.
 
-Estimated mixtures are easily accessible through the `$` operator. But the package also includes the `topWords()` function to extract the most probable words of each topic. `topWords()` includes three types of outputs: *long* `data.table`/`data-frame`, `matrix` or `ggplot` object (also accessible through the alias `plot_topWords()`).
+Estimated mixtures are easily accessible through the `$` operator. But the package also includes the `top_words()` function to extract the most probable words of each topic. `top_words()` includes three types of outputs: *long* `data.table`/`data-frame`, `matrix` or `ggplot` object (also accessible through the alias `plot_top_words()`).
 
 ```{r}
 head(lda$theta)
-topWords(lda, output = "matrix")
+top_words(lda, output = "matrix")
 ```
 
 In addition, document-level is facilitated through the use of the `melt()` method, that joins estimated topical proportions to document metadata present in the `tokens` input. This result in a *long* `data.table`/`data.frame` that can be used for plotting or easily reshaped to a wide format (for example using `data.table::dcast`).
@@ -88,14 +88,14 @@ sentopics_labels(lda) <- list(
   topic = c("Inflation", "Fiscal policy", "Governing council", "Financial sector", "Uncertainty")
 )
 head(lda$theta)
-plot_topWords(lda) + ggplot2::theme_grey(base_size = 9)
+plot_top_words(lda) + ggplot2::theme_grey(base_size = 9)
 ```
 
 
-Besides modifying topic labels, it is also possible to merge topics into a greater thematic. This is often useful when estimating a large number of topics (e.g, K > 15). The `mergeTopics()` does this job and re-label topics accordingly.
+Besides modifying topic labels, it is also possible to merge topics into a greater thematic. This is often useful when estimating a large number of topics (e.g, K > 15). The `merge_topics()` does this job and re-label topics accordingly.
 
 ```{r}
-merged <- mergeTopics(lda, list(
+merged <- merge_topics(lda, list(
   `Big big thematic` = c(1, 3:5),
   `Fical policy` = 2
 ))

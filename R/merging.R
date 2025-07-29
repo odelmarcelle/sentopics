@@ -31,23 +31,23 @@
 #'   c(1,5),
 #'   2:4
 #' )
-#' mergeTopics(lda, merging_list)
+#' merge_topics(lda, merging_list)
 #' 
 #' # also possible with a named list
 #' merging_list2 <- list(
 #'   mytheme_1 = c(1,5),
 #'   mytheme_2 = 2:4
 #' )
-#' merged <- mergeTopics(lda, merging_list2)
+#' merged <- merge_topics(lda, merging_list2)
 #' sentopics_labels(merged)
 #' 
 #' # implemented for rJST
 #' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' rjst <- fit(rjst, 100)
-#' mergeTopics(rjst, merging_list2)}
-mergeTopics <- function(x, merging_list){
+#' merge_topics(rjst, merging_list2)}
+merge_topics <- function(x, merging_list){
   
-  if (!inherits(x, c("LDA", "rJST"))) stop("`mergeTopics` is only implemented for LDA and rJST models.")
+  if (!inherits(x, c("LDA", "rJST"))) stop("`merge_topics` is only implemented for LDA and rJST models.")
   if (isTRUE(attr(x, "approx"))) stop("Not possible for approximated models")
   ## TODO: check that merging list is numeric or character
   if (length(merging_list) < 2) stop("The aggregation list should include at least two new topics.")

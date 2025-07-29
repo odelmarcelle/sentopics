@@ -61,10 +61,10 @@ head(lda$theta)
 # The document-topic in a 'long' format & optionally with meta-data
 head(melt(lda, include_docvars = FALSE))
 # The most probable words per topic
-topWords(lda, output = "matrix") 
+top_words(lda, output = "matrix") 
 ```
 
-Two visualization are also implemented: `plot_topWords()` display the most probable words and `plot()` summarize the topic proportions and their top words.
+Two visualization are also implemented: `plot_top_words()` display the most probable words and `plot()` summarize the topic proportions and their top words.
 ```{r plot-lda-show, eval = FALSE}
 plot(lda)
 ```

@@ -104,7 +104,7 @@ C_NPMI <- function(x, nWords = 10, window = 10, topics = 1:x$L1, sentiments = 1:
   for (t in 1:length(topics)) {
     for (s in 1:length(sentiments)) {
 
-      top <- topWords_dt(x, nWords, top_method)
+      top <- top_words_dt(x, nWords, top_method)
       if (is.null(top$L2)) top$L2 <- 1
       top <- merge(top[L1 == topics[t] & L2 == sentiments[s]], x$vocabulary, by.x = "word", by.y = "word")
       sub <- NPMIs[as.character(top$index), as.character(top$index)]
@@ -137,7 +137,7 @@ C_V <- function(x, nWords = 10, window = 110, topics = 1:x$L1, sentiments = 1:x$
   coherence <- matrix(0, length(topics), length(sentiments))
   dimnames(coherence) <- list(paste0("topic", topics), paste0("sentiment", sentiments))
 
-  tops <- merge(topWords_dt(x, nWords, top_method), x$vocabulary, by.x = "word", by.y = "word", sort = FALSE)
+  tops <- merge(top_words_dt(x, nWords, top_method), x$vocabulary, by.x = "word", by.y = "word", sort = FALSE)
 
 
   for (t in 1:length(topics)) {

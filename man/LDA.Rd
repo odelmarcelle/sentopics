@@ -31,7 +31,7 @@ with a breakdown of the likelihood into hierarchical components as
 attribute
 }
 
-The \code{\link[=topWords]{topWords()}} function easily extract the most probables words of each
+The \code{\link[=top_words]{top_words()}} function easily extract the most probables words of each
 topic/sentiment.
 }
 \description{
@@ -58,7 +58,7 @@ Blei, D.M., Ng, A.Y. and Jordan, M.I. (2003). \href{http://www.cs.columbia.edu/~
 }
 \seealso{
 Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}}, extracting
-top words: \code{\link[=topWords]{topWords()}}
+top words: \code{\link[=top_words]{top_words()}}
 
 Other topic models: 
 \code{\link{JST}()},

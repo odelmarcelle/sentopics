@@ -27,6 +27,7 @@ test_that("reset works", {
   expect_null(res$L2post)
   expect_false(isTRUE(all.equal(sentopicmodel$za, res$za)))
   expect_length(res$logLikelihood, 1)
+  refitted <- fit(res, 5, displayProgress = FALSE)
 })
 
 test_that("print and plot methods work", {
@@ -34,7 +35,7 @@ test_that("print and plot methods work", {
 })
 
 test_that("output functions works", {
-  expect_silent(tops <- topWords(sentopicmodel, output = "matrix"))
+  expect_silent(tops <- top_words(sentopicmodel, output = "matrix"))
   expect_type(tops, "character")
   expect_false(anyNA(tops))
   txts <- getTexts(sentopicmodel, topic = "l1-1", "negative")
@@ -42,28 +43,28 @@ test_that("output functions works", {
   expect_type(unlist(txts), "character")
 })
 
-test_that("topWords subset works", {
-  expect_silent(tops <- topWords(sentopicmodel, output = "matrix", subset = topic %in% 1))
+test_that("top_words subset works", {
+  expect_silent(tops <- top_words(sentopicmodel, output = "matrix", subset = topic %in% 1))
   expect_equal(dim(tops), c(10L, 3L))
-  expect_silent(tops <- topWords(sentopicmodel, output = "matrix",
+  expect_silent(tops <- top_words(sentopicmodel, output = "matrix",
                                  subset = topic %in% 1 & sentiment == 3L))
   expect_equal(dim(tops), c(10L, 1L))
-  expect_silent(tops <- topWords(sentopicmodel, output = "matrix",
+  expect_silent(tops <- top_words(sentopicmodel, output = "matrix",
                                  subset = topic %in% 1 & sentiment == 9L))
   expect_equal(dim(tops), c(10L, 0L))
 })
 
 
-test_that("topWords methods works", {
-  expect_silent(tops <- topWords(sentopicmodel, method = "probability"))
+test_that("top_words methods works", {
+  expect_silent(tops <- top_words(sentopicmodel, method = "probability"))
   expect_true(all(is.finite(tops$value)))
   expect_output(print(tops), "probability")
 
-  expect_silent(tops <- topWords(sentopicmodel, method = "term-score"))
+  expect_silent(tops <- top_words(sentopicmodel, method = "term-score"))
   expect_true(all(is.finite(tops$value)))
   expect_output(print(tops), "term-score")
 
-  expect_silent(tops <- topWords(sentopicmodel, method = "FREX"))
+  expect_silent(tops <- top_words(sentopicmodel, method = "FREX"))
   expect_true(all(is.finite(tops$value)))
   expect_output(print(tops), "FREX")
 })

@@ -331,9 +331,9 @@ computePhi <- function(x, base = core(x)) {
 # Chains distance functions -----------------------------------------------
 
 ## compute pairwise distance between MCMCs
-hellingerDistances <- function(multiChains) {
-  nChains <- attr(multiChains, "nChains")
-  l_phi <- lapply(multiChains, function(x){
+hellingerDistances <- function(multi_chains) {
+  nChains <- attr(multi_chains, "nChains")
+  l_phi <- lapply(multi_chains, function(x){
     matrix(x$phi, nrow(x$vocabulary), x$L1 * x$L2)
   })
   cb <- utils::combn(1:length(l_phi), 2, simplify = FALSE)
@@ -355,9 +355,9 @@ hellingerDistances <- function(multiChains) {
 }
 
 ## compute pairwise distance between MCMCs
-euclideanDistances <- function(multiChains) {
-  nChains <- attr(multiChains, "nChains")
-  l_phi <- lapply(multiChains, function(x){
+euclideanDistances <- function(multi_chains) {
+  nChains <- attr(multi_chains, "nChains")
+  l_phi <- lapply(multi_chains, function(x){
     matrix(x$phi, nrow(x$vocabulary), x$L1 * x$L2)
   })
   cb <- utils::combn(1:length(l_phi), 2, simplify = FALSE)
@@ -380,9 +380,9 @@ euclideanDistances <- function(multiChains) {
 }
 
 ## compute pairwise distance between MCMCs
-naiveEuclideanDistances <- function(multiChains) {
-  nChains <- attr(multiChains, "nChains")
-  l_phi <- lapply(multiChains, function(x){
+naiveEuclideanDistances <- function(multi_chains) {
+  nChains <- attr(multi_chains, "nChains")
+  l_phi <- lapply(multi_chains, function(x){
     matrix(x$phi, nrow(x$vocabulary), x$L1 * x$L2)
   })
   cb <- utils::combn(1:length(l_phi), 2, simplify = FALSE)
@@ -407,19 +407,19 @@ naiveEuclideanDistances <- function(multiChains) {
 
 ## compute pairwise distance between MCMCs
 ## This assumes that sentiments are correctly estimated
-invariantEuclideanOptim <- function(multiChains, L1 = multiChains[[1]]$L1,
-                                    L2 = multiChains[[1]]$L2, FUN_aggregate = c("sum", "max")) {
+invariantEuclideanOptim <- function(multi_chains, L1 = multi_chains[[1]]$L1,
+                                    L2 = multi_chains[[1]]$L2, FUN_aggregate = c("sum", "max")) {
 
   FUN_aggregate <- get(match.arg(FUN_aggregate))
   # if (S == 1) stop("invariantEuclidan is undefined for non-JST models.")
   strict <- TRUE
-  if (all(is.na(multiChains[[1]]$vocabulary$lexicon)) && L2 > 1) {
+  if (all(is.na(multi_chains[[1]]$vocabulary$lexicon)) && L2 > 1) {
     message("No lexicon detected, allowing permutations over sentiment labels.")
     strict <- FALSE
   }
 
-  nChains <- attr(multiChains, "nChains")
-  l_phi <- lapply(multiChains, function(x){
+  nChains <- attr(multi_chains, "nChains")
+  l_phi <- lapply(multi_chains, function(x){
     matrix(x$phi, nrow(x$vocabulary), x$L1 * x$L2)
   })
   cb <- utils::combn(1:length(l_phi), 2, simplify = FALSE)
@@ -436,7 +436,7 @@ invariantEuclideanOptim <- function(multiChains, L1 = multiChains[[1]]$L1,
     ## to a (L1, L1) matrix by summing the diagonal of each submatrix (L2, L2).
     ## Then, apply hungarian algorithm to find the minimum L1 pairs. L1 pairs
     ## are expanded to find the max difference between two topic-sentiment
-    if (attr(unclass(multiChains)[[1]], "reversed") && strict) {
+    if (attr(unclass(multi_chains)[[1]], "reversed") && strict) {
 
       tmp2 <- matrix(0, L1, L1)
       for (ii in 1:L1) {
@@ -462,7 +462,7 @@ invariantEuclideanOptim <- function(multiChains, L1 = multiChains[[1]]$L1,
       ## TODO: safety, to be removed
       if (!identical(dim(expandPairs), as.integer(c(L2, 2L, L1)))) stop("Condition not fulfilled")
     }
-    else if (!attr(unclass(multiChains)[[1]], "reversed") && strict) {
+    else if (!attr(unclass(multi_chains)[[1]], "reversed") && strict) {
 
       tmp2 <- vector("list", L1)
       for (ii in 1:L1) {
@@ -505,9 +505,9 @@ expandIndex <- function(x, S) {
   seq( (x - 1)*S + 1, length.out = S)
 }
 
-cosineDistances <- function(multiChains) {
-  nChains <- attr(multiChains, "nChains")
-  l_phi <- lapply(multiChains, function(x){
+cosineDistances <- function(multi_chains) {
+  nChains <- attr(multi_chains, "nChains")
+  l_phi <- lapply(multi_chains, function(x){
     matrix(x$phi, nrow(x$vocabulary), x$L1 * x$L2)
   })
   cb <- utils::combn(1:length(l_phi), 2, simplify = FALSE)
@@ -528,9 +528,9 @@ cosineDistances <- function(multiChains) {
 
 ## To keep?
 ## minimum matching euclidean distance
-minMaxEuclidean <- function(multiChains) {
-  nChains <- attr(multiChains, "nChains")
-  l_phi <- lapply(multiChains, function(x){
+minMaxEuclidean <- function(multi_chains) {
+  nChains <- attr(multi_chains, "nChains")
+  l_phi <- lapply(multi_chains, function(x){
     matrix(x$phi, nrow(x$vocabulary), x$L1 * x$L2)
   })
   cb <- utils::combn(1:length(l_phi), 2, simplify = FALSE)
@@ -796,7 +796,7 @@ recompileVocabulary <- function(x) {
 
 # This code is directly copied from the tidytext package to avoid unnecessary
 # dependencies. The sole usage of this function is to order words correctly in
-# `topWords()`.
+# `top_words()`.
 reorder_within <- function(x, by, within, fun = mean, sep = "___", ...) {
   if (!is.list(within)) {
     within <- list(within)

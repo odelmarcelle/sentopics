@@ -62,7 +62,7 @@ lda
 # ------------------Useful methods------------------
 # fit       :Estimate the model using Gibbs sampling
 # topics    :Return the most important topic of each document
-# topWords  :Return a data.table with the top words of each topic/sentiment
+# top_words  :Return a data.table with the top words of each topic/sentiment
 # plot      :Plot a sunburst chart representing the estimated mixtures
 # This message is displayed once per session, unless calling `print(x, extended = TRUE)`
 ```
@@ -93,7 +93,7 @@ head(melt(lda, include_docvars = FALSE))
 # 5: topic1    1_5 0.008849558
 # 6: topic1    1_6 0.006993007
 # The most probable words per topic
-topWords(lda, output = "matrix") 
+top_words(lda, output = "matrix") 
 #       topic1        topic2              topic3           
 #  [1,] "growth"      "governing_council" "euro_area"      
 #  [2,] "annual"      "fiscal"            "economic"       
@@ -107,7 +107,7 @@ topWords(lda, output = "matrix")
 # [10,] "financial"   "bank"              "outlook"
 ```
 
-Two visualization are also implemented: `plot_topWords()` display the
+Two visualization are also implemented: `plot_top_words()` display the
 most probable words and `plot()` summarize the topic proportions and
 their top words.
 

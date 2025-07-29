@@ -1,3 +1,16 @@
+# sentopics 1.0.0
+
+### Breaking changes
+
+* Renamed various functions and classes to snake_case style.
+   - renamed function `mergeTopics()` to `merge_topics()`
+   - renamed function `topWords()` to `top_words()`
+   - renamed function `plot_topWords()` to `plot_top_words()`
+   - renamed function `chainsScores()` to `chains_scores()`
+   - renamed function `chainsDistances()` to `chains_distances()`
+   - renamed S3 class `topWords` to `top_words`
+   - renamed S3 class `multiChains` to `multi_chains`
+
 # sentopics 0.7.5
 
 * Fixed a test following change in suggested dependency.

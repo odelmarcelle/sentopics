@@ -11,7 +11,7 @@ generated_sentopicmodel <- fit(generated_sentopicmodel, 20, displayProgress = FA
 
 test_that("multiple chains works", {
   expect_true(all(sapply(generated_sentopicmodel, check_integrity)))
-  expect_s3_class(generated_sentopicmodel, "multiChains")
+  expect_s3_class(generated_sentopicmodel, "multi_chains")
   expect_message(generated_sentopicmodel <- fit(generated_sentopicmodel, 20, displayProgress = FALSE), NA)
   expect_true(all(sapply(generated_sentopicmodel, check_integrity)))
 })
@@ -22,10 +22,10 @@ test_that("accessors works", {
   expect_true(check_integrity(generated_sentopicmodel$chain1))
   expect_true(check_integrity(generated_sentopicmodel[[1]]))
 
-  expect_s3_class(tmp <- generated_sentopicmodel[1], "multiChains")
+  expect_s3_class(tmp <- generated_sentopicmodel[1], "multi_chains")
   expect_true(check_integrity(tmp[[1]]))
-  expect_s3_class(head(generated_sentopicmodel), "multiChains")
-  expect_s3_class(tail(generated_sentopicmodel), "multiChains")
+  expect_s3_class(head(generated_sentopicmodel), "multi_chains")
+  expect_s3_class(tail(generated_sentopicmodel), "multi_chains")
 })
 
 if (Sys.getenv("R_COVR") != "true") {
@@ -37,7 +37,7 @@ if (Sys.getenv("R_COVR") != "true") {
 
   test_that("parallel works", {
     expect_true(all(sapply(generated_sentopicmodel, check_integrity)))
-    expect_s3_class(generated_sentopicmodel, "multiChains")
+    expect_s3_class(generated_sentopicmodel, "multi_chains")
     expect_message(generated_sentopicmodel <- fit(generated_sentopicmodel, 20, displayProgress = FALSE), NA)
     expect_true(all(sapply(generated_sentopicmodel, check_integrity)))
   })
@@ -128,23 +128,23 @@ generated_sentopicmodel <- fit(generated_sentopicmodel, 20, displayProgress = FA
 
 test_that("scores & distances works", {
   plan(multisession, workers = if (Sys.getenv("R_COVR") != "true") 2 else 1)
-  expect_silent(scores <- chainsScores(
+  expect_silent(scores <- chains_scores(
     generated_sentopicmodel, nWords = 2,
     window = "boolean"))
   expect_false(anyNA(scores))
-  expect_silent(distances <- chainsDistances(generated_sentopicmodel))
+  expect_silent(distances <- chains_distances(generated_sentopicmodel))
   expect_true(is.matrix(distances))
   expect_false(anyNA(distances))
-  expect_silent(distances <- chainsDistances(generated_sentopicmodel, method = "cosine"))
+  expect_silent(distances <- chains_distances(generated_sentopicmodel, method = "cosine"))
   expect_false(anyNA(distances))
-  expect_silent(distances <- chainsDistances(generated_sentopicmodel, method = "hellinger"))
+  expect_silent(distances <- chains_distances(generated_sentopicmodel, method = "hellinger"))
   expect_false(anyNA(distances))
-  expect_silent(distances <- chainsDistances(generated_sentopicmodel, method = "minMax"))
+  expect_silent(distances <- chains_distances(generated_sentopicmodel, method = "minMax"))
   expect_false(anyNA(distances))
-  expect_silent(distances2 <- chainsDistances(generated_sentopicmodel, method = "invariantEuclidean"))
+  expect_silent(distances2 <- chains_distances(generated_sentopicmodel, method = "invariantEuclidean"))
   expect_false(anyNA(distances))
   expect_true(all(distances <= distances2))
-  expect_silent(distances <- chainsDistances(generated_sentopicmodel, method = "naiveEuclidean"))
+  expect_silent(distances <- chains_distances(generated_sentopicmodel, method = "naiveEuclidean"))
   expect_false(anyNA(distances))
 })
 
@@ -154,13 +154,13 @@ test_that("equality between euclidean distances", {
   LDA <- LDA(toks)
   LDAs <- fit(LDA, 10, nChains = 5)
   expect_equal(
-    chainsDistances(LDAs),
-    chainsDistances(LDAs, method = "invariantEuclidean"))
+    chains_distances(LDAs),
+    chains_distances(LDAs, method = "invariantEuclidean"))
   rJST <- rJST(toks, S = 1)
   rJSTs <- fit(rJST, 10, nChains = 5)
   expect_equal(
-    chainsDistances(rJSTs),
-    chainsDistances(rJSTs, method = "invariantEuclidean"))
+    chains_distances(rJSTs),
+    chains_distances(rJSTs, method = "invariantEuclidean"))
 })
 
 

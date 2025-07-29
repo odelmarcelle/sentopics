@@ -112,22 +112,22 @@ test_that("fit0 doesn't alter anything", {
 })
 
 
-test_that("mergeTopics works", {
+test_that("merge_topics works", {
   toks <- ECB_press_conferences_tokens[1:50]
   model <- LDA(toks)
-  merged <- mergeTopics(model, as.list(1:5))
+  merged <- merge_topics(model, as.list(1:5))
   sentopics_labels(merged)
   sentopics_labels(merged) <- NULL
   expect_identical(merged, model)
 
   model <- fit(model, 2, displayProgress = FALSE)
-  merged <- mergeTopics(model, as.list(1:5))
+  merged <- merge_topics(model, as.list(1:5))
   sentopics_labels(merged)
   sentopics_labels(merged) <- NULL
   expect_identical(merged, model)
 
-  merged <- mergeTopics(model, list(1:4, 5))
-  topWords(merged)
+  merged <- merge_topics(model, list(1:4, 5))
+  top_words(merged)
   skip_if_not_installed("plotly")
   plot(merged)
   sentiment_series(model, period = "day")
@@ -137,22 +137,22 @@ test_that("mergeTopics works", {
 
   toks <- ECB_press_conferences_tokens[1:50]
   model <- rJST(toks, lexicon = LoughranMcDonald)
-  merged <- mergeTopics(model, as.list(1:5))
+  merged <- merge_topics(model, as.list(1:5))
   sentopics_labels(merged)
   sentopics_labels(merged) <- NULL
   expect_identical(merged, model)
 
   model <- fit(model, 2, displayProgress = FALSE)
-  merged <- mergeTopics(model, as.list(1:5))
+  merged <- merge_topics(model, as.list(1:5))
   sentopics_labels(merged)
   sentopics_labels(merged) <- NULL
   expect_identical(merged, model)
 
   sentopics_sentiment(model) <- NULL
   sentopics_sentiment(model, override = TRUE)
-  merged <- mergeTopics(model, list(1:4, 5))
+  merged <- merge_topics(model, list(1:4, 5))
   sentopics_sentiment(model)
-  topWords(merged)
+  top_words(merged)
   plot(merged)
   sentiment_series(merged, period = "day")
   sentiment_breakdown(merged, period = "day")

@@ -15,11 +15,11 @@ test_that("from STM", {
   lda <- as.LDA(stm, out$documents)
 
   expect_true(check_integrity(lda))
-  expect_silent(topWords(lda))
+  expect_silent(sentopics::top_words(lda))
 
   # check top words
   expect_identical(
-    unname(topWords(lda, 7, out = "matrix", method = "probability")),
+    unname(sentopics::top_words(lda, 7, out = "matrix", method = "probability")),
     t(labelTopics(stm)$prob)
   )
 
@@ -30,7 +30,7 @@ test_that("from STM", {
   )
 
   expect_error(fit(lda), "Not possible for approximated")
-  expect_error(mergeTopics(lda, as.list(1:3)), "Not possible for approximated")
+  expect_error(merge_topics(lda, as.list(1:3)), "Not possible for approximated")
   expect_error(rJST(lda), "Not possible for approximated")
 
   expect_silent(sentopics_sentiment(lda) <- rnorm(length(lda$tokens)))
@@ -62,7 +62,7 @@ test_that("from lda", {
   topics <- lda$topics[, order(colnames(lda$topics))] # force correct order
   expect_equal(
     top.topic.words(topics),
-    topWords(LDA, method = "frequency", 20, output = "matrix"),
+    sentopics::top_words(LDA, method = "frequency", 20, output = "matrix"),
     check.attributes = FALSE
   )
 
@@ -89,8 +89,8 @@ test_that("from topicmodels", {
 
   # check top words
   expect_equal(
-    terms(lda, k = 10),
-    topWords(LDA, output = "matrix"),
+    topicmodels::terms(lda, k = 10),
+    sentopics::top_words(LDA, output = "matrix"),
     check.attributes = FALSE
   )
 
@@ -108,8 +108,8 @@ test_that("from topicmodels", {
 
   # check top words
   expect_equal(
-    terms(vem, k = 10),
-    topWords(LDA, output = "matrix", method = "probability"),
+    topicmodels::terms(vem, k = 10),
+    sentopics::top_words(LDA, output = "matrix", method = "probability"),
     check.attributes = FALSE
   )
 
@@ -124,13 +124,13 @@ test_that("from seededlda", {
   LDA <- as.LDA(lda)
 
   expect_true(check_integrity(LDA))
-  expect_silent(topWords(LDA))
+  expect_silent(sentopics::top_words(LDA))
 
   # check top words
   lda$phi <- lda$phi[, order(colnames(lda$phi))] # force correct order
   expect_identical(
-    topWords(LDA, output = "matrix", method = "probability"),
-    terms(lda)
+    sentopics::top_words(LDA, output = "matrix", method = "probability"),
+    seededlda::terms(lda)
   )
 
   # check top documents
@@ -154,13 +154,13 @@ test_that("from seededlda", {
   LDA <- as.LDA(slda)
 
   expect_true(check_integrity(LDA))
-  expect_silent(topWords(LDA))
+  expect_silent(sentopics::top_words(LDA))
 
   # check top words
   slda$phi <- slda$phi[, order(colnames(slda$phi))] # force correct order
   expect_identical(
-    topWords(LDA, output = "matrix", method = "probability"),
-    terms(slda)
+    sentopics::top_words(LDA, output = "matrix", method = "probability"),
+    seededlda::terms(slda)
   )
 
   # check top documents
@@ -194,13 +194,13 @@ test_that("from keyATM", {
   LDA <- as.LDA(out, keyATM_docs)
 
   expect_true(check_integrity(LDA))
-  expect_silent(topWords(LDA))
+  expect_silent(sentopics::top_words(LDA))
 
   # check top words
   out$phi <- out$phi[, order(colnames(out$phi))] # force correct order
   expect_identical(
-    topWords(LDA, output = "matrix", method = "probability"),
-    as.matrix(top_words(out, show_keyword = FALSE))
+    sentopics::top_words(LDA, output = "matrix", method = "probability"),
+    as.matrix(keyATM::top_words(out, show_keyword = FALSE))
   )
 
   # check top documents

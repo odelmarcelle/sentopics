@@ -66,10 +66,10 @@
 #' @examples
 #' model <- LDA(ECB_press_conferences_tokens)
 #' model <- fit(model, 10)
-#' topWords(model)
-#' topWords(model, output = "matrix")
-#' topWords(model, method = "FREX")
-topWords <- function(x,
+#' top_words(model)
+#' top_words(model, output = "matrix")
+#' top_words(model, method = "FREX")
+top_words <- function(x,
                      nWords = 10,
                      method = c("frequency", "probability", "term-score", "FREX"),
                      output = c("data.frame", "plot", "matrix"),
@@ -84,7 +84,7 @@ topWords <- function(x,
   method <- match.arg(method)
   output <- match.arg(output)
   x <- reorder_sentopicmodel(x)
-  top <- topWords_dt(x, nWords, method, w)
+  top <- top_words_dt(x, nWords, method, w)
   if (!missing(subset)) {
     if (attr(x, "reversed")) env <- list(topic = quote(L1),
                                          sentiment = quote(L2))
@@ -160,7 +160,7 @@ topWords <- function(x,
   )
 }
 
-topWords_dt <- function(x,
+top_words_dt <- function(x,
                         nWords = 10,
                         method = c("frequency", "probability", "term-score", "FREX"),
                         w = .5) {
@@ -215,30 +215,30 @@ topWords_dt <- function(x,
            phiStats[, L2 := 1L]
          }
   )
-  topWords <- phiStats[order(-value, word), utils::head(.SD, nWords),
+  top_words <- phiStats[order(-value, word), utils::head(.SD, nWords),
                        by = list(L1, L2)][order(L1, L2)]
-  class(topWords) <- c("topWords", class(phiStats))
-  attr(topWords, "method") <- method
-  topWords
+  class(top_words) <- c("top_words", class(phiStats))
+  attr(top_words, "method") <- method
+  top_words
 }
 
-#' @rdname topWords
+#' @rdname top_words
 #' @export
 #' @examples
-#' plot_topWords(model)
-#' plot_topWords(model, subset = topic %in% 1:2)
+#' plot_top_words(model)
+#' plot_top_words(model, subset = topic %in% 1:2)
 #'
 #' jst <- JST(ECB_press_conferences_tokens)
 #' jst <- fit(jst, 10)
-#' plot_topWords(jst)
-#' plot_topWords(jst, subset = topic %in% 1:2 & sentiment == 3)
-plot_topWords <- function(x,
+#' plot_top_words(jst)
+#' plot_top_words(jst, subset = topic %in% 1:2 & sentiment == 3)
+plot_top_words <- function(x,
                           nWords = 10,
                           method = c("frequency", "probability", "term-score", "FREX"),
                           subset,
                           w = .5) {
   eval(substitute(
-    topWords(x, nWords, method, output = "plot", e, w),
+    top_words(x, nWords, method, output = "plot", e, w),
     list(e = substitute(subset))
   ))
 }
@@ -257,11 +257,13 @@ plot_topWords <- function(x,
 #'   estimated with \code{\link[=fit.sentopicmodel]{fit()}}
 #' @param method the coherence method used.
 #' @param nWords the number of words in each topic used for evaluation.
-#' @param window optional. If `NULL`, use the default window for each coherence
-#'   metric (10 for C_NPMI and 110 for C_V). It is possible to override these
-#'   default windows by providing an integer or `"boolean"` to this argument,
-#'   determining a new window size for all measures. No effect is the `NPMIs`
-#'   argument is also provided.
+#' @param window optional. The maximum distance between two tokens to be
+#' considered *co-occuring* for the coherence measure. Distance is expressed in
+#'   token positions. If `NULL`, use the default window for each coherence
+#'   metric (10 for C_NPMI and 110 for C_V). Providing an integer or `"boolean"`
+#'   to this argument will override the default. If `"boolean"`, co-occurences
+#'   will simply take place if the two words are present in the same document.
+#'   This argument has no effect if the `NPMIs` argument is also provided.
 #' @param NPMIs optional NPMI matrix. If provided, skip the computation of NPMI
 #'   between words, substantially decreasing computing time.
 #'
@@ -329,7 +331,7 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 #'   the distance between distinct realizations of the estimation process.
 #'   Estimates are referred to as *chains*.
 #'
-#' @param x a valid `multiChains` object, obtained through the estimation of a
+#' @param x a valid `multi_chains` object, obtained through the estimation of a
 #'   topic model using \code{\link[=fit.sentopicmodel]{fit()}} and the argument
 #'   `nChains` greater than `1`.
 #' @param method the method used to measure the distance between chains.
@@ -356,19 +358,19 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 #' @examples
 #' model <- LDA(ECB_press_conferences_tokens)
 #' model <- fit(model, 10, nChains = 5)
-#' chainsDistances(model)
+#' chains_distances(model)
 #'
-#' @seealso [plot.multiChains()] [chainsScores()]
+#' @seealso [plot.multi_chains()] [chains_scores()]
 #' @references Tang, J., Meng, Z., Nguyen, X., Mei, Q., and Zhang, M. (2014).
 #'   [Understanding the Limiting Factors of Topic Modeling via Posterior
 #'   Contraction Analysis](https://proceedings.mlr.press/v32/tang14.html). In
 #'   *Proceedings of the 31st International Conference on Machine Learning*, 32,
 #'   90--198.
 #' @export
-chainsDistances <- function(x,
+chains_distances <- function(x,
                             method = c("euclidean", "hellinger", "cosine", "minMax", "naiveEuclidean", "invariantEuclidean"),
                             ...) {
-  if (!inherits(x, "multiChains")) stop("Please provide a correct multiChains object")
+  if (!inherits(x, "multi_chains")) stop("Please provide a correct multi_chains object")
 
   x <- as.sentopicmodel(x)
   # avoid copying base to each chain
@@ -391,7 +393,7 @@ chainsDistances <- function(x,
 #' Compute various scores (log likelihood, coherence) for a list of topic
 #' models.
 #'
-#' @param x a valid `multiChains` object, obtained through the estimation of a
+#' @param x a valid `multi_chains` object, obtained through the estimation of a
 #'   topic model using \code{\link[=fit.sentopicmodel]{fit()}} and the argument
 #'   `nChains` greater than `1`.
 #' @param nWords the number of words used to compute coherence. See
@@ -410,21 +412,21 @@ chainsDistances <- function(x,
 #' @examples
 #' model <- LDA(ECB_press_conferences_tokens[1:10])
 #' model <- fit(model, 10, nChains = 5)
-#' chainsScores(model, window = 5)
-#' chainsScores(model, window = "boolean")
+#' chains_scores(model, window = 5)
+#' chains_scores(model, window = "boolean")
 #'
 #' # -- Parallel computation --
 #' require(future.apply)
 #' future::plan("multisession", workers = 2) # Set up 2 workers
-#' chainsScores(model, window = "boolean")
+#' chains_scores(model, window = "boolean")
 #'
 #' future::plan("sequential") # Shut down workers
 #'
-#' @seealso [chainsDistances()] [coherence()]
+#' @seealso [chains_distances()] [coherence()]
 #'
 #' @export
-chainsScores <- function(x, window = 110, nWords = 10) {
-  if (!inherits(x, "multiChains")) stop("Please provide a correct multiChains object")
+chains_scores <- function(x, window = 110, nWords = 10) {
+  if (!inherits(x, "multi_chains")) stop("Please provide a correct multi_chains object")
 
   ## CMD check
   name <- NULL
@@ -457,14 +459,14 @@ chainsScores <- function(x, window = 110, nWords = 10) {
   }
   if (requireNamespace("future.apply", quietly = TRUE)) {
     environment(FUN) <- globalenv()
-    chainsScores <- future.apply::future_sapply(
+    chains_scores <- future.apply::future_sapply(
       x, FUN, future.seed = FALSE,
       future.globals = list(
         nWords = nWords, NPMIsW = NPMIsW, NPMIs10 = NPMIs10
       ))
   } else {
-    chainsScores <- sapply(x, FUN)
+    chains_scores <- sapply(x, FUN)
   }
 
-  t(chainsScores)
+  t(chains_scores)
 }

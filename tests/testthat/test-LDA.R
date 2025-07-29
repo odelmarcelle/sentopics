@@ -20,9 +20,9 @@ test_that("LDA works", {
 LDA <- fit(LDA, 2, displayProgress = FALSE)
 
 test_that("functions works", {
-  expect_s3_class(topWords(LDA), "data.table")
-  expect_true(is.matrix(topWords(LDA, output = "matrix")))
-  expect_silent(p <- topWords(LDA, output = "plot"))
+  expect_s3_class(top_words(LDA), "data.table")
+  expect_true(is.matrix(top_words(LDA, output = "matrix")))
+  expect_silent(p <- top_words(LDA, output = "plot"))
   expect_s3_class(p, "ggplot")
   expect_silent(print(p))
   expect_silent(m <- melt(LDA))

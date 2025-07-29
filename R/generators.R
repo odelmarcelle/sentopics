@@ -141,14 +141,14 @@ generatePartialLexicon <- function(toks, Sindex = c(1,3)) {
 
 
 distToGenerative <- function(x, generativeVocabulary, plot = FALSE, full = FALSE, method = "invariantEuclidean") {
-  if (!inherits(x, "multiChains")) stop("Only valid for multiChains objects.")
+  if (!inherits(x, "multi_chains")) stop("Only valid for multi_chains objects.")
   if (nrow(x[[1]]$vocabulary) < nrow(generativeVocabulary)) stop("Not all words of the generative vocabulary are present in the generated text.")
 
   x[[length(x) + 1]] <- x[[1]]
   x[[length(x)]]$phi <- generativeVocabulary[order(match(rownames(generativeVocabulary),x$vocabulary$word)),,,drop = FALSE]
 
   attr(x, "nChains") <- length(x)
-  d <- chainsDistances(x, method, FUN_aggregate = "max")
+  d <- chains_distances(x, method, FUN_aggregate = "max")
   if (plot) {
     coord <- stats::cmdscale(stats::as.dist(d))
     plot(coord[, 1], coord[, 2], type = "n", xlab = "Coordinate 1", ylab = "Coordinate 2", main = paste0("Distance to true vocabulary"))

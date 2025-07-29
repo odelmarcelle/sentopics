@@ -21,7 +21,7 @@
 #'   example, estimated through variational inference). For these, the
 #'   conversion is limited and some functionalities of \pkg{sentopics} will be
 #'   disabled. The list of affected functions is subject to change and currently
-#'   includes \code{\link[=fit.sentopicmodel]{fit()}}, [mergeTopics()] and [rJST.LDA()].
+#'   includes \code{\link[=fit.sentopicmodel]{fit()}}, [merge_topics()] and [rJST.LDA()].
 #'
 #'   Since models from the \pkg{lda} package are simply lists of outputs, the
 #'   function `as.LDA_lda()` is not related to the other methods and should be
@@ -589,7 +589,7 @@ as.sentopicmodel <- function(x) {
 }
 as.sentopicmodel_defaults <- function(x) {
   ### perhaps create too many objects
-  ### especially in multiChains, recreate things that are stored in base
+  ### especially in multi_chains, recreate things that are stored in base
   if (is.null(x$L2)) x$L2 <- 1
   if (is.null(x$L2prior)) x$L2prior <- x$L1prior
   if (is.null(x$L2post) & x$it > 0) {
@@ -663,7 +663,7 @@ as.sentopicmodel.sentopicmodel <- function(x) {
   x
 }
 #' @export
-as.sentopicmodel.multiChains <- function(x) {
+as.sentopicmodel.multi_chains <- function(x) {
   attr(x, "containedClass") <- "sentopicmodel"
   x
 }
@@ -696,7 +696,7 @@ as.LDA.sentopicmodel <- function(x, ...) {
   x
 }
 #' @export
-as.LDA.multiChains <- function(x, ...) {
+as.LDA.multi_chains <- function(x, ...) {
   # atrs <- attributes(x)
   # x <- lapply(unclass(x), as.LDA)
   # attributes(x) <- atrs
@@ -732,7 +732,7 @@ as.rJST.sentopicmodel <- function(x) {
   x
 }
 #' @export
-as.rJST.multiChains <- function(x) {
+as.rJST.multi_chains <- function(x) {
   # atrs <- attributes(x)
   # x <- lapply(unclass(x), as.rJST)
   # attributes(x) <- atrs
@@ -768,7 +768,7 @@ as.JST.sentopicmodel <- function(x) {
   x
 }
 #' @export
-as.JST.multiChains <- function(x) {
+as.JST.multi_chains <- function(x) {
   # atrs <- attributes(x)
   # x <- lapply(unclass(x), as.JST)
 

@@ -15,6 +15,8 @@
   To align with this change, internal attributes of `sentopicmodel` objects
   have been renamed from `reversed` to `reverse`.
 
+* Modified names of columns in the `PicaultRenault_data` dataset to
+  syntactically valid names.
 
 ### Other changes
 

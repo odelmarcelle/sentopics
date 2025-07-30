@@ -4,7 +4,7 @@
 \alias{rJST}
 \alias{rJST.default}
 \alias{rJST.LDA}
-\title{Create a Reversed Joint Sentiment/Topic model}
+\title{Create a Reverse Joint Sentiment/Topic model}
 \usage{
 rJST(x, ...)
 
@@ -66,7 +66,7 @@ The \code{\link[=top_words]{top_words()}} function easily extract the most proba
 topic/sentiment.
 }
 \description{
-This function initialize a Reversed Joint Sentiment/Topic model.
+This function initialize a Reverse Joint Sentiment/Topic model.
 }
 \details{
 The \code{rJST.LDA} methods enable the transition from a previously
@@ -108,7 +108,7 @@ top words: \code{\link[=top_words]{top_words()}}
 
 Other topic models: 
 \code{\link{JST}()},
-\code{\link{LDA}},
+\code{\link{LDA}()},
 \code{\link{sentopicmodel}()}
 }
 \author{

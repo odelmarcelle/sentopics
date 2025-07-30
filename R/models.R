@@ -30,9 +30,9 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
   ))
 }
 
-#' Create a Reversed Joint Sentiment/Topic model
+#' Create a Reverse Joint Sentiment/Topic model
 #'
-#' @description This function initialize a Reversed Joint Sentiment/Topic model.
+#' @description This function initialize a Reverse Joint Sentiment/Topic model.
 #'
 #' @references Lin, C. and He, Y. (2009). [Joint sentiment/topic model for
 #' sentiment analysis](https://dl.acm.org/doi/10.1145/1645953.1646003). In *Proceedings
@@ -236,7 +236,7 @@ JST <- function(
     beta,
     gammaCycle,
     alphaCycle,
-    reversed = FALSE
+    reverse = FALSE
   ))
 }
 
@@ -260,10 +260,10 @@ JST <- function(
 #' @param L1cycle integer specifying the cycle size between two updates of the hyperparameter L1prior
 #' @param L2cycle integer specifying the cycle size between two updates of the hyperparameter L2prior
 #' @param lexicon a `quanteda` dictionary with positive and negative categories
-#' @param reversed indicates on which dimension should `lexicon` apply. When
-#'  `reversed=FALSE`, the lexicon is applied on the first layer of the document
-#'  mixture (as in a JST model). When `reversed=TRUE`, the lexicon is applied to
-#'  the second layer of the document mixture (as in a reversed-JST model).
+#' @param reverse indicates on which dimension should `lexicon` apply. When
+#'  `reverse=FALSE`, the lexicon is applied on the first layer of the document
+#'  mixture (as in a JST model). When `reverse=TRUE`, the lexicon is applied to
+#'  the second layer of the document mixture (as in a reverse-JST model).
 #'
 #' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}},
 #'   extracting top words: [top_words()]
@@ -302,7 +302,7 @@ sentopicmodel <- function(
   beta = 0.01,
   L1cycle = 0,
   L2cycle = 0,
-  reversed = TRUE
+  reverse = TRUE
 ) {
   count <- index <- word <- NULL # due to NSE notes in R CMD check
 
@@ -320,12 +320,12 @@ sentopicmodel <- function(
 
   x <- quanteda::as.tokens(x)
 
-  if (reversed) {
+  if (reverse) {
     S <- L2
   } else {
     S <- L1
   }
-  if (reversed) {
+  if (reverse) {
     Sdim <- "L2"
   } else {
     Sdim <- "L1"
@@ -365,7 +365,7 @@ sentopicmodel <- function(
     L2cycle = L2cycle
   )
 
-  cpp_model <- methods::new(cpp_sentopicmodel, reversed)
+  cpp_model <- methods::new(cpp_sentopicmodel, reverse)
 
   cpp_model$init(
     clean,
@@ -392,7 +392,7 @@ sentopicmodel <- function(
   model[names(tmp)] <- tmp
 
   class(model) <- c("sentopicmodel")
-  attr(model, "reversed") <- reversed
+  attr(model, "reverse") <- reverse
   attr(model, "Sdim") <- Sdim
   # if (length(dictVal) > 0) attr(model$vocabulary, "compounds") <- compounds
   reorder_sentopicmodel(model)

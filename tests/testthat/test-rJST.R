@@ -6,7 +6,7 @@ rJST <- rJST(toks, lexicon = LoughranMcDonald)
 test_that("rJST works", {
   expect_output(
     print(rJST),
-    "A reversed-JST model with 5 topics and 3 sentiments. Currently fitted by 0 Gibbs sampling iterations."
+    "A reverse-JST model with 5 topics and 3 sentiments. Currently fitted by 0 Gibbs sampling iterations."
   )
   tabl <- table(rJST$vocabulary$lexicon)
   expect_length(tabl, 3)
@@ -14,13 +14,13 @@ test_that("rJST works", {
   rJST <- fit(rJST, 2, displayProgress = FALSE)
   expect_true(check_integrity(rJST, fast = FALSE))
   expect_s3_class(rJST, "rJST")
-  expect_equal(attr(rJST, "reversed"), TRUE)
+  expect_equal(attr(rJST, "reverse"), TRUE)
 
   rJST2 <- fit(rJST, 2, nChains = 2, displayProgress = FALSE)
   rJST2 <- fit(rJST2, 2, displayProgress = FALSE)
   expect_identical(attr(rJST2, "containedClass"), "rJST")
 
-  expect_true(all(sapply(rJST2, function(x) attr(x, "reversed"))))
+  expect_true(all(sapply(rJST2, function(x) attr(x, "reverse"))))
   expect_true(all(sapply(rJST2, check_integrity, fast = FALSE)))
 })
 

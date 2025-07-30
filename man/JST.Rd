@@ -87,7 +87,7 @@ Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}},
 extracting top words: \code{\link[=top_words]{top_words()}}
 
 Other topic models: 
-\code{\link{LDA}},
+\code{\link{LDA}()},
 \code{\link{rJST}()},
 \code{\link{sentopicmodel}()}
 }

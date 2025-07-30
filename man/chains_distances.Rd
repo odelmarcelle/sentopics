@@ -42,7 +42,7 @@ Inspired by the \emph{minimum-matching distance} from Tang et al. (2014).
 \item \code{naiveEuclidean} computes the Euclidean distance without searching for the
 best pairs of topics.
 \item \code{invariantEuclidean} computes the best pairs of topics for all allowed
-permutations of topic indices. For JST and reversed-JST models, the two-
+permutations of topic indices. For JST and reverse-JST models, the two-
 levels hierarchy of document-sentiment-topic leads some permutations of
 indices to represent a drastically different outcome. This setting restricts
 the set of permutations to the ones that do not change the interpretation of

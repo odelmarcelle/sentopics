@@ -54,7 +54,7 @@ print.sentopicmodel <- function(x, extended = FALSE, ...) {
 #' @export
 print.rJST <- function(x, extended = FALSE, ...) {
   cat(
-    "A reversed-JST model with",
+    "A reverse-JST model with",
     x$K,
     "topics and",
     x$S,

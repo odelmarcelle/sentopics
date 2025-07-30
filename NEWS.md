@@ -11,6 +11,11 @@
    - renamed S3 class `topWords` to `top_words`
    - renamed S3 class `multiChains` to `multi_chains`
 
+* Corrected naming of Reverse Joint Sentiment/Topic model (rJST).
+  To align with this change, internal attributes of `sentopicmodel` objects
+  have been renamed from `reversed` to `reverse`.
+
+
 ### Other changes
 
 * Reformatted codebase using Air.

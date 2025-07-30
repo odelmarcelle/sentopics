@@ -44,7 +44,7 @@ rebuild_cppModel <- function(x, base) {
   if (isTRUE(all.equal(stats::median(base$beta), 0))) {
     stop("Unable to rebuild initBeta.")
   }
-  cppModel <- methods::new(cpp_sentopicmodel, attr(x, "reversed"))
+  cppModel <- methods::new(cpp_sentopicmodel, attr(x, "reverse"))
 
   cppModel$rebuild(
     nrow(base$vocabulary), # x$V
@@ -122,7 +122,7 @@ check_integrity <- function(x, detailed = FALSE, fast = TRUE) {
     x$vocabulary$word
   )
 
-  if (attr(x, "reversed")) {
+  if (attr(x, "reverse")) {
     lexFlag <- all(
       all(x$beta[, is.na(x$vocabulary$lexicon)] != 0)
       ### Cannot rely on media value as merging models produces multiple values in beta
@@ -130,7 +130,7 @@ check_integrity <- function(x, detailed = FALSE, fast = TRUE) {
     )
   } else {
     ## TODO: improve this. Do some aperm on x$beta depending on the lexicon dimension?
-    ######### Basically reversing in JST/reversedJST lexicon still refer to the same dimension. it's not reversed
+    ######### Basically reversing in JST/reverseJST lexicon still refer to the same dimension. it's not reverse
     if (any(!is.na(x$vocabulary$lexicon))) {
       S <- levels(x$vocabulary$lexicon)
       lexFlag <- all(
@@ -192,10 +192,10 @@ check_integrity <- function(x, detailed = FALSE, fast = TRUE) {
 reorder_sentopicmodel <- function(x) {
   approx <- isTRUE(attr(x, "approx"))
   x <- as.sentopicmodel(x)
-  if (is.null(attr(x, "reversed"))) {
-    stop("Object corrupted, missing reversed attribute.")
+  if (is.null(attr(x, "reverse"))) {
+    stop("Object corrupted, missing reverse attribute.")
   }
-  reversed <- attr(x, "reversed")
+  reverse <- attr(x, "reverse")
   Sdim <- attr(x, "Sdim")
   labels <- attr(x, "labels")
   if (!is.null(x$IGNORE_CHECK)) {
@@ -220,7 +220,7 @@ reorder_sentopicmodel <- function(x) {
   )]
   x <- x[!sapply(x, is.null)]
   class(x) <- c("sentopicmodel")
-  attr(x, "reversed") <- reversed
+  attr(x, "reverse") <- reverse
   attr(x, "Sdim") <- Sdim
   attr(x, "labels") <- labels
   if (approx) {
@@ -236,7 +236,7 @@ reorder_sentopicmodel <- function(x) {
 core <- function(x) {
   res <- x[c("tokens", "vocabulary", "beta", "L1cycle", "L2cycle")]
   attr(res, "Sdim") <- attr(x, "Sdim")
-  attr(res, "reversed") <- attr(x, "reversed")
+  attr(res, "reverse") <- attr(x, "reverse")
   ## extract only if updates are disabled
   if (res$L1cycle == 0L) {
     res$L1prior <- x$L1prior
@@ -585,7 +585,7 @@ invariantEuclideanOptim <- function(
     ## to a (L1, L1) matrix by summing the diagonal of each submatrix (L2, L2).
     ## Then, apply hungarian algorithm to find the minimum L1 pairs. L1 pairs
     ## are expanded to find the max difference between two topic-sentiment
-    if (attr(unclass(multi_chains)[[1]], "reversed") && strict) {
+    if (attr(unclass(multi_chains)[[1]], "reverse") && strict) {
       tmp2 <- matrix(0, L1, L1)
       for (ii in 1:L1) {
         for (jj in 1:L1) {
@@ -617,7 +617,7 @@ invariantEuclideanOptim <- function(
       if (!identical(dim(expandPairs), as.integer(c(L2, 2L, L1)))) {
         stop("Condition not fulfilled")
       }
-    } else if (!attr(unclass(multi_chains)[[1]], "reversed") && strict) {
+    } else if (!attr(unclass(multi_chains)[[1]], "reverse") && strict) {
       tmp2 <- vector("list", L1)
       for (ii in 1:L1) {
         tmp2[[ii]] <- RcppHungarian::HungarianSolver(tmp[
@@ -1282,7 +1282,7 @@ getTexts <- function(x, topic, sentiment, n = 3, collapsed = TRUE) {
   prob <- .id <- NULL
 
   ## avoid conflict with column names
-  if (attr(x, "reversed")) {
+  if (attr(x, "reverse")) {
     stopifnot(
       topic %in%
         create_labels(x, flat = FALSE)[["L1"]] &

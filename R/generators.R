@@ -14,9 +14,9 @@ generateVocab <- function(
 
   hierarchy <- match.arg(hierarchy)
   if (hierarchy == "rJST") {
-    reversed <- TRUE
+    reverse <- TRUE
   } else {
-    reversed <- FALSE
+    reverse <- FALSE
   }
 
   vocab <- vector()
@@ -115,7 +115,7 @@ generateVocab <- function(
   rowSums(betaa, dims = 2) ## topic wise
   rowSums(aperm(betaa, c(1, 3, 2)), dims = 2) ## sentiment wise
 
-  if (reversed) {
+  if (reverse) {
     betaa <- aperm(betaa, c(1, 3, 2))
   }
 

@@ -14,13 +14,13 @@ test_that("JST works", {
   JST <- fit(JST, 2, displayProgress = FALSE)
   expect_true(check_integrity(JST, fast = FALSE))
   expect_s3_class(JST, "JST")
-  expect_equal(attr(JST, "reversed"), FALSE)
+  expect_equal(attr(JST, "reverse"), FALSE)
 
   JST2 <- fit(JST, 2, nChains = 2, displayProgress = FALSE)
   JST2 <- fit(JST2, 2, displayProgress = FALSE)
   expect_identical(attr(JST2, "containedClass"), "JST")
 
-  expect_true(all(!sapply(JST2, function(x) attr(x, "reversed"))))
+  expect_true(all(!sapply(JST2, function(x) attr(x, "reverse"))))
   expect_true(all(sapply(JST2, check_integrity, fast = FALSE)))
 })
 

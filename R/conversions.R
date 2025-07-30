@@ -195,7 +195,7 @@ as.LDA.STM <- function(x, docs, ...) {
       logLikelihood = x$convergence$bound
     ),
     class = c("LDA", "sentopicmodel"),
-    reversed = TRUE,
+    reverse = TRUE,
     Sdim = "L2",
     approx = TRUE
   )
@@ -235,7 +235,7 @@ as.LDA.LDA_Gibbs <- function(x, docs, ...) {
       logLikelihood = NULL
     ),
     class = c("LDA", "sentopicmodel"),
-    reversed = TRUE,
+    reverse = TRUE,
     Sdim = "L2"
   )
   LDA <- fit(LDA, 0, displayProgress = FALSE)
@@ -331,7 +331,7 @@ as.LDA.LDA_VEM <- function(x, docs, ...) {
       logLikelihood = x@logLiks
     ),
     class = c("LDA", "sentopicmodel"),
-    reversed = TRUE,
+    reverse = TRUE,
     Sdim = "L2",
     approx = TRUE
   )
@@ -388,7 +388,7 @@ as.LDA.textmodel_lda <- function(x, ...) {
       logLikelihood = NULL
     ),
     class = c("LDA", "sentopicmodel"),
-    reversed = TRUE,
+    reverse = TRUE,
     Sdim = "L2",
     approx = TRUE,
     labels = list(L1 = colnames(x$theta))
@@ -452,7 +452,7 @@ as.LDA_lda <- function(list, docs, alpha, eta) {
       logLikelihood = NULL
     ),
     class = c("LDA", "sentopicmodel"),
-    reversed = TRUE,
+    reverse = TRUE,
     Sdim = "L2"
   )
   LDA <- fit(LDA, 0, displayProgress = FALSE)
@@ -590,7 +590,7 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
       logLikelihood = NULL
     ),
     class = c("LDA", "sentopicmodel"),
-    reversed = TRUE,
+    reverse = TRUE,
     Sdim = "L2",
     approx = TRUE,
     labels = list(L1 = colnames(x$theta))

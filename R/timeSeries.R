@@ -1748,8 +1748,8 @@ sentopicmodel_params <- function(x) {
       "L1cycle",
       "L2cycle"
     )],
-    attributes(x)[c("reversed", "Sdim")],
-    L1_name = ifelse(attr(x, "reversed") == TRUE, "topic", "sentiment"),
-    L2_name = ifelse(attr(x, "reversed") == FALSE, "topic", "sentiment")
+    attributes(x)[c("reverse", "Sdim")],
+    L1_name = ifelse(attr(x, "reverse") == TRUE, "topic", "sentiment"),
+    L2_name = ifelse(attr(x, "reverse") == FALSE, "topic", "sentiment")
   )
 }

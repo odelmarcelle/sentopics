@@ -21,7 +21,7 @@ test_that("rJST works", {
   )
   expect_output(
     print(rJST),
-    "A reversed-JST model with 5 topics and 3 sentiments. Currently fitted by 10 Gibbs sampling iterations."
+    "A reverse-JST model with 5 topics and 3 sentiments. Currently fitted by 10 Gibbs sampling iterations."
   )
 })
 

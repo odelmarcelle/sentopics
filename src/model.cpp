@@ -26,8 +26,8 @@ using namespace Rcpp;
 using namespace arma;
 
 // constructor default values
-void model::set_default_values(bool reversed_) {
-  reversed = reversed_;
+void model::set_default_values(bool reverse_) {
+  reverse = reverse_;
 
   V = 1;
   L1 = 1;
@@ -101,7 +101,7 @@ void model::initBetaLex(double initBeta) {
     // WARNING : any operation on the vector such as += 1 will break this behavior
     if(lexicon(w) != INT_MIN){
 
-      if(reversed){
+      if(reverse){
         for (uword z = 0; z < L1*L2; z++){
           if( z % L2 != (uword) lexicon(w)){
             beta(z, w) = 0;
@@ -318,7 +318,7 @@ void model::iterate(uword iterations, bool displayProgress, bool computeLikeliho
   // branch to correct loop
   int LDAruns = 0;
   ///////////////////////////////////////////////////
-  if ( (L2 == 1) & (reversed == true) ) {LDAruns = iterations;} //branch to LDA if no sentiment and not JST model
+  if ( (L2 == 1) & (reverse == true) ) {LDAruns = iterations;} //branch to LDA if no sentiment and not JST model
   //////////////////////////////////////////////////
   DEBUG_MSG2("LDA runs : "<< LDAruns);
   DEBUG_MSG2("non-LDA runs : "<< (iterations - LDAruns));

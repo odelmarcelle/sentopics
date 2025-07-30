@@ -19,7 +19,7 @@ arma::imat wrapper_cpp_rebuild_zd(SEXP za_, arma::uword Z);
 
 class model {
 public:
-  bool reversed; // true means topic > sentiment (rJST), false means sentiment > topic (JST)
+  bool reverse; // true means topic > sentiment (rJST), false means sentiment > topic (JST)
 
   uword V;  // vocabulary size
   uword L1;  // number of topics
@@ -74,12 +74,12 @@ public:
   model() {
     set_default_values(true);
   }
-  model(bool reversed_) {
-    set_default_values(reversed_);
+  model(bool reverse_) {
+    set_default_values(reverse_);
   }
 
   // initial empty object
-  void set_default_values(bool reversed_);
+  void set_default_values(bool reverse_);
 
 
   // initialize the model
@@ -146,7 +146,7 @@ RCPP_MODULE(model_module) {
   class_<model>( "cpp_sentopicmodel" )
   .constructor()
   .constructor<bool>()
-  .field( "reversed", &model::reversed)
+  .field( "reverse", &model::reverse)
   .field( "V", &model::V)
   .field( "L1", &model::L1)
   .field( "L2", &model::L2)

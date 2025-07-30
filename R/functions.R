@@ -88,7 +88,7 @@ top_words <- function(
   x <- reorder_sentopicmodel(x)
   top <- top_words_dt(x, nWords, method, w)
   if (!missing(subset)) {
-    if (attr(x, "reversed")) {
+    if (attr(x, "reverse")) {
       env <- list(topic = quote(L1), sentiment = quote(L2))
     } else {
       env <- list(sentiment = quote(L1), topic = quote(L2))
@@ -454,7 +454,7 @@ coherence.sentopicmodel <- function(
 #'  - `naiveEuclidean` computes the Euclidean distance without searching for the
 #'  best pairs of topics.
 #'  - `invariantEuclidean` computes the best pairs of topics for all allowed
-#'  permutations of topic indices. For JST and reversed-JST models, the two-
+#'  permutations of topic indices. For JST and reverse-JST models, the two-
 #'  levels hierarchy of document-sentiment-topic leads some permutations of
 #'  indices to represent a drastically different outcome. This setting restricts
 #'  the set of permutations to the ones that do not change the interpretation of

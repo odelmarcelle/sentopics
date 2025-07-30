@@ -14,7 +14,7 @@ sentopicmodel(
   beta = 0.01,
   L1cycle = 0,
   L2cycle = 0,
-  reversed = TRUE
+  reverse = TRUE
 )
 }
 \arguments{
@@ -36,10 +36,10 @@ sentopicmodel(
 
 \item{L2cycle}{integer specifying the cycle size between two updates of the hyperparameter L2prior}
 
-\item{reversed}{indicates on which dimension should \code{lexicon} apply. When
-\code{reversed=FALSE}, the lexicon is applied on the first layer of the document
-mixture (as in a JST model). When \code{reversed=TRUE}, the lexicon is applied to
-the second layer of the document mixture (as in a reversed-JST model).}
+\item{reverse}{indicates on which dimension should \code{lexicon} apply. When
+\code{reverse=FALSE}, the lexicon is applied on the first layer of the document
+mixture (as in a JST model). When \code{reverse=TRUE}, the lexicon is applied to
+the second layer of the document mixture (as in a reverse-JST model).}
 }
 \value{
 An S3 list containing the model parameter and the estimated mixture.
@@ -76,7 +76,7 @@ extracting top words: \code{\link[=top_words]{top_words()}}
 
 Other topic models: 
 \code{\link{JST}()},
-\code{\link{LDA}},
+\code{\link{LDA}()},
 \code{\link{rJST}()}
 }
 \author{

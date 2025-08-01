@@ -59,6 +59,6 @@ test_that("test convergence", {
 
 test_that("misc", {
   expect_length(dim(LDA$phi), 2)
-  expect_length(dim(as.sentopicmodel(LDA)$phi), 3)
-  expect_length(dim(as.LDA(as.sentopicmodel(LDA))$phi), 2)
+  expect_length(dim(as.sentopicsmodel(LDA)$phi), 3)
+  expect_length(dim(as.LDA(as.sentopicsmodel(LDA))$phi), 2)
 })

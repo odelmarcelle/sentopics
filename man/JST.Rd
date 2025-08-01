@@ -40,7 +40,7 @@ the hyperparameter alpha}
 \value{
 An S3 list containing the model parameter and the estimated mixture.
 This object corresponds to a Gibbs sampler estimator with zero iterations.
-The MCMC can be iterated using the \code{\link[=fit.sentopicmodel]{fit()}}
+The MCMC can be iterated using the \code{\link[=fit.sentopicsmodel]{fit()}}
 function.
 \itemize{
 \item \code{tokens} is the tokens object used to create the model
@@ -83,13 +83,13 @@ Lin, C., He, Y., Everson, R. and Ruger, S. (2012). \href{https://ieeexplore.ieee
 \emph{IEEE Transactions on Knowledge and Data Engineering}, 24(6), 1134–-1145.
 }
 \seealso{
-Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}},
+Fitting a model: \code{\link[=fit.sentopicsmodel]{fit()}},
 extracting top words: \code{\link[=top_words]{top_words()}}
 
 Other topic models: 
 \code{\link{LDA}()},
 \code{\link{rJST}()},
-\code{\link{sentopicmodel}()}
+\code{\link{sentopicsmodel}()}
 }
 \author{
 Olivier Delmarcelle

@@ -31,5 +31,5 @@ lda <- fit(lda, 100)
 LDAvis(lda)
 }
 \seealso{
-\code{\link[=plot.sentopicmodel]{plot.sentopicmodel()}}
+\code{\link[=plot.sentopicsmodel]{plot.sentopicsmodel()}}
 }

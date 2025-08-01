@@ -17,7 +17,7 @@ test_that("as.tokens.dfm works", {
   expect_silent(LDA <- LDA(dfm))
   expect_silent(JST <- JST(dfm))
   expect_silent(rJST <- rJST(dfm))
-  expect_silent(sentopicmodel <- sentopicmodel(dfm))
+  expect_silent(sentopicsmodel <- sentopicsmodel(dfm))
   expect_identical(as.tokens(dfm, tokens = toks), toks)
 
   dfm <- quanteda::dfm(ECB_press_conferences_tokens)
@@ -52,16 +52,16 @@ test_that("as.tokens.dfm works", {
 
 test_that("melt works", {
   toks <- ECB_press_conferences_tokens[1:10]
-  model <- sentopicmodel(toks)
-  expect_error(melt.sentopicmodel(model), "Nothing to melt")
+  model <- sentopicsmodel(toks)
+  expect_error(melt.sentopicsmodel(model), "Nothing to melt")
   model <- fit(model, 10, displayProgress = FALSE)
-  melt.sentopicmodel(model, include_docvars = TRUE)
+  melt.sentopicsmodel(model, include_docvars = TRUE)
 })
 
 test_that("sunburst works", {
   skip_if_not_installed("plotly")
   toks <- ECB_press_conferences_tokens[1:10]
-  model <- sentopicmodel(toks)
+  model <- sentopicsmodel(toks)
   model <- fit(model, 10, displayProgress = FALSE)
   expect_silent(p <- plot(model))
   expect_s3_class(p, "plotly")
@@ -72,7 +72,7 @@ test_that("sunburst works", {
 
 test_that("R likelihood works", {
   toks <- ECB_press_conferences_tokens[1:10]
-  model <- sentopicmodel(toks)
+  model <- sentopicsmodel(toks)
   model <- fit(model, 10, displayProgress = FALSE)
   logLik <- c(
     tail(model$logLikelihood, 1L),
@@ -175,13 +175,13 @@ test_that("merge_topics works", {
 test_that("rebuild counts from posterior works", {
   rjst <- rJST(ECB_press_conferences_tokens)
   rjst <- fit(rjst, 10, displayProgress = FALSE)
-  rjst <- as.sentopicmodel(rjst)
+  rjst <- as.sentopicsmodel(rjst)
   expect_equal(rebuild_zd_from_posterior(rjst), rebuild_zd(rjst))
   expect_equal(rebuild_zw_from_posterior(rjst), rebuild_zw(rjst))
 
   lda <- LDA(ECB_press_conferences_tokens)
   lda <- fit(lda, 10, displayProgress = FALSE)
-  lda <- as.sentopicmodel(lda)
+  lda <- as.sentopicsmodel(lda)
   expect_equal(rebuild_zd_from_posterior(lda), rebuild_zd(lda))
   expect_equal(rebuild_zw_from_posterior(lda), rebuild_zw(lda))
 })

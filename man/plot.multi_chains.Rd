@@ -13,7 +13,7 @@
 }
 \arguments{
 \item{x}{a valid \code{multi_chains} object, obtained through the estimation of a
-topic model using \code{\link[=fit.sentopicmodel]{fit()}} and the argument
+topic model using \code{\link[=fit.sentopicsmodel]{fit()}} and the argument
 \code{nChains} greater than \code{1}.}
 
 \item{...}{not used}

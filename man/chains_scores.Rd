@@ -8,7 +8,7 @@ chains_scores(x, window = 110, nWords = 10)
 }
 \arguments{
 \item{x}{a valid \code{multi_chains} object, obtained through the estimation of a
-topic model using \code{\link[=fit.sentopicmodel]{fit()}} and the argument
+topic model using \code{\link[=fit.sentopicsmodel]{fit()}} and the argument
 \code{nChains} greater than \code{1}.}
 
 \item{window}{optional. If \code{NULL}, use the default window for each coherence

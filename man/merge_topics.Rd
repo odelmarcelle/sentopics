@@ -27,7 +27,7 @@ assignments.
 
 Note that the output of this function does not constitute an estimated
 topic model, but merely an aggregation to ease the analysis. It is not
-advised to use \code{\link[=fit.sentopicmodel]{fit()}} on the merged topic
+advised to use \code{\link[=fit.sentopicsmodel]{fit()}} on the merged topic
 model as it will radically affect the content and proportions of the new
 themes.
 }

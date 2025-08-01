@@ -5,19 +5,19 @@
 #' @author Olivier Delmarcelle
 #'
 #' @description Compute, extract or replace the internal sentiment of a
-#'   `sentopicmodel`. The internal sentiment is used to create time series using
+#'   `sentopicsmodel`. The internal sentiment is used to create time series using
 #'   the functions [sentiment_series()] or [sentiment_topics()]. If the input
 #'   model contains a sentiment layer, sentiment can be computed directly from
 #'   the output of the model. Otherwise, sentiment obtained externally should be
 #'   added for each document.
 #'
-#' @param x a `sentopicmodel` created from the [LDA()], [JST()], [rJST()] or
-#'   [sentopicmodel()] function
+#' @param x a `sentopicsmodel` created from the [LDA()], [JST()], [rJST()] or
+#'   [sentopicsmodel()] function
 #' @param method the method used to compute sentiment, see "Methods" below.
 #'   Ignored if an internal sentiment is already stored, unless `override` is
 #'   `TRUE`.
 #' @param override by default, the function computes sentiment only if no
-#'   internal sentiment is already stored within the `sentopicmodel` object.
+#'   internal sentiment is already stored within the `sentopicsmodel` object.
 #'   This avoid, for example, erasing externally provided sentiment. Set to
 #'   `TRUE` to force computation of new sentiment values. Only useful for models
 #'   with a sentiment layer.
@@ -63,7 +63,7 @@
 #' @examples
 #' \donttest{# example dataset already contains ".sentiment" docvar
 #' docvars(ECB_press_conferences_tokens)
-#' # sentiment is automatically stored in the sentopicmodel object
+#' # sentiment is automatically stored in the sentopicsmodel object
 #' lda <- LDA(ECB_press_conferences_tokens)
 #' sentopics_sentiment(lda)
 #'
@@ -225,7 +225,7 @@ sentopics_sentiment <- function(
 #' @param value a numeric vector of sentiment to input into the model.
 #' @export
 `sentopics_sentiment<-` <- function(x, value) {
-  if (!inherits(x, "sentopicmodel")) {
+  if (!inherits(x, "sentopicsmodel")) {
     stop(
       "Replacement of internal sentiment is only possible for topic models of package `sentopics`"
     )
@@ -264,7 +264,7 @@ sentopics_sentiment <- function(
 #' @author Olivier Delmarcelle
 #' @family sentopics helpers
 #' @inheritParams sentopics_sentiment
-#' @description Extract or replace the internal dates of a `sentopicmodel`. The
+#' @description Extract or replace the internal dates of a `sentopicsmodel`. The
 #'   internal dates are used to create time series using the functions
 #'   [sentiment_series()] or [sentiment_topics()]. Dates should be provided by
 #'   using `sentopics_date(x) <- value` or by storing a '.date' docvars in
@@ -279,7 +279,7 @@ sentopics_sentiment <- function(
 #' @examples
 #' # example dataset already contains ".date" docvar
 #' docvars(ECB_press_conferences_tokens)
-#' # dates are automatically stored in the sentopicmodel object
+#' # dates are automatically stored in the sentopicsmodel object
 #' lda <- LDA(ECB_press_conferences_tokens)
 #' sentopics_date(lda)
 #'
@@ -305,7 +305,7 @@ sentopics_date <- function(x, include_docvars = FALSE) {
 #' @param value a `Date`-coercible vector of dates to input into the model.
 #' @export
 `sentopics_date<-` <- function(x, value) {
-  if (!inherits(x, "sentopicmodel")) {
+  if (!inherits(x, "sentopicsmodel")) {
     stop(
       "Replacement of internal date is only possible for topic models of package `sentopics`"
     )
@@ -335,7 +335,7 @@ sentopics_date <- function(x, include_docvars = FALSE) {
 #' @author Olivier Delmarcelle
 #' @family sentopics helpers
 #' @inheritParams sentopics_sentiment
-#' @description Extract or replace the labels of a `sentopicmodel`. The replaced
+#' @description Extract or replace the labels of a `sentopicsmodel`. The replaced
 #'   labels will appear in most functions dealing with the output of the
 #'   `sentomicmodel`.
 #' @param flat if FALSE, return a list of dimension labels instead of a
@@ -371,7 +371,7 @@ sentopics_date <- function(x, include_docvars = FALSE) {
 sentopics_labels <- function(x, flat = TRUE) {
   res <- create_labels(x, flat = flat)
   if (!flat) {
-    params <- sentopicmodel_params(x)
+    params <- sentopicsmodel_params(x)
     names(res) <- c(params$L1_name, params$L2_name)[seq_along(res)]
   }
   res
@@ -401,7 +401,7 @@ sentopics_labels <- function(x, flat = TRUE) {
     warning("Input list should be named.")
   }
 
-  params <- sentopicmodel_params(x)
+  params <- sentopicsmodel_params(x)
   if (is.null(attr(x, "labels"))) {
     attr(x, "labels") <- list()
   }
@@ -456,7 +456,7 @@ sentopics_labels <- function(x, flat = TRUE) {
 #'   and/or internal sentiment.
 #'
 #' @description Compute a sentiment time series based on the internal sentiment
-#'   and dates of a `sentopicmodel`. The time series computation supports
+#'   and dates of a `sentopicsmodel`. The time series computation supports
 #'   multiple sampling period and optionally allow computing a moving average.
 #'
 #' @return A time series of sentiment, stored as an [xts::xts] or
@@ -1713,7 +1713,7 @@ days_period <- function(date, period) {
 
 #' @keywords internal
 make_colors <- function(x, dimrange = c("L1", "L2")) {
-  params <- sentopicmodel_params(x)
+  params <- sentopicsmodel_params(x)
   if (!("L2" %in% dimrange)) {
     params$L2 <- 1L
   }
@@ -1738,8 +1738,8 @@ make_colors <- function(x, dimrange = c("L1", "L2")) {
 }
 
 #' @keywords internal
-sentopicmodel_params <- function(x) {
-  x <- as.sentopicmodel(x)
+sentopicsmodel_params <- function(x) {
+  x <- as.sentopicsmodel(x)
   c(
     x[c(
       "L1",

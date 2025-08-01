@@ -10,8 +10,8 @@ sentopics_date(x, include_docvars = FALSE)
 sentopics_date(x) <- value
 }
 \arguments{
-\item{x}{a \code{sentopicmodel} created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} or
-\code{\link[=sentopicmodel]{sentopicmodel()}} function}
+\item{x}{a \code{sentopicsmodel} created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} or
+\code{\link[=sentopicsmodel]{sentopicsmodel()}} function}
 
 \item{include_docvars}{if \code{TRUE} the function will return all docvars stored
 in the internal \code{tokens} object of the model}
@@ -22,7 +22,7 @@ in the internal \code{tokens} object of the model}
 a data.frame with the stored date per document.
 }
 \description{
-Extract or replace the internal dates of a \code{sentopicmodel}. The
+Extract or replace the internal dates of a \code{sentopicsmodel}. The
 internal dates are used to create time series using the functions
 \code{\link[=sentiment_series]{sentiment_series()}} or \code{\link[=sentiment_topics]{sentiment_topics()}}. Dates should be provided by
 using \code{sentopics_date(x) <- value} or by storing a '.date' docvars in
@@ -36,7 +36,7 @@ function, although this is discouraged.
 \examples{
 # example dataset already contains ".date" docvar
 docvars(ECB_press_conferences_tokens)
-# dates are automatically stored in the sentopicmodel object
+# dates are automatically stored in the sentopicsmodel object
 lda <- LDA(ECB_press_conferences_tokens)
 sentopics_date(lda)
 

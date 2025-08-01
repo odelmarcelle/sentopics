@@ -60,19 +60,19 @@ test_that("lexicon & class  generation works", {
   expect_lt(sum(test_JST$beta), length(test_JST$beta) * .01)
 })
 
-generated_sentopicmodel <- sentopicmodel(toks)
-generated_sentopicmodel <- fit(
-  generated_sentopicmodel,
+generated_sentopicsmodel <- sentopicsmodel(toks)
+generated_sentopicsmodel <- fit(
+  generated_sentopicsmodel,
   20,
   displayProgress = FALSE
 )
-test_that("generated sentopicmodel works", {
-  expect_true(check_integrity(generated_sentopicmodel))
-  expect_s3_class(generated_sentopicmodel, "sentopicmodel")
-  expect_length(generated_sentopicmodel$logLikelihood, 20)
-  expect_equal(generated_sentopicmodel$it, 20)
+test_that("generated sentopicsmodel works", {
+  expect_true(check_integrity(generated_sentopicsmodel))
+  expect_s3_class(generated_sentopicsmodel, "sentopicsmodel")
+  expect_length(generated_sentopicsmodel$logLikelihood, 20)
+  expect_equal(generated_sentopicsmodel$it, 20)
   expect_true(all(
-    c("L1post", "L2post", "phi") %in% names(generated_sentopicmodel)
+    c("L1post", "L2post", "phi") %in% names(generated_sentopicsmodel)
   ))
 })
 

@@ -16,15 +16,15 @@ sentopics_sentiment(
 sentopics_sentiment(x) <- value
 }
 \arguments{
-\item{x}{a \code{sentopicmodel} created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} or
-\code{\link[=sentopicmodel]{sentopicmodel()}} function}
+\item{x}{a \code{sentopicsmodel} created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} or
+\code{\link[=sentopicsmodel]{sentopicsmodel()}} function}
 
 \item{method}{the method used to compute sentiment, see "Methods" below.
 Ignored if an internal sentiment is already stored, unless \code{override} is
 \code{TRUE}.}
 
 \item{override}{by default, the function computes sentiment only if no
-internal sentiment is already stored within the \code{sentopicmodel} object.
+internal sentiment is already stored within the \code{sentopicsmodel} object.
 This avoid, for example, erasing externally provided sentiment. Set to
 \code{TRUE} to force computation of new sentiment values. Only useful for models
 with a sentiment layer.}
@@ -41,7 +41,7 @@ A data.frame with the stored sentiment per document.
 }
 \description{
 Compute, extract or replace the internal sentiment of a
-\code{sentopicmodel}. The internal sentiment is used to create time series using
+\code{sentopicsmodel}. The internal sentiment is used to create time series using
 the functions \code{\link[=sentiment_series]{sentiment_series()}} or \code{\link[=sentiment_topics]{sentiment_topics()}}. If the input
 model contains a sentiment layer, sentiment can be computed directly from
 the output of the model. Otherwise, sentiment obtained externally should be
@@ -86,7 +86,7 @@ negative and positive sentiments.
 \examples{
 \donttest{# example dataset already contains ".sentiment" docvar
 docvars(ECB_press_conferences_tokens)
-# sentiment is automatically stored in the sentopicmodel object
+# sentiment is automatically stored in the sentopicsmodel object
 lda <- LDA(ECB_press_conferences_tokens)
 sentopics_sentiment(lda)
 

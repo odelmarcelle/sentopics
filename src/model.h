@@ -143,7 +143,7 @@ public:
 
 // Rcpp modules exposition
 RCPP_MODULE(model_module) {
-  class_<model>( "cpp_sentopicmodel" )
+  class_<model>( "cpp_sentopicsmodel" )
   .constructor()
   .constructor<bool>()
   .field( "reverse", &model::reverse)

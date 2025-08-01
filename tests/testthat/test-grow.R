@@ -41,16 +41,16 @@ test_that("JST works", {
 })
 
 
-test_that("sentopicmodel works", {
+test_that("sentopicsmodel works", {
   expect_silent(
-    sentopicmodel <- grow(
-      sentopicmodel(toks, lexicon = LoughranMcDonald),
+    sentopicsmodel <- grow(
+      sentopicsmodel(toks, lexicon = LoughranMcDonald),
       10,
       displayProgress = FALSE
     )
   )
   expect_output(
-    print(sentopicmodel),
-    "A sentopicmodel topic model with 5 topics and 3 sentiments. Currently fitted by 10 Gibbs sampling iterations."
+    print(sentopicsmodel),
+    "A sentopicsmodel topic model with 5 topics and 3 sentiments. Currently fitted by 10 Gibbs sampling iterations."
   )
 })

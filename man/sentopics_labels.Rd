@@ -10,8 +10,8 @@ sentopics_labels(x, flat = TRUE)
 sentopics_labels(x) <- value
 }
 \arguments{
-\item{x}{a \code{sentopicmodel} created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} or
-\code{\link[=sentopicmodel]{sentopicmodel()}} function}
+\item{x}{a \code{sentopicsmodel} created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}}, \code{\link[=rJST]{rJST()}} or
+\code{\link[=sentopicsmodel]{sentopicsmodel()}} function}
 
 \item{flat}{if FALSE, return a list of dimension labels instead of a
 character vector.}
@@ -24,7 +24,7 @@ examples for a correct usage.}
 a character vector of topic/sentiment labels.
 }
 \description{
-Extract or replace the labels of a \code{sentopicmodel}. The replaced
+Extract or replace the labels of a \code{sentopicsmodel}. The replaced
 labels will appear in most functions dealing with the output of the
 \code{sentomicmodel}.
 }

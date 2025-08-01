@@ -2,12 +2,12 @@
 % Please edit documentation in R/conversions.R
 \name{sentopics-conversions}
 \alias{sentopics-conversions}
-\alias{as.sentopicmodel}
+\alias{as.sentopicsmodel}
 \alias{as.rJST}
 \alias{as.JST}
 \title{Internal conversions between \strong{sentopics} models.}
 \usage{
-as.sentopicmodel(x)
+as.sentopicsmodel(x)
 
 as.rJST(x)
 

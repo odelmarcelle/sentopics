@@ -16,9 +16,9 @@ toks <- generateDocuments(
   nWords = 10,
   nClass = 2
 )
-generated_sentopicmodel <- sentopicmodel(toks)
-generated_sentopicmodel <- fit(
-  generated_sentopicmodel,
+generated_sentopicsmodel <- sentopicsmodel(toks)
+generated_sentopicsmodel <- fit(
+  generated_sentopicsmodel,
   20,
   displayProgress = FALSE,
   nChains = 2
@@ -26,244 +26,244 @@ generated_sentopicmodel <- fit(
 
 
 test_that("multiple chains works", {
-  expect_true(all(sapply(generated_sentopicmodel, check_integrity)))
-  expect_s3_class(generated_sentopicmodel, "multi_chains")
+  expect_true(all(sapply(generated_sentopicsmodel, check_integrity)))
+  expect_s3_class(generated_sentopicsmodel, "multi_chains")
   expect_message(
-    generated_sentopicmodel <- fit(
-      generated_sentopicmodel,
+    generated_sentopicsmodel <- fit(
+      generated_sentopicsmodel,
       20,
       displayProgress = FALSE
     ),
     NA
   )
-  expect_true(all(sapply(generated_sentopicmodel, check_integrity)))
+  expect_true(all(sapply(generated_sentopicsmodel, check_integrity)))
 })
 
 test_that("accessors works", {
-  expect_s3_class(generated_sentopicmodel$tokens, "tokens")
-  expect_s3_class(generated_sentopicmodel$vocabulary, "data.table")
-  expect_true(check_integrity(generated_sentopicmodel$chain1))
-  expect_true(check_integrity(generated_sentopicmodel[[1]]))
+  expect_s3_class(generated_sentopicsmodel$tokens, "tokens")
+  expect_s3_class(generated_sentopicsmodel$vocabulary, "data.table")
+  expect_true(check_integrity(generated_sentopicsmodel$chain1))
+  expect_true(check_integrity(generated_sentopicsmodel[[1]]))
 
-  expect_s3_class(tmp <- generated_sentopicmodel[1], "multi_chains")
+  expect_s3_class(tmp <- generated_sentopicsmodel[1], "multi_chains")
   expect_true(check_integrity(tmp[[1]]))
-  expect_s3_class(head(generated_sentopicmodel), "multi_chains")
-  expect_s3_class(tail(generated_sentopicmodel), "multi_chains")
+  expect_s3_class(head(generated_sentopicsmodel), "multi_chains")
+  expect_s3_class(tail(generated_sentopicsmodel), "multi_chains")
 })
 
 if (Sys.getenv("R_COVR") != "true") {
   plan(multisession, workers = 2)
-  generated_sentopicmodel <- sentopicmodel(toks)
-  generated_sentopicmodel <- fit(
-    generated_sentopicmodel,
+  generated_sentopicsmodel <- sentopicsmodel(toks)
+  generated_sentopicsmodel <- fit(
+    generated_sentopicsmodel,
     20,
     displayProgress = TRUE,
     nChains = 10
   )
 
   test_that("parallel works", {
-    expect_true(all(sapply(generated_sentopicmodel, check_integrity)))
-    expect_s3_class(generated_sentopicmodel, "multi_chains")
+    expect_true(all(sapply(generated_sentopicsmodel, check_integrity)))
+    expect_s3_class(generated_sentopicsmodel, "multi_chains")
     expect_message(
-      generated_sentopicmodel <- fit(
-        generated_sentopicmodel,
+      generated_sentopicsmodel <- fit(
+        generated_sentopicsmodel,
         20,
         displayProgress = FALSE
       ),
       NA
     )
-    expect_true(all(sapply(generated_sentopicmodel, check_integrity)))
+    expect_true(all(sapply(generated_sentopicsmodel, check_integrity)))
   })
 
   test_that("seed works", {
     plan(sequential)
-    generated_sentopicmodel <- sentopicmodel(toks)
+    generated_sentopicsmodel <- sentopicsmodel(toks)
     set.seed(123)
-    sentopicmodel_1 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_1 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 1
     )
     set.seed(123)
-    sentopicmodel_2 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_2 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 1
     )
-    expect_identical(sentopicmodel_1, sentopicmodel_2)
-    sentopicmodel_1 <- fit(
-      generated_sentopicmodel,
+    expect_identical(sentopicsmodel_1, sentopicsmodel_2)
+    sentopicsmodel_1 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 1,
       seed = 123
     )
-    sentopicmodel_2 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_2 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 1,
       seed = 123
     )
-    expect_identical(sentopicmodel_1, sentopicmodel_2)
-    sentopicmodel_1 <- fit(
-      generated_sentopicmodel,
+    expect_identical(sentopicsmodel_1, sentopicsmodel_2)
+    sentopicsmodel_1 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 1,
       seed = 1234
     )
-    expect_false(identical(sentopicmodel_1, sentopicmodel_2))
-    sentopicmodel_1 <- fit(
-      generated_sentopicmodel,
+    expect_false(identical(sentopicsmodel_1, sentopicsmodel_2))
+    sentopicsmodel_1 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 1,
       seed = NULL
     )
-    sentopicmodel_2 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_2 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 1,
       seed = NULL
     )
-    expect_false(identical(sentopicmodel_1, sentopicmodel_2))
+    expect_false(identical(sentopicsmodel_1, sentopicsmodel_2))
 
-    sentopicmodel_1 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_1 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = 123
     )
-    sentopicmodel_2 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_2 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = 123
     )
-    expect_identical(sentopicmodel_1, sentopicmodel_2)
-    sentopicmodel_1 <- fit(
-      generated_sentopicmodel,
+    expect_identical(sentopicsmodel_1, sentopicsmodel_2)
+    sentopicsmodel_1 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = 1234
     )
-    expect_false(identical(sentopicmodel_1, sentopicmodel_2))
-    sentopicmodel_1 <- fit(
-      generated_sentopicmodel,
+    expect_false(identical(sentopicsmodel_1, sentopicsmodel_2))
+    sentopicsmodel_1 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = NULL
     )
-    sentopicmodel_2 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_2 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = NULL
     )
-    expect_false(identical(sentopicmodel_1, sentopicmodel_2))
+    expect_false(identical(sentopicsmodel_1, sentopicsmodel_2))
 
     plan(multisession, workers = 2)
     set.seed(123)
-    sentopicmodel_1 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_1 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 2
     )
     set.seed(123)
-    sentopicmodel_2 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_2 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 2
     )
-    expect_identical(sentopicmodel_1, sentopicmodel_2)
-    sentopicmodel_1 <- fit(
-      generated_sentopicmodel,
+    expect_identical(sentopicsmodel_1, sentopicsmodel_2)
+    sentopicsmodel_1 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = NULL
     )
-    sentopicmodel_2 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_2 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = NULL
     )
-    expect_false(identical(sentopicmodel_1, sentopicmodel_2))
-    sentopicmodel_1 <- fit(
-      generated_sentopicmodel,
+    expect_false(identical(sentopicsmodel_1, sentopicsmodel_2))
+    sentopicsmodel_1 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = 1234
     )
-    sentopicmodel_2 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_2 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = 123
     )
-    expect_false(identical(sentopicmodel_1, sentopicmodel_2))
-    sentopicmodel_1 <- fit(
-      generated_sentopicmodel,
+    expect_false(identical(sentopicsmodel_1, sentopicsmodel_2))
+    sentopicsmodel_1 <- fit(
+      generated_sentopicsmodel,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = 123
     )
-    expect_identical(sentopicmodel_1, sentopicmodel_2)
+    expect_identical(sentopicsmodel_1, sentopicsmodel_2)
 
-    sentopicmodel_11 <- fit(
-      sentopicmodel_1,
+    sentopicsmodel_11 <- fit(
+      sentopicsmodel_1,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = 1234
     )
-    sentopicmodel_22 <- fit(
-      sentopicmodel_2,
+    sentopicsmodel_22 <- fit(
+      sentopicsmodel_2,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = 1234
     )
-    expect_identical(sentopicmodel_11, sentopicmodel_22)
-    sentopicmodel_22 <- fit(
-      sentopicmodel_2,
+    expect_identical(sentopicsmodel_11, sentopicsmodel_22)
+    sentopicsmodel_22 <- fit(
+      sentopicsmodel_2,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = 123
     )
-    expect_false(identical(sentopicmodel_11, sentopicmodel_22))
-    sentopicmodel_11 <- fit(
-      sentopicmodel_1,
+    expect_false(identical(sentopicsmodel_11, sentopicsmodel_22))
+    sentopicsmodel_11 <- fit(
+      sentopicsmodel_1,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = NULL
     )
-    sentopicmodel_22 <- fit(
-      sentopicmodel_2,
+    sentopicsmodel_22 <- fit(
+      sentopicsmodel_2,
       2,
       displayProgress = FALSE,
       nChains = 2,
       seed = NULL
     )
-    expect_false(identical(sentopicmodel_11, sentopicmodel_22))
+    expect_false(identical(sentopicsmodel_11, sentopicsmodel_22))
 
     # cran is annoyed by more than 2 cores => skip it
     skip_on_cran()
@@ -279,41 +279,41 @@ if (Sys.getenv("R_COVR") != "true") {
 
     plan(multisession, workers = num_workers)
     ### this works !
-    sentopicmodel_1 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_1 <- fit(
+      generated_sentopicsmodel,
       5,
       displayProgress = FALSE,
       nChains = 3,
       seed = 1234
     )
     plan(multisession, workers = 2)
-    sentopicmodel_2 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_2 <- fit(
+      generated_sentopicsmodel,
       5,
       displayProgress = FALSE,
       nChains = 3,
       seed = 1234
     )
     plan(multisession, workers = 1)
-    sentopicmodel_3 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_3 <- fit(
+      generated_sentopicsmodel,
       5,
       displayProgress = FALSE,
       nChains = 3,
       seed = 1234
     )
-    expect_identical(sentopicmodel_1, sentopicmodel_2)
-    expect_identical(sentopicmodel_1, sentopicmodel_3)
+    expect_identical(sentopicsmodel_1, sentopicsmodel_2)
+    expect_identical(sentopicsmodel_1, sentopicsmodel_3)
 
     plan(multisession, workers = 2)
-    sentopicmodel_3 <- fit(
-      generated_sentopicmodel,
+    sentopicsmodel_3 <- fit(
+      generated_sentopicsmodel,
       5,
       displayProgress = FALSE,
       nChains = 3,
       seed = 123
     )
-    expect_false(identical(sentopicmodel_1, sentopicmodel_3))
+    expect_false(identical(sentopicsmodel_1, sentopicsmodel_3))
   })
 }
 
@@ -326,9 +326,9 @@ toks <- generateDocuments(
   nClass = 2
 )
 lex <- generatePartialLexicon(toks)
-generated_sentopicmodel <- sentopicmodel(toks, lex)
-generated_sentopicmodel <- fit(
-  generated_sentopicmodel,
+generated_sentopicsmodel <- sentopicsmodel(toks, lex)
+generated_sentopicsmodel <- fit(
+  generated_sentopicsmodel,
   20,
   displayProgress = FALSE,
   nChains = 3
@@ -338,30 +338,33 @@ test_that("scores & distances works", {
   plan(multisession, workers = if (Sys.getenv("R_COVR") != "true") 2 else 1)
   expect_silent(
     scores <- chains_scores(
-      generated_sentopicmodel,
+      generated_sentopicsmodel,
       nWords = 2,
       window = "boolean"
     )
   )
   expect_false(anyNA(scores))
-  expect_silent(distances <- chains_distances(generated_sentopicmodel))
+  expect_silent(distances <- chains_distances(generated_sentopicsmodel))
   expect_true(is.matrix(distances))
   expect_false(anyNA(distances))
   expect_silent(
-    distances <- chains_distances(generated_sentopicmodel, method = "cosine")
+    distances <- chains_distances(generated_sentopicsmodel, method = "cosine")
   )
   expect_false(anyNA(distances))
   expect_silent(
-    distances <- chains_distances(generated_sentopicmodel, method = "hellinger")
+    distances <- chains_distances(
+      generated_sentopicsmodel,
+      method = "hellinger"
+    )
   )
   expect_false(anyNA(distances))
   expect_silent(
-    distances <- chains_distances(generated_sentopicmodel, method = "minMax")
+    distances <- chains_distances(generated_sentopicsmodel, method = "minMax")
   )
   expect_false(anyNA(distances))
   expect_silent(
     distances2 <- chains_distances(
-      generated_sentopicmodel,
+      generated_sentopicsmodel,
       method = "invariantEuclidean"
     )
   )
@@ -369,7 +372,7 @@ test_that("scores & distances works", {
   expect_true(all(distances <= distances2))
   expect_silent(
     distances <- chains_distances(
-      generated_sentopicmodel,
+      generated_sentopicsmodel,
       method = "naiveEuclidean"
     )
   )
@@ -395,7 +398,7 @@ test_that("equality between euclidean distances", {
 
 
 test_that("plot methods work", {
-  expect_silent(plot(generated_sentopicmodel))
+  expect_silent(plot(generated_sentopicsmodel))
 })
 
 ## fix detritus

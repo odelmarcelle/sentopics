@@ -20,14 +20,14 @@
 #'   example, estimated through variational inference). For these, the
 #'   conversion is limited and some functionalities of \pkg{sentopics} will be
 #'   disabled. The list of affected functions is subject to change and currently
-#'   includes \code{\link[=fit.sentopicmodel]{fit()}}, [merge_topics()] and [rJST.LDA()].
+#'   includes \code{\link[=fit.sentopicsmodel]{fit()}}, [merge_topics()] and [rJST.LDA()].
 #'
 #'   Since models from the \pkg{lda} package are simply lists of outputs, the
 #'   function `as.LDA_lda()` is not related to the other methods and should be
 #'   applied directly on lists containing a model.
 #'
 #' @return A S3 list of class `LDA`, as if it was created and estimated using
-#'   [LDA()] and \code{\link[=fit.sentopicmodel]{fit()}}.
+#'   [LDA()] and \code{\link[=fit.sentopicsmodel]{fit()}}.
 #'
 #' @rdname as.LDA
 #' @export
@@ -194,12 +194,12 @@ as.LDA.STM <- function(x, docs, ...) {
       phi = phi,
       logLikelihood = x$convergence$bound
     ),
-    class = c("LDA", "sentopicmodel"),
+    class = c("LDA", "sentopicsmodel"),
     reverse = TRUE,
     Sdim = "L2",
     approx = TRUE
   )
-  LDA <- as.LDA(reorder_sentopicmodel(LDA))
+  LDA <- as.LDA(reorder_sentopicsmodel(LDA))
 
   LDA
 }
@@ -234,7 +234,7 @@ as.LDA.LDA_Gibbs <- function(x, docs, ...) {
       za = za,
       logLikelihood = NULL
     ),
-    class = c("LDA", "sentopicmodel"),
+    class = c("LDA", "sentopicsmodel"),
     reverse = TRUE,
     Sdim = "L2"
   )
@@ -330,12 +330,12 @@ as.LDA.LDA_VEM <- function(x, docs, ...) {
       phi = phi,
       logLikelihood = x@logLiks
     ),
-    class = c("LDA", "sentopicmodel"),
+    class = c("LDA", "sentopicsmodel"),
     reverse = TRUE,
     Sdim = "L2",
     approx = TRUE
   )
-  LDA <- as.LDA(reorder_sentopicmodel(LDA))
+  LDA <- as.LDA(reorder_sentopicsmodel(LDA))
 
   LDA
 }
@@ -387,13 +387,13 @@ as.LDA.textmodel_lda <- function(x, ...) {
       zw = zw,
       logLikelihood = NULL
     ),
-    class = c("LDA", "sentopicmodel"),
+    class = c("LDA", "sentopicsmodel"),
     reverse = TRUE,
     Sdim = "L2",
     approx = TRUE,
     labels = list(L1 = colnames(x$theta))
   )
-  LDA <- as.LDA(reorder_sentopicmodel(LDA))
+  LDA <- as.LDA(reorder_sentopicsmodel(LDA))
 
   LDA
 }
@@ -451,7 +451,7 @@ as.LDA_lda <- function(list, docs, alpha, eta) {
       za = za,
       logLikelihood = NULL
     ),
-    class = c("LDA", "sentopicmodel"),
+    class = c("LDA", "sentopicsmodel"),
     reverse = TRUE,
     Sdim = "L2"
   )
@@ -589,13 +589,13 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
       zw = zw,
       logLikelihood = NULL
     ),
-    class = c("LDA", "sentopicmodel"),
+    class = c("LDA", "sentopicsmodel"),
     reverse = TRUE,
     Sdim = "L2",
     approx = TRUE,
     labels = list(L1 = colnames(x$theta))
   )
-  LDA <- as.LDA(reorder_sentopicmodel(LDA))
+  LDA <- as.LDA(reorder_sentopicsmodel(LDA))
 
   LDA
 }
@@ -620,7 +620,7 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
 #' @return Nothing, called for its side effects.
 #' @export
 #'
-#' @seealso [plot.sentopicmodel()]
+#' @seealso [plot.sentopicsmodel()]
 #'
 #' @examples
 #' lda <- LDA(ECB_press_conferences_tokens)
@@ -640,9 +640,9 @@ LDAvis <- function(x, ...) {
     )
   }
 
-  stopifnot(inherits(x, c("LDA", "sentopicmodel")))
-  zw <- rebuild_zw(as.sentopicmodel(x))
-  zd <- rebuild_zd(as.sentopicmodel(x))
+  stopifnot(inherits(x, c("LDA", "sentopicsmodel")))
+  zw <- rebuild_zw(as.sentopicsmodel(x))
+  zd <- rebuild_zd(as.sentopicsmodel(x))
   json <- LDAvis::createJSON(
     phi = t(x$phi),
     theta = x$theta,
@@ -656,7 +656,7 @@ LDAvis <- function(x, ...) {
 }
 
 
-# To sentopicmodel --------------------------------------------------------
+# To sentopicsmodel --------------------------------------------------------
 
 #' @name sentopics-conversions
 #' @rdname sentopics-conversions
@@ -668,10 +668,10 @@ LDAvis <- function(x, ...) {
 #'
 #' @return A **sentopics** model of the relevant class
 #' @export
-as.sentopicmodel <- function(x) {
-  UseMethod("as.sentopicmodel")
+as.sentopicsmodel <- function(x) {
+  UseMethod("as.sentopicsmodel")
 }
-as.sentopicmodel_defaults <- function(x) {
+as.sentopicsmodel_defaults <- function(x) {
   ### perhaps create too many objects
   ### especially in multi_chains, recreate things that are stored in base
   if (is.null(x$L2)) {
@@ -707,7 +707,7 @@ as.sentopicmodel_defaults <- function(x) {
   x
 }
 #' @export
-as.sentopicmodel.LDA <- function(x) {
+as.sentopicsmodel.LDA <- function(x) {
   rename <- stats::setNames(names(x), names(x))
   translate <- stats::setNames(
     c(
@@ -749,10 +749,10 @@ as.sentopicmodel.LDA <- function(x) {
   rename <- replace(rename, names(translate), translate)[rename]
   names(x) <- rename
   class(x) <- setdiff(class(x), "LDA")
-  as.sentopicmodel_defaults(x)
+  as.sentopicsmodel_defaults(x)
 }
 #' @export
-as.sentopicmodel.rJST <- function(x) {
+as.sentopicsmodel.rJST <- function(x) {
   rename <- stats::setNames(names(x), names(x))
   translate <- stats::setNames(
     c(
@@ -783,10 +783,10 @@ as.sentopicmodel.rJST <- function(x) {
   rename <- replace(rename, names(translate), translate)[rename]
   names(x) <- rename
   class(x) <- setdiff(class(x), "rJST")
-  as.sentopicmodel_defaults(x)
+  as.sentopicsmodel_defaults(x)
 }
 #' @export
-as.sentopicmodel.JST <- function(x) {
+as.sentopicsmodel.JST <- function(x) {
   rename <- stats::setNames(names(x), names(x))
   translate <- stats::setNames(
     c(
@@ -818,26 +818,26 @@ as.sentopicmodel.JST <- function(x) {
   names(x) <- rename
   class(x) <- setdiff(class(x), "JST")
 
-  as.sentopicmodel_defaults(x)
+  as.sentopicsmodel_defaults(x)
 }
 #' @export
-as.sentopicmodel.sentopicmodel <- function(x) {
+as.sentopicsmodel.sentopicsmodel <- function(x) {
   x
 }
 #' @export
-as.sentopicmodel.multi_chains <- function(x) {
-  attr(x, "containedClass") <- "sentopicmodel"
+as.sentopicsmodel.multi_chains <- function(x) {
+  attr(x, "containedClass") <- "sentopicsmodel"
   x
 }
 #' @export
-as.sentopicmodel.default <- function(x) {
-  stop("Unexpected object passed to as.sentopicmodel")
+as.sentopicsmodel.default <- function(x) {
+  stop("Unexpected object passed to as.sentopicsmodel")
 }
 
-# From sentopicmodel ------------------------------------------------------
+# From sentopicsmodel ------------------------------------------------------
 
 #' @export
-as.LDA.sentopicmodel <- function(x, ...) {
+as.LDA.sentopicsmodel <- function(x, ...) {
   rename <- stats::setNames(names(x), names(x))
   translate <- stats::setNames(
     c(
@@ -905,7 +905,7 @@ as.rJST <- function(x) {
   UseMethod("as.rJST")
 }
 #' @export
-as.rJST.sentopicmodel <- function(x) {
+as.rJST.sentopicsmodel <- function(x) {
   rename <- stats::setNames(names(x), names(x))
   translate <- stats::setNames(
     c(
@@ -974,7 +974,7 @@ as.JST <- function(x) {
   UseMethod("as.JST")
 }
 #' @export
-as.JST.sentopicmodel <- function(x) {
+as.JST.sentopicsmodel <- function(x) {
   rename <- stats::setNames(names(x), names(x))
   translate <- stats::setNames(
     c(

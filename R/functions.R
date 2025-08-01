@@ -3,9 +3,9 @@
 #' @author Olivier Delmarcelle
 #'
 #' @description Extract the top words in each topic/sentiment from a
-#'   `sentopicmodel`.
+#'   `sentopicsmodel`.
 #'
-#' @param x a `sentopicmodel` created from the [LDA()], [JST()] or [rJST()]
+#' @param x a `sentopicsmodel` created from the [LDA()], [JST()] or [rJST()]
 #' @param nWords the number of top words to extract
 #' @param method specify if a re-ranking function should be applied before
 #'   returning the top words. See Details for a description of each method.
@@ -61,7 +61,7 @@
 #'
 #' @import data.table
 #' @export
-#' @seealso [melt.sentopicmodel()] for extracting estimated mixtures
+#' @seealso [melt.sentopicsmodel()] for extracting estimated mixtures
 #' @examples
 #' model <- LDA(ECB_press_conferences_tokens)
 #' model <- fit(model, 10)
@@ -85,7 +85,7 @@ top_words <- function(
   class <- class(x)[1]
   method <- match.arg(method)
   output <- match.arg(output)
-  x <- reorder_sentopicmodel(x)
+  x <- reorder_sentopicsmodel(x)
   top <- top_words_dt(x, nWords, method, w)
   if (!missing(subset)) {
     if (attr(x, "reverse")) {
@@ -170,7 +170,7 @@ top_words <- function(
       p
     },
     "data.frame" = {
-      params <- sentopicmodel_params(x)
+      params <- sentopicsmodel_params(x)
       labs <- create_labels(x, class, flat = FALSE)
       for (i in names(labs)) {
         top[[i]] <- factor(
@@ -326,7 +326,7 @@ plot_top_words <- function(
 #'   = TRUE`.
 #'
 #' @param x a model created from the [LDA()], [JST()] or [rJST()] function and
-#'   estimated with \code{\link[=fit.sentopicmodel]{fit()}}
+#'   estimated with \code{\link[=fit.sentopicsmodel]{fit()}}
 #' @param method the coherence method used.
 #' @param nWords the number of words in each topic used for evaluation.
 #' @param window optional. The maximum distance between two tokens to be
@@ -367,7 +367,7 @@ coherence.LDA <- function(
   window = NULL,
   NPMIs = NULL
 ) {
-  res <- coherence(as.sentopicmodel(x), nWords, method, window, NPMIs)
+  res <- coherence(as.sentopicsmodel(x), nWords, method, window, NPMIs)
   rowSums(res)
 }
 #' @export
@@ -379,7 +379,7 @@ coherence.JST <- function(
   NPMIs = NULL
 ) {
   ### TODO: need to make this more robust
-  coherence(as.sentopicmodel(x), nWords, method, window, NPMIs)
+  coherence(as.sentopicsmodel(x), nWords, method, window, NPMIs)
 }
 #' @export
 coherence.rJST <- function(
@@ -389,11 +389,11 @@ coherence.rJST <- function(
   window = NULL,
   NPMIs = NULL
 ) {
-  coherence(as.sentopicmodel(x), nWords, method, window, NPMIs)
+  coherence(as.sentopicsmodel(x), nWords, method, window, NPMIs)
 }
 
 #' @export
-coherence.sentopicmodel <- function(
+coherence.sentopicsmodel <- function(
   x,
   nWords = 10,
   method = c("C_NPMI", "C_V"),
@@ -414,7 +414,7 @@ coherence.sentopicmodel <- function(
   if (nWords < 2) {
     stop("The number of words must be at least 2.")
   }
-  if (inherits(x, "sentopicmodel")) {
+  if (inherits(x, "sentopicsmodel")) {
     switch(
       method,
       C_NPMI = C_NPMI(x, nWords, window_C_NPMI, NPMIs = NPMIs),
@@ -422,7 +422,7 @@ coherence.sentopicmodel <- function(
       stop("Undefined method")
     )
   } else {
-    stop("Please provide a correct sentopicmodel object")
+    stop("Please provide a correct sentopicsmodel object")
   }
 }
 
@@ -438,7 +438,7 @@ coherence.sentopicmodel <- function(
 #'   Estimates are referred to as *chains*.
 #'
 #' @param x a valid `multi_chains` object, obtained through the estimation of a
-#'   topic model using \code{\link[=fit.sentopicmodel]{fit()}} and the argument
+#'   topic model using \code{\link[=fit.sentopicsmodel]{fit()}} and the argument
 #'   `nChains` greater than `1`.
 #' @param method the method used to measure the distance between chains.
 #' @param ... further arguments passed to internal distance functions.
@@ -489,7 +489,7 @@ chains_distances <- function(
     stop("Please provide a correct multi_chains object")
   }
 
-  x <- as.sentopicmodel(x)
+  x <- as.sentopicsmodel(x)
   # avoid copying base to each chain
   x <- as.list(x, copy = FALSE)
 
@@ -512,7 +512,7 @@ chains_distances <- function(
 #' models.
 #'
 #' @param x a valid `multi_chains` object, obtained through the estimation of a
-#'   topic model using \code{\link[=fit.sentopicmodel]{fit()}} and the argument
+#'   topic model using \code{\link[=fit.sentopicsmodel]{fit()}} and the argument
 #'   `nChains` greater than `1`.
 #' @param nWords the number of words used to compute coherence. See
 #'   [coherence()].
@@ -525,7 +525,7 @@ chains_distances <- function(
 #'   coherence metrics, the value shown is the mean coherence across all topics
 #'   of a chain
 #'
-#' @inheritSection fit.sentopicmodel Parallelism
+#' @inheritSection fit.sentopicsmodel Parallelism
 #'
 #' @examples
 #' model <- LDA(ECB_press_conferences_tokens[1:10])

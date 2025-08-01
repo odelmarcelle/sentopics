@@ -23,7 +23,7 @@ sentopics_print_extend <- function(extended = FALSE) {
 #'   forced by using `extended = TRUE`), it lists the most important function
 #'   related to **sentopics** models.
 #'
-#' @rdname print.sentopicmodel
+#' @rdname print.sentopicsmodel
 #'
 #' @param x the model to be printed
 #' @param extended if `TRUE`, extends the print to include some helpful related
@@ -33,9 +33,9 @@ sentopics_print_extend <- function(extended = FALSE) {
 #' @return No return value, called for side effects (printing).
 #'
 #' @export
-print.sentopicmodel <- function(x, extended = FALSE, ...) {
+print.sentopicsmodel <- function(x, extended = FALSE, ...) {
   cat(
-    "A sentopicmodel topic model with",
+    "A sentopicsmodel topic model with",
     x$L1,
     "topics and",
     x$L2,
@@ -50,7 +50,7 @@ print.sentopicmodel <- function(x, extended = FALSE, ...) {
   ##TODO: add models paremeters? ex: # cat("Model parameters: alpha = ")
 }
 
-#' @rdname print.sentopicmodel
+#' @rdname print.sentopicsmodel
 #' @export
 print.rJST <- function(x, extended = FALSE, ...) {
   cat(
@@ -68,7 +68,7 @@ print.rJST <- function(x, extended = FALSE, ...) {
   }
 }
 
-#' @rdname print.sentopicmodel
+#' @rdname print.sentopicsmodel
 #' @export
 print.LDA <- function(x, extended = FALSE, ...) {
   cat(
@@ -84,7 +84,7 @@ print.LDA <- function(x, extended = FALSE, ...) {
   }
 }
 
-#' @rdname print.sentopicmodel
+#' @rdname print.sentopicsmodel
 #' @export
 print.JST <- function(x, extended = FALSE, ...) {
   cat(
@@ -147,11 +147,11 @@ print.top_words <- function(x, ...) {
 #' # only displays the topic proportions
 #' plot(lda, layers = 1)
 ## TODO: add other methods than probability?
-plot.sentopicmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
+plot.sentopicsmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
   mis <- missingSuggets(c("plotly", "RColorBrewer"))
   if (length(mis) > 0) {
     stop(
-      "Suggested packages are missing for the plot.sentopicmodel function.\n",
+      "Suggested packages are missing for the plot.sentopicsmodel function.\n",
       "Please install first the following packages: ",
       paste0(mis, collapse = ", "),
       ".\n",
@@ -162,7 +162,7 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
   }
 
   class <- class(x)[1]
-  x <- as.sentopicmodel(x)
+  x <- as.sentopicsmodel(x)
   real <- prob <- L1 <- L2 <- id <- value <- parent <- color <- NULL # due to NSE notes in R CMD check
   l1 <- l2 <- l3 <- NULL ## in case they exist in environment
   mixtureStats <- melt(x)
@@ -327,7 +327,7 @@ plot.multi_chains <- function(
 #' @export
 generics::fit
 
-#' @name fit.sentopicmodel
+#' @name fit.sentopicsmodel
 #' @aliases grow
 #' @title Estimate a topic model
 #'
@@ -349,7 +349,7 @@ generics::fit
 #' @param seed for reproducibility, a seed can be provided.
 #' @param ... arguments passed to other methods. Not used.
 #'
-#' @return a `sentopicmodel` of the relevant model class if `nChains` is
+#' @return a `sentopicsmodel` of the relevant model class if `nChains` is
 #'   unspecified or equal to 1. A `multi_chains` object if `nChains` is greater
 #'   than 1.
 #'
@@ -372,7 +372,7 @@ generics::fit
 #' future::plan("sequential") # Shut down workers
 NULL
 
-#' @rdname fit.sentopicmodel
+#' @rdname fit.sentopicsmodel
 #' @export
 #' @usage NULL
 fit.LDA <- function(
@@ -388,7 +388,7 @@ fit.LDA <- function(
     stop("Not possible for approximated models")
   }
   as.LDA(fit(
-    as.sentopicmodel(object),
+    as.sentopicsmodel(object),
     iterations = iterations,
     nChains = nChains,
     displayProgress = displayProgress,
@@ -397,7 +397,7 @@ fit.LDA <- function(
   ))
 }
 
-#' @rdname fit.sentopicmodel
+#' @rdname fit.sentopicsmodel
 #' @export
 #' @usage NULL
 fit.rJST <- function(
@@ -410,7 +410,7 @@ fit.rJST <- function(
   ...
 ) {
   as.rJST(fit(
-    as.sentopicmodel(object),
+    as.sentopicsmodel(object),
     iterations = iterations,
     nChains = nChains,
     displayProgress = displayProgress,
@@ -419,7 +419,7 @@ fit.rJST <- function(
   ))
 }
 
-#' @rdname fit.sentopicmodel
+#' @rdname fit.sentopicsmodel
 #' @export
 #' @usage NULL
 fit.JST <- function(
@@ -432,7 +432,7 @@ fit.JST <- function(
   ...
 ) {
   as.JST(fit(
-    as.sentopicmodel(object),
+    as.sentopicsmodel(object),
     iterations = iterations,
     nChains = nChains,
     displayProgress = displayProgress,
@@ -441,9 +441,9 @@ fit.JST <- function(
   ))
 }
 
-#' @rdname fit.sentopicmodel
+#' @rdname fit.sentopicsmodel
 #' @export
-fit.sentopicmodel <- function(
+fit.sentopicsmodel <- function(
   object,
   iterations = 100,
   nChains = 1,
@@ -467,7 +467,7 @@ fit.sentopicmodel <- function(
     cpp_model$iterate(iterations, displayProgress, computeLikelihood)
     tmp <- extract_cppModel(cpp_model, base)
     object[names(tmp)] <- tmp
-    reorder_sentopicmodel(object)
+    reorder_sentopicsmodel(object)
   } else if (nChains > 1) {
     ## CMD check
     chains <- NULL
@@ -573,7 +573,7 @@ fit.sentopicmodel <- function(
       class(chains) <- "multi_chains"
       attr(chains, "nChains") <- nChains
       attr(chains, "base") <- base
-      attr(chains, "containedClass") <- "sentopicmodel"
+      attr(chains, "containedClass") <- "sentopicsmodel"
     })
 
     if (displayProgress & !requireNamespace("progressr", quietly = TRUE)) {
@@ -619,7 +619,7 @@ fit.sentopicmodel <- function(
   }
 }
 
-#' @rdname fit.sentopicmodel
+#' @rdname fit.sentopicsmodel
 #' @export
 fit.multi_chains <- function(
   object,
@@ -640,7 +640,7 @@ fit.multi_chains <- function(
   containedClass <- attr(object, "containedClass")
 
   object <- unclass(object) ## unclass to prevent usage of `[[.multi_chains`
-  object <- lapply(object, as.sentopicmodel) ## return to sentopicmodel objects
+  object <- lapply(object, as.sentopicsmodel) ## return to sentopicsmodel objects
 
   ## erase posterior in each chain to limit memory transfers
   for (i in seq_along(object)) {
@@ -782,7 +782,7 @@ fit.multi_chains <- function(
 
 # Retain `grow` methods for compatibility
 
-#' @rdname fit.sentopicmodel
+#' @rdname fit.sentopicsmodel
 #' @export
 #' @usage NULL
 grow <- function(
@@ -796,23 +796,23 @@ grow <- function(
 ) {
   UseMethod("grow")
 }
-#' @rdname fit.sentopicmodel
+#' @rdname fit.sentopicsmodel
 #' @export
 #' @usage NULL
 grow.LDA <- fit.LDA
-#' @rdname fit.sentopicmodel
+#' @rdname fit.sentopicsmodel
 #' @export
 #' @usage NULL
 grow.rJST <- fit.rJST
-#' @rdname fit.sentopicmodel
+#' @rdname fit.sentopicsmodel
 #' @export
 #' @usage NULL
 grow.JST <- fit.JST
-#' @rdname fit.sentopicmodel
+#' @rdname fit.sentopicsmodel
 #' @export
 #' @usage NULL
-grow.sentopicmodel <- fit.sentopicmodel
-#' @rdname fit.sentopicmodel
+grow.sentopicsmodel <- fit.sentopicsmodel
+#' @rdname fit.sentopicsmodel
 #' @export
 #' @usage NULL
 grow.multi_chains <- fit.multi_chains
@@ -828,7 +828,7 @@ grow.multi_chains <- fit.multi_chains
 #' @param object a model created from the [LDA()], [JST()] or [rJST()] function and
 #'   estimated with [fit()]
 #'
-#' @return a `sentopicmodel` of the relevant model class, with the iteration count
+#' @return a `sentopicsmodel` of the relevant model class, with the iteration count
 #'   reset to zero and re-initialized assignment of latent variables.
 #'
 #' @seealso [fit()]
@@ -842,7 +842,7 @@ reset <- function(object) {
   object$za <- data.table::copy(object$za)
 
   class <- class(object)[1]
-  object <- as.sentopicmodel(object)
+  object <- as.sentopicsmodel(object)
   object$it <- 0
   object$logLikelihood <- NULL
   object$phi <- object$L2post <- object$L1post <- NULL
@@ -855,7 +855,7 @@ reset <- function(object) {
   object[names(tmp)] <- tmp
 
   fun <- get(paste0("as.", class))
-  fun(reorder_sentopicmodel(object))
+  fun(reorder_sentopicsmodel(object))
 }
 
 
@@ -865,7 +865,7 @@ reset <- function(object) {
 #'
 #' As of the CRAN release of the 1.14.8 version of **data.table**, the
 #' [data.table::melt()] function is not a generic. This function aims to
-#' temporary provide a generic to this function, so that [melt.sentopicmodel()]
+#' temporary provide a generic to this function, so that [melt.sentopicsmodel()]
 #' can be effectively dispatched when used. Expect this function to disappear
 #' shortly after the release of **data.table** 1.14.9.
 #'
@@ -874,7 +874,7 @@ reset <- function(object) {
 #'
 #' @return An unkeyed `data.table` containing the molten data.
 #'
-#' @seealso [data.table::melt()], [melt.sentopicmodel()]
+#' @seealso [data.table::melt()], [melt.sentopicsmodel()]
 #' @export
 melt <- function(data, ...) {
   UseMethod("melt")
@@ -888,7 +888,7 @@ melt.default <- function(data, ...) {
 # #' @export
 # data.table::melt
 
-#' Melt for sentopicmodels
+#' Melt for sentopicsmodels
 #'
 #' @author Olivier Delmarcelle
 #'
@@ -921,12 +921,12 @@ melt.default <- function(data, ...) {
 #' jst <- JST(ECB_press_conferences_tokens)
 #' jst <- fit(jst, 10)
 #' melt(jst)
-melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
+melt.sentopicsmodel <- function(data, ..., include_docvars = FALSE) {
   if (data$it <= 0) {
     stop("Nothing to melt. Estimate the model with fit() first.")
   }
   class <- class(data)[1]
-  data <- as.sentopicmodel(data)
+  data <- as.sentopicsmodel(data)
   .id <- topic <- sentiment <- prob <- L1_prob <- L2_prob <- NULL # due to NSE notes in R CMD check
 
   L1stats <- data.table::as.data.table(
@@ -1027,14 +1027,14 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
   core(x) <- base
 
   fun <- get(paste0("as.", containedClass))
-  fun(reorder_sentopicmodel(x))
+  fun(reorder_sentopicsmodel(x))
 }
 
 ##TODO: add test for this?
 #' @export
 `$.multi_chains` <- function(x, name, ...) {
   if (!name %in% names(x)) {
-    #### This wont work with "alpha" "gamma" because they are under sentopicmodel form
+    #### This wont work with "alpha" "gamma" because they are under sentopicsmodel form
     x <- attr(x, "base")
     x <- NextMethod()
   } else {
@@ -1043,7 +1043,7 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
     x <- NextMethod()
     core(x) <- base
     fun <- get(paste0("as.", containedClass))
-    x <- fun(reorder_sentopicmodel(x))
+    x <- fun(reorder_sentopicsmodel(x))
   }
 
   x
@@ -1080,7 +1080,7 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
   }
 
   fun <- get(paste0("as.", attr(x, "containedClass")))
-  x[] <- lapply(x, function(xi) fun(reorder_sentopicmodel(xi)))
+  x[] <- lapply(x, function(xi) fun(reorder_sentopicsmodel(xi)))
   attr(x, "base") <- NULL
   x
 
@@ -1099,9 +1099,9 @@ melt.sentopicmodel <- function(data, ..., include_docvars = FALSE) {
 #' @export
 quanteda::docvars
 
-#' @method docvars sentopicmodel
+#' @method docvars sentopicsmodel
 #' @export
-docvars.sentopicmodel <- function(x, field = NULL) {
+docvars.sentopicsmodel <- function(x, field = NULL) {
   quanteda::docvars(x$tokens)
 }
 

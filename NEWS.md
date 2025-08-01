@@ -2,6 +2,9 @@
 
 ### Breaking changes
 
+* Renamed base class `sentopicmodel` to `sentopicsmodel` for consistency
+  with the package name.
+
 * Renamed various functions and classes to snake_case style.
    - renamed function `mergeTopics()` to `merge_topics()`
    - renamed function `topWords()` to `top_words()`
@@ -12,7 +15,7 @@
    - renamed S3 class `multiChains` to `multi_chains`
 
 * Corrected naming of Reverse Joint Sentiment/Topic model (rJST).
-  To align with this change, internal attributes of `sentopicmodel` objects
+  To align with this change, internal attributes of `sentopicsmodel` objects
   have been renamed from `reversed` to `reverse`.
 
 * Modified names of columns in the `PicaultRenault_data` dataset to

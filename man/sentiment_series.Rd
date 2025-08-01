@@ -49,7 +49,7 @@ data.frame.
 }
 \description{
 Compute a sentiment time series based on the internal sentiment
-and dates of a \code{sentopicmodel}. The time series computation supports
+and dates of a \code{sentopicsmodel}. The time series computation supports
 multiple sampling period and optionally allow computing a moving average.
 }
 \examples{

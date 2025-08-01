@@ -44,7 +44,7 @@ rebuild_cppModel <- function(x, base) {
   if (isTRUE(all.equal(stats::median(base$beta), 0))) {
     stop("Unable to rebuild initBeta.")
   }
-  cppModel <- methods::new(cpp_sentopicmodel, attr(x, "reverse"))
+  cppModel <- methods::new(cpp_sentopicsmodel, attr(x, "reverse"))
 
   cppModel$rebuild(
     nrow(base$vocabulary), # x$V
@@ -86,7 +86,7 @@ rebuild_cppModel <- function(x, base) {
 
 ## function performing integrity checks on count structures & assignments lists of a model
 check_integrity <- function(x, detailed = FALSE, fast = TRUE) {
-  x <- as.sentopicmodel(x)
+  x <- as.sentopicsmodel(x)
 
   if (!identical(dim(x$L1prior), as.integer(c(x$L1, 1)))) {
     stop("Internal error in dimensions of priors.")
@@ -189,9 +189,9 @@ check_integrity <- function(x, detailed = FALSE, fast = TRUE) {
   }
 }
 
-reorder_sentopicmodel <- function(x) {
+reorder_sentopicsmodel <- function(x) {
   approx <- isTRUE(attr(x, "approx"))
-  x <- as.sentopicmodel(x)
+  x <- as.sentopicsmodel(x)
   if (is.null(attr(x, "reverse"))) {
     stop("Object corrupted, missing reverse attribute.")
   }
@@ -219,7 +219,7 @@ reorder_sentopicmodel <- function(x) {
     "L2cycle"
   )]
   x <- x[!sapply(x, is.null)]
-  class(x) <- c("sentopicmodel")
+  class(x) <- c("sentopicsmodel")
   attr(x, "reverse") <- reverse
   attr(x, "Sdim") <- Sdim
   attr(x, "labels") <- labels
@@ -227,7 +227,7 @@ reorder_sentopicmodel <- function(x) {
     attr(x, "approx") <- approx
   }
   if (!check_integrity(x)) {
-    stop("Internal error when reordering the sentopicmodel object.")
+    stop("Internal error when reordering the sentopicsmodel object.")
   } # this has an impact on subsetting performance.. consider removing or optimizing
   x
 }
@@ -389,7 +389,7 @@ computeTheta <- function(x, base = core(x)) {
   L1post <- t(L1post)
   dimnames(L1post) <- list(
     .id = names(base$tokens),
-    L1 = labels_sentopicmodel(x, base)[["L1"]]
+    L1 = labels_sentopicsmodel(x, base)[["L1"]]
   )
 
   L1post
@@ -400,8 +400,8 @@ computePi <- function(x, base = core(x)) {
   if (x$L2 == 1L) {
     L2post <- array(1, dim = c(1, x$L1, length(base$tokens)))
     dimnames(L2post) <- list(
-      L2 = labels_sentopicmodel(x, base)[["L2"]],
-      L1 = labels_sentopicmodel(x, base)[["L1"]],
+      L2 = labels_sentopicsmodel(x, base)[["L2"]],
+      L1 = labels_sentopicsmodel(x, base)[["L1"]],
       .id = names(base$tokens)
     )
     return(L2post)
@@ -439,8 +439,8 @@ computePi <- function(x, base = core(x)) {
 
   L2post <- array(L2post, dim = c(L2, L1, length(base$tokens)))
   dimnames(L2post) <- list(
-    L2 = labels_sentopicmodel(x, base)[["L2"]],
-    L1 = labels_sentopicmodel(x, base)[["L1"]],
+    L2 = labels_sentopicsmodel(x, base)[["L2"]],
+    L1 = labels_sentopicsmodel(x, base)[["L1"]],
     .id = names(base$tokens)
   )
 
@@ -468,8 +468,8 @@ computePhi <- function(x, base = core(x)) {
 
   dimnames(phi) <- list(
     word = base$vocabulary$word,
-    L2 = labels_sentopicmodel(x, base)[["L2"]],
-    L1 = labels_sentopicmodel(x, base)[["L1"]]
+    L2 = labels_sentopicsmodel(x, base)[["L2"]],
+    L1 = labels_sentopicsmodel(x, base)[["L1"]]
   )
 
   phi
@@ -930,7 +930,7 @@ multLikelihoodL2 <- function(x) {
   stats::setNames(c(logLik, logLikMultinomial), c("logLik", "logLik2"))
 }
 multLikelihood <- function(x) {
-  x <- as.sentopicmodel(x)
+  x <- as.sentopicsmodel(x)
   logLik <- rbind(multLikelihoodW(x), multLikelihoodL1(x), multLikelihoodL2(x))
   logLik <- rbind(colSums(logLik), logLik)
   rownames(logLik) <- c("WTS", "W", "L1", "L2")
@@ -942,7 +942,7 @@ multLikelihood <- function(x) {
 
 recompileVocabulary <- function(x) {
   class <- class(x)[1]
-  x <- as.sentopicmodel(x)
+  x <- as.sentopicsmodel(x)
   if (x$it > 0) {
     warning("The model will be reset before recompiling the vocabulary")
   }
@@ -967,7 +967,7 @@ recompileVocabulary <- function(x) {
   x$beta <- cpp_model$beta
 
   fun <- get(paste0("as.", class))
-  fun(reorder_sentopicmodel(x))
+  fun(reorder_sentopicsmodel(x))
 }
 
 
@@ -1299,7 +1299,7 @@ getTexts <- function(x, topic, sentiment, n = 3, collapsed = TRUE) {
     ..L2 <- topic
     ..L1 <- sentiment
   }
-  x <- as.sentopicmodel(x)
+  x <- as.sentopicsmodel(x)
   # names <- names(head(sort(x$pi[sentiment, topic, ], decreasing = TRUE), n))
   names <- utils::head(melt(x)[L1 == ..L1 & L2 == ..L2][order(-prob), .id], n)
   toks <- x$tokens[names]
@@ -1339,7 +1339,7 @@ create_labels <- function(x, class, flat = TRUE) {
   if (missing(class)) {
     class <- base::class(x)[1]
   }
-  x <- as.sentopicmodel(x)
+  x <- as.sentopicsmodel(x)
   if (!is.null(attr(x, "labels"))) {
     res <- attr(x, "labels")
     empty_lab <- !c("L1", "L2") %in% names(res)
@@ -1347,7 +1347,7 @@ create_labels <- function(x, class, flat = TRUE) {
     if (any(empty_lab)) {
       res2 <- switch(
         class,
-        "sentopicmodel" = labels_sentopicmodel(x),
+        "sentopicsmodel" = labels_sentopicsmodel(x),
         "JST" = labels_JST(x),
         "rJST" = labels_rJST(x),
         "LDA" = labels_LDA(x),
@@ -1358,7 +1358,7 @@ create_labels <- function(x, class, flat = TRUE) {
   } else {
     res <- switch(
       class,
-      "sentopicmodel" = labels_sentopicmodel(x),
+      "sentopicsmodel" = labels_sentopicsmodel(x),
       "JST" = labels_JST(x),
       "rJST" = labels_rJST(x),
       "LDA" = labels_LDA(x),
@@ -1374,7 +1374,7 @@ create_labels <- function(x, class, flat = TRUE) {
   }
 }
 
-labels_sentopicmodel <- function(x, base = x) {
+labels_sentopicsmodel <- function(x, base = x) {
   labs <- list(L1 = paste0("l1-", 1:x$L1), L2 = paste0("l2-", 1:x$L2))
   labs[[attr(base, "Sdim")]] <- levels(base$vocabulary$lexicon)
   labs

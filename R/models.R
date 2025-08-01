@@ -9,7 +9,7 @@
 #' @inherit rJST
 #' @export
 #' @family topic models
-#' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}}, extracting
+#' @seealso Fitting a model: \code{\link[=fit.sentopicsmodel]{fit()}}, extracting
 #'   top words: [top_words()]
 #' @examples
 #' \donttest{# creating a model
@@ -19,7 +19,7 @@
 #' lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- fit(lda, 100)}
 LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
-  as.LDA(sentopicmodel(
+  as.LDA(sentopicsmodel(
     x,
     lexicon = NULL,
     L1 = K,
@@ -43,7 +43,7 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #' Sentiment-Topic Detection from Text](https://ieeexplore.ieee.org/document/5710933).
 #' *IEEE Transactions on Knowledge and Data Engineering*, 24(6), 1134–-1145.
 #'
-#' @inherit sentopicmodel
+#' @inherit sentopicsmodel
 #'
 #' @param K the number of topics
 #' @param S the number of sentiments
@@ -56,7 +56,7 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #' @param ... not used
 #'
 #' @export
-#' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}}, extracting
+#' @seealso Fitting a model: \code{\link[=fit.sentopicsmodel]{fit()}}, extracting
 #'   top words: [top_words()]
 #' @family topic models
 #' @examples
@@ -94,7 +94,7 @@ rJST.default <- function(
   gammaCycle = 0,
   ...
 ) {
-  as.rJST(sentopicmodel(
+  as.rJST(sentopicsmodel(
     x,
     lexicon,
     K,
@@ -120,7 +120,7 @@ rJST.LDA <- function(x, lexicon = NULL, S = 3, gamma = 5, ...) {
   if (isTRUE(attr(x, "approx"))) {
     stop("Not possible for approximated models")
   }
-  x <- as.sentopicmodel(x)
+  x <- as.sentopicsmodel(x)
   x$L2 <- as.numeric(S)
 
   if (length(gamma) == 1L) {
@@ -205,7 +205,7 @@ rJST.LDA <- function(x, lexicon = NULL, S = 3, gamma = 5, ...) {
 #'
 #' @inherit rJST
 #' @export
-#' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}},
+#' @seealso Fitting a model: \code{\link[=fit.sentopicsmodel]{fit()}},
 #'   extracting top words: [top_words()]
 #' @family topic models
 #' @examples
@@ -226,7 +226,7 @@ JST <- function(
   gammaCycle = 0,
   alphaCycle = 0
 ) {
-  as.JST(sentopicmodel(
+  as.JST(sentopicsmodel(
     x,
     lexicon,
     S,
@@ -246,7 +246,7 @@ JST <- function(
 #' @author Olivier Delmarcelle
 #'
 #' @description The set of functions [LDA()], [JST()], [rJST()] and
-#'   [sentopicmodel()] are all wrappers to an unified C++ routine and attempt to
+#'   [sentopicsmodel()] are all wrappers to an unified C++ routine and attempt to
 #'   replicate their corresponding model. This function is the lower level
 #'   wrapper to the C++ routine.
 #'
@@ -265,7 +265,7 @@ JST <- function(
 #'  mixture (as in a JST model). When `reverse=TRUE`, the lexicon is applied to
 #'  the second layer of the document mixture (as in a reverse-JST model).
 #'
-#' @seealso Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}},
+#' @seealso Fitting a model: \code{\link[=fit.sentopicsmodel]{fit()}},
 #'   extracting top words: [top_words()]
 #' @family topic models
 #'
@@ -273,7 +273,7 @@ JST <- function(
 #'
 #' @return An S3 list containing the model parameter and the estimated mixture.
 #'   This object corresponds to a Gibbs sampler estimator with zero iterations.
-#'   The MCMC can be iterated using the \code{\link[=fit.sentopicmodel]{fit()}}
+#'   The MCMC can be iterated using the \code{\link[=fit.sentopicsmodel]{fit()}}
 #'   function.
 #'
 #'   - `tokens` is the tokens object used to create the model
@@ -292,7 +292,7 @@ JST <- function(
 #' @examples
 #' LDA(ECB_press_conferences_tokens)
 #' rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
-sentopicmodel <- function(
+sentopicsmodel <- function(
   x,
   lexicon = NULL,
   L1 = 5,
@@ -365,7 +365,7 @@ sentopicmodel <- function(
     L2cycle = L2cycle
   )
 
-  cpp_model <- methods::new(cpp_sentopicmodel, reverse)
+  cpp_model <- methods::new(cpp_sentopicsmodel, reverse)
 
   cpp_model$init(
     clean,
@@ -391,9 +391,9 @@ sentopicmodel <- function(
   tmp <- extract_cppModel(cpp_model, core(model))
   model[names(tmp)] <- tmp
 
-  class(model) <- c("sentopicmodel")
+  class(model) <- c("sentopicsmodel")
   attr(model, "reverse") <- reverse
   attr(model, "Sdim") <- Sdim
   # if (length(dictVal) > 0) attr(model$vocabulary, "compounds") <- compounds
-  reorder_sentopicmodel(model)
+  reorder_sentopicsmodel(model)
 }

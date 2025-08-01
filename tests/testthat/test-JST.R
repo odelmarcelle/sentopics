@@ -107,5 +107,5 @@ test_that("test convergence", {
 # e <- fit(e, 10000)
 # top_words(e, output = "plot")
 # plot(e$logLikelihood)
-# rebuild_zw(as.sentopicmodel(JST$chain2))
-# rebuild_zw(as.sentopicmodel(e))
+# rebuild_zw(as.sentopicsmodel(JST$chain2))
+# rebuild_zw(as.sentopicsmodel(e))

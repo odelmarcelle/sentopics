@@ -69,8 +69,8 @@ test_that("from lda", {
 
   LDA <- as.LDA_lda(lda, cora.documents, alpha = .1, eta = .1)
 
-  expect_equal(unname(lda$topics), rebuild_zw(as.sentopicmodel(LDA)))
-  expect_equal(unname(lda$document_sums), rebuild_zd(as.sentopicmodel(LDA)))
+  expect_equal(unname(lda$topics), rebuild_zw(as.sentopicsmodel(LDA)))
+  expect_equal(unname(lda$document_sums), rebuild_zd(as.sentopicsmodel(LDA)))
   expect_equal(median(LDA$alpha), 0.1)
   expect_equal(median(LDA$beta), 0.1)
 

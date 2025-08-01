@@ -11,7 +11,7 @@ reset(object)
 estimated with \code{\link[=fit]{fit()}}}
 }
 \value{
-a \code{sentopicmodel} of the relevant model class, with the iteration count
+a \code{sentopicsmodel} of the relevant model class, with the iteration count
 reset to zero and re-initialized assignment of latent variables.
 }
 \description{

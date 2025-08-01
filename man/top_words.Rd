@@ -23,7 +23,7 @@ plot_top_words(
 )
 }
 \arguments{
-\item{x}{a \code{sentopicmodel} created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}}}
+\item{x}{a \code{sentopicsmodel} created from the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}}}
 
 \item{nWords}{the number of top words to extract}
 
@@ -47,7 +47,7 @@ result in either a long-style data.frame, a \code{ggplot2} object or a matrix.
 }
 \description{
 Extract the top words in each topic/sentiment from a
-\code{sentopicmodel}.
+\code{sentopicsmodel}.
 }
 \details{
 \code{"frequency"} ranks top words according to their frequency
@@ -99,7 +99,7 @@ Bischof JM. and Airoldi, EM. (2012). \href{https://dl.acm.org/doi/10.5555/304257
 Conference on Machine Learning}, ICML'12, 9--16.
 }
 \seealso{
-\code{\link[=melt.sentopicmodel]{melt.sentopicmodel()}} for extracting estimated mixtures
+\code{\link[=melt.sentopicsmodel]{melt.sentopicsmodel()}} for extracting estimated mixtures
 }
 \author{
 Olivier Delmarcelle

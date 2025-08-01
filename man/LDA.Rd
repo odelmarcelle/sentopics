@@ -18,7 +18,7 @@ LDA(x, K = 5, alpha = 1, beta = 0.01)
 \value{
 An S3 list containing the model parameter and the estimated mixture.
 This object corresponds to a Gibbs sampler estimator with zero iterations.
-The MCMC can be iterated using the \code{\link[=fit.sentopicmodel]{fit()}}
+The MCMC can be iterated using the \code{\link[=fit.sentopicsmodel]{fit()}}
 function.
 \itemize{
 \item \code{tokens} is the tokens object used to create the model
@@ -57,13 +57,13 @@ Blei, D.M., Ng, A.Y. and Jordan, M.I. (2003). \href{http://www.cs.columbia.edu/~
 \emph{Journal of Machine Learning Research}, 3, 993--1022.
 }
 \seealso{
-Fitting a model: \code{\link[=fit.sentopicmodel]{fit()}}, extracting
+Fitting a model: \code{\link[=fit.sentopicsmodel]{fit()}}, extracting
 top words: \code{\link[=top_words]{top_words()}}
 
 Other topic models: 
 \code{\link{JST}()},
 \code{\link{rJST}()},
-\code{\link{sentopicmodel}()}
+\code{\link{sentopicsmodel}()}
 }
 \author{
 Olivier Delmarcelle

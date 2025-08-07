@@ -1,7 +1,7 @@
 # print -------------------------------------------------------------------
 
 sentopics_print_extend <- function(extended = FALSE) {
-  methods = c("fit", "topics", "top_words", "plot")
+  methods <- c("fit", "topics", "top_words", "plot")
   explain <- c(
     "Estimate the model using Gibbs sampling",
     "Return the most important topic of each document",

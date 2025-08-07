@@ -330,7 +330,7 @@ plot_top_words <- function(
 #' @param method the coherence method used.
 #' @param nWords the number of words in each topic used for evaluation.
 #' @param window optional. The maximum distance between two tokens to be
-#' considered *co-occuring* for the coherence measure. Distance is expressed in
+#' considered *co-occurring* for the coherence measure. Distance is expressed in
 #'   token positions. If `NULL`, use the default window for each coherence
 #'   metric (10 for C_NPMI and 110 for C_V). Providing an integer or `"boolean"`
 #'   to this argument will override the default. If `"boolean"`, co-occurences

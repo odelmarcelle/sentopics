@@ -64,7 +64,7 @@ virtualDocuments <- function(itoks, window = 10) {
 ## Computation of NPMI without using epsilon smoothing
 NPMI <- function(x, epsilon = 0) {
   if (dim(x)[1] != dim(x)[2]) {
-    stop("Provide a square matrix of co-occurence probabilities")
+    stop("Provide a square matrix of co-occurrence probabilities")
   }
 
   ## naming dimnames to match default behavior of which( arr.ind = TRUE)

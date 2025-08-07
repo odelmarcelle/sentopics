@@ -24,6 +24,8 @@
 ### Other changes
 
 * Reformatted codebase using Air.
+* Removed a comprehensive assessment from the `PicaultRenault_data` dataset
+  not present in the original paper.
 
 # sentopics 0.7.5
 

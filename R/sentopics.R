@@ -1,4 +1,3 @@
-
 #' @useDynLib sentopics,.registration = TRUE
 #' @importFrom Rcpp evalCpp sourceCpp
 NULL
@@ -43,7 +42,7 @@ NULL
 #' @format A [quanteda::corpus] object.
 #' @seealso [ECB_press_conferences_tokens]
 #'
-#' @source \url{https://www.ecb.europa.eu/press/key/date/html/index.en.html}.
+#' @source \url{https://www.ecb.europa.eu/press/pubbydate/html/index.en.html?name_of_publication=Monetary%20policy%20statement}.
 "ECB_press_conferences"
 
 #' Tokenized press conferences
@@ -65,7 +64,7 @@ NULL
 #' @format A [quanteda::tokens] object.
 #' @seealso [ECB_press_conferences]
 #'
-#' @source \url{https://www.ecb.europa.eu/press/key/date/html/index.en.html}.
+#' @source \url{https://www.ecb.europa.eu/press/pubbydate/html/index.en.html?name_of_publication=Monetary%20policy%20statement}.
 "ECB_press_conferences_tokens"
 
 #' Loughran-McDonald lexicon

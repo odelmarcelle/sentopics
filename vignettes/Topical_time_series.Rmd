@@ -19,9 +19,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Internal dates and sentiment
+# Document dates and sentiment
 
-The example dataset shipped with the package already contains two *docvars*: `.date` and `.sentiment`. Using these exact names, these two will be considered as internal dates and internal sentiment by `sentopics` when creating a topic model. Those values may be accessed or modified through the helper functions `sentopics_date()` and `sentopics_sentiment()`.
+The example dataset included in the package contains a *docvars* variable `.date` which contains the date of each document. To compute sentiment time series, a sentiment value per document is also required. The sentiment can be assigned using the `sentopics_sentiment()` helper function. `sentopics_sentiment()` and `sentopics_date()` can also recover the documents' sentiment and date. For this example, we compute sentiment using the `compute_PicaultRenault_scores()` function.
 
 ```{r message=FALSE}
 library("xts")
@@ -32,6 +32,12 @@ head(docvars(ECB_press_conferences_tokens))
 set.seed(123)
 lda <- LDA(ECB_press_conferences_tokens, K = 9, alpha = 1, beta = 0.001)
 head(sentopics_date(lda))
+
+# Compute sentiment using on the corpus
+data("ECB_press_conferences")
+scores <- compute_PicaultRenault_scores(ECB_press_conferences)
+print(head(scores))
+sentopics_sentiment(lda) <- scores[names(ECB_press_conferences_tokens), "EC"]
 head(sentopics_sentiment(lda))
 ```
 

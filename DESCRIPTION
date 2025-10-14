@@ -51,7 +51,7 @@ Suggests:
     stm,
     lda,
     topicmodels,
-    seededlda (>= 1.4.0),
+    seededlda (>= 1.4.3),
     keyATM,
     LDAvis,
     servr,

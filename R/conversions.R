@@ -59,6 +59,7 @@
 #' LDA <- as.LDA(lda, docs = AssociatedPress[1:20,])
 #'
 #' ## seededlda
+#' library("quanteda")
 #' library("seededlda")
 #' lda <- textmodel_lda(dfm(ECB_press_conferences_tokens),
 #'                      k = 6, max_iter = 100)

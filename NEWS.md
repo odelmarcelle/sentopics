@@ -29,6 +29,10 @@
 
 # sentopics 0.7.5
 
+* Fixed an example following change in suggested dependency.
+
+# sentopics 0.7.5
+
 * Fixed a test following change in suggested dependency.
 
 # sentopics 0.7.4

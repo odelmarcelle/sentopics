@@ -168,6 +168,15 @@ sentopics_sentiment <- function(
     }
   )
 
+  # Remove topic-specific sentiment and scaled values if any
+  if (".sentiment_scaled" %in% names(docvars)) {
+    docvars$`.sentiment_scaled` <- NULL
+  }
+  cols <- grep("^\\.s_", names(docvars), value = TRUE)
+  for (c in cols) {
+    docvars[[c]] <- NULL
+  }
+
   if (attr(x, "Sdim") == "L1") {
     ## then it is JST
 
@@ -242,12 +251,19 @@ sentopics_sentiment <- function(
   docvars <- attr(x$tokens, "docvars")
   if (".sentiment" %in% names(docvars) & !is.null(value)) {
     message("Replacing existing '.sentiment' docvars")
+    # Also remove topic-specific sentiment and scaled values if any
+    if (".sentiment_scaled" %in% names(docvars)) {
+      x$tokens$`.sentiment_scaled` <- NULL
+    }
+    cols <- grep("^\\.s_", names(docvars), value = TRUE)
+    for (c in cols) {
+      docvars(x$tokens, c) <- NULL
+    }
   }
 
   if (!is.null(value)) {
     x$tokens$`.sentiment` <- value
-  }
-  if (is.null(value)) {
+  } else if (is.null(value)) {
     x$tokens$`.sentiment` <- NULL
     idx <- names(docvars)[
       names(docvars) %in%
@@ -469,6 +485,7 @@ sentopics_labels <- function(x, flat = TRUE) {
 #' @export
 #' @seealso sentopics_sentiment sentopics_date
 #' @examples
+#' \donttest{
 #' lda <- LDA(ECB_press_conferences_tokens)
 #' scores <- compute_PicaultRenault_scores(ECB_press_conferences)
 #' sentopics_sentiment(lda) <- scores[names(lda$tokens), "EC"]
@@ -484,6 +501,7 @@ sentopics_labels <- function(x, flat = TRUE) {
 #' # in the initial object
 #' sentopics_sentiment(lda)
 #' sentopics_sentiment(rjst)
+#' }
 sentiment_series <- function(
   x,
   period = c("year", "quarter", "month", "day"),
@@ -859,7 +877,7 @@ sentiment_breakdown <- function(
     ))
   ) {
     stop(
-      "Computation of breakdown failed. Please contact the author of the package to work on a solution."
+      "Computation of breakdown failed. Please contact the author of the package to report the issue."
     )
   }
 
@@ -1533,7 +1551,7 @@ proportion_topics <- function(
     ))
   ) {
     stop(
-      "Computation of breakdown failed. Please contact the author of the package to work on a solution."
+      "Computation of breakdown failed. Please contact the author of the package to report the issue."
     )
   }
 

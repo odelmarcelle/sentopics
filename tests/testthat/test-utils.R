@@ -123,10 +123,13 @@ test_that("fit0 doesn't alter anything", {
   expect_identical(model, fit(model, 0, displayProgress = FALSE))
 })
 
+scores <- compute_PicaultRenault_scores(ECB_press_conferences)
+EC <- scores[names(ECB_press_conferences_tokens), "EC"]
 
 test_that("merge_topics works", {
   toks <- ECB_press_conferences_tokens[1:50]
   model <- LDA(toks)
+  sentopics_sentiment(model) <- EC[names(model$tokens)]
   merged <- merge_topics(model, as.list(1:5))
   sentopics_labels(merged)
   sentopics_labels(merged) <- NULL
@@ -161,7 +164,7 @@ test_that("merge_topics works", {
   expect_identical(merged, model)
 
   sentopics_sentiment(model) <- NULL
-  sentopics_sentiment(model)
+  sentopics_sentiment(model, override = TRUE)
   merged <- merge_topics(model, list(1:4, 5))
   sentopics_sentiment(model)
   top_words(merged)

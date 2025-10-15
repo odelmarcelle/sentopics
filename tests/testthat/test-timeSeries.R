@@ -1,32 +1,9 @@
 toks <- ECB_press_conferences_tokens
-
-test_that("prior population works", {
-  jst <- JST(toks)
-
-  expect_message(
-    sent <- sentopics_sentiment(jst),
-    "'.sentiment' docvars found."
-  )
-
-  expect_identical(
-    sentopics_sentiment(jst),
-    data.table(
-      .id = names(toks),
-      .sentiment = ECB_press_conferences_tokens$.sentiment
-    )
-  )
-  expect_identical(
-    sentopics_date(jst),
-    data.table(
-      .id = names(toks),
-      .date = as.Date(ECB_press_conferences_tokens$.date)
-    )
-  )
-})
-
+scores <- compute_PicaultRenault_scores(ECB_press_conferences)
 jst <- fit(JST(toks, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
+EC <- scores[names(jst$tokens), "EC"]
 
-
+jst$tokens$.sentiment <- EC
 sentopics_date(jst) <- NULL
 sentopics_sentiment(jst) <- NULL
 
@@ -45,17 +22,17 @@ test_that("sentiment works", {
   expect_true(all(is.finite(sent$.sentiment)))
 
   expect_message(
-    sent <- sentopics_sentiment(jst),
+    sent <- sentopics_sentiment(jst, override = TRUE),
     "Sentiment computed and assigned"
   )
 
-  sentopics_sentiment(jst) <- ECB_press_conferences_tokens$.sentiment
+  sentopics_sentiment(jst) <- EC
 
   expect_identical(
     sentopics_sentiment(jst),
     data.table(
       .id = names(toks),
-      .sentiment = ECB_press_conferences_tokens$.sentiment
+      .sentiment = EC
     )
   )
 
@@ -101,9 +78,9 @@ sentopics_date(jst) <- ECB_press_conferences_tokens$.date
 test_that("sentiment_series works", {
   skip_if_not_installed("xts")
   jst <- fit(JST(toks, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
-  s1_1 <- sentiment_series(jst)
-  sentopics_sentiment(jst)
   s2 <- sentiment_series(jst)
+  sentopics_sentiment(jst) <- EC
+  s1_1 <- sentiment_series(jst)
   expect_false(isTRUE(all.equal(s1_1, s2, check.attributes = FALSE)))
 
   rjst <- fit(
@@ -112,12 +89,13 @@ test_that("sentiment_series works", {
     displayProgress = FALSE
   )
   sentopics_labels(jst) <- list(topic = paste0("superTopic", 1:jst$K))
-  s1_2 <- sentiment_series(rjst)
-  sentopics_sentiment(rjst)
   s2 <- sentiment_series(rjst)
+  sentopics_sentiment(rjst) <- EC
+  s1_2 <- sentiment_series(rjst)
   expect_false(isTRUE(all.equal(s1_2, s2, check.attributes = FALSE)))
 
   lda <- fit(LDA(ECB_press_conferences_tokens), 1, displayProgress = FALSE)
+  sentopics_sentiment(lda) <- EC
   s1_3 <- sentiment_series(lda)
 
   expect_identical(s1_1, s1_2)
@@ -130,13 +108,14 @@ test_that("sentiment_series works", {
 
   lda <- LDA(ECB_press_conferences_tokens[1:50])
   expect_error(sentiment_series(lda))
-  expect_silent(sentiment_series(lda, period = "day"))
+  expect_error(sentiment_series(lda, period = "day"))
 })
 
 
 test_that("series functions works for LDA", {
   skip_if_not_installed("xts")
   lda <- LDA(ECB_press_conferences_tokens)
+  sentopics_sentiment(lda) <- EC
   expect_silent(res <- sentiment_series(lda))
   expect_equal(mean(res), 0)
   expect_equal(sd(res), 1)
@@ -161,6 +140,7 @@ test_that("series functions works for LDA", {
 test_that("series functions works for rJST", {
   rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
   rjst <- fit(rjst, 10, displayProgress = FALSE)
+  sentopics_sentiment(rjst) <- EC
 
   expect_warning(sentiment_breakdown(rjst))
   expect_warning(sentiment_topics(rjst))
@@ -174,7 +154,57 @@ test_that("series functions works for rJST", {
   }
   expect_equal(agg, unclass(not_complete), check.attributes = FALSE)
 
-  sentopics_sentiment(rjst)
+  sentopics_sentiment(rjst, override = TRUE)
+  sentnames <- names(sentopics_sentiment(rjst))
+  sentnames <- sub("^\\.s_", "", sentnames[grepl("^\\.s_", sentnames)])
+  expect_equal(
+    sentopics_labels(rjst, flat = FALSE)$topic,
+    sentnames
+  )
+
+  ## check if changing labels propagate to stored sentiment
+  sentopics_labels(rjst) <- list(
+    topic = paste0("superTopic", 1:jst$K),
+    sentiment = c("negative", "neutral", "positive")
+  )
+  sentnames <- names(sentopics_sentiment(rjst))
+  sentnames <- sub("^\\.s_", "", sentnames[grepl("^\\.s_", sentnames)])
+  expect_equal(
+    sentopics_labels(rjst, flat = FALSE)$topic,
+    sentnames
+  )
+
+  expect_silent(sentiment_breakdown(rjst))
+  plot_sentiment_breakdown(rjst, scale = FALSE)
+
+  expect_silent(sentiment_topics(rjst))
+  plot_sentiment_topics(rjst, period = "month", scale = FALSE)
+  plot_sentiment_topics(
+    rjst,
+    period = "month",
+    scale = FALSE,
+    plot_ridgelines = FALSE
+  )
+})
+
+
+test_that("series functions works for rJST - internal sentiment", {
+  rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
+  rjst <- fit(rjst, 10, displayProgress = FALSE)
+
+  expect_message(sentiment_breakdown(rjst), "Sentiment computed and assigned")
+  expect_silent(sentiment_topics(rjst))
+
+  expect_silent(complete <- proportion_topics(rjst))
+  expect_silent(not_complete <- proportion_topics(rjst, complete = FALSE))
+
+  agg <- matrix(0, nrow(complete), rjst$K)
+  for (i in seq_len(rjst$K)) {
+    agg[, i] <- rowSums(complete[, seq_len(rjst$S) + (i - 1) * rjst$S])
+  }
+  expect_equal(agg, unclass(not_complete), check.attributes = FALSE)
+
+  sentopics_sentiment(rjst, override = TRUE)
   sentnames <- names(sentopics_sentiment(rjst))
   sentnames <- sub("^\\.s_", "", sentnames[grepl("^\\.s_", sentnames)])
   expect_equal(

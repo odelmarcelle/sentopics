@@ -53,6 +53,7 @@ and dates of a \code{sentopicsmodel}. The time series computation supports
 multiple sampling period and optionally allow computing a moving average.
 }
 \examples{
+\donttest{
 lda <- LDA(ECB_press_conferences_tokens)
 scores <- compute_PicaultRenault_scores(ECB_press_conferences)
 sentopics_sentiment(lda) <- scores[names(lda$tokens), "EC"]
@@ -68,6 +69,7 @@ sentiment_series(rjst)
 # in the initial object
 sentopics_sentiment(lda)
 sentopics_sentiment(rjst)
+}
 }
 \seealso{
 sentopics_sentiment sentopics_date

@@ -21,6 +21,8 @@
 * Modified names of columns in the `PicaultRenault_data` dataset to
   syntactically valid names.
 
+* Removed `.sentiment` docvars in `ECB_press_conferences` dataset.
+
 ### Other changes
 
 * Reformatted codebase using Air.

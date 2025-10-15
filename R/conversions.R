@@ -604,7 +604,7 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
 
 # To LDAvis ---------------------------------------------------------------
 
-#' Visualize a LDA model using \pkg{LDAvis}
+#' Visualize an LDA model using \pkg{LDAvis}
 #'
 #' This function call \pkg{LDAvis} to create a dynamic visualization of an
 #' estimated topic model.

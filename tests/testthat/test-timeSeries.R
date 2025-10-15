@@ -45,7 +45,7 @@ test_that("sentiment works", {
   expect_true(all(is.finite(sent$.sentiment)))
 
   expect_message(
-    sent <- sentopics_sentiment(jst, override = TRUE),
+    sent <- sentopics_sentiment(jst),
     "Sentiment computed and assigned"
   )
 
@@ -60,7 +60,7 @@ test_that("sentiment works", {
   )
 
   jst <- JST(toks)
-  expect_error(sentopics_sentiment(jst, override = TRUE))
+  expect_error(sentopics_sentiment(jst))
   sentopics_sentiment(jst) <- NULL
   expect_error(sentopics_sentiment(jst))
 
@@ -74,7 +74,7 @@ test_that("sentiment works", {
     displayProgress = FALSE
   )
   expect_message(
-    sent <- sentopics_sentiment(rjst, override = TRUE),
+    sent <- sentopics_sentiment(rjst),
     "Sentiment computed and assigned"
   )
   expect_true(all(is.finite(sent$.sentiment)))
@@ -102,7 +102,7 @@ test_that("sentiment_series works", {
   skip_if_not_installed("xts")
   jst <- fit(JST(toks, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
   s1_1 <- sentiment_series(jst)
-  sentopics_sentiment(jst, override = TRUE)
+  sentopics_sentiment(jst)
   s2 <- sentiment_series(jst)
   expect_false(isTRUE(all.equal(s1_1, s2, check.attributes = FALSE)))
 
@@ -113,7 +113,7 @@ test_that("sentiment_series works", {
   )
   sentopics_labels(jst) <- list(topic = paste0("superTopic", 1:jst$K))
   s1_2 <- sentiment_series(rjst)
-  sentopics_sentiment(rjst, override = TRUE)
+  sentopics_sentiment(rjst)
   s2 <- sentiment_series(rjst)
   expect_false(isTRUE(all.equal(s1_2, s2, check.attributes = FALSE)))
 
@@ -143,6 +143,8 @@ test_that("series functions works for LDA", {
   lda <- fit(lda, 1, displayProgress = FALSE)
 
   expect_silent(sentiment_topics(lda))
+  scores <- compute_PicaultRenault_scores(ECB_press_conferences)
+  sentopics_sentiment(lda) <- scores[names(lda$tokens), "EC"]
   expect_silent(breakdown <- sentiment_breakdown(lda))
   expect_silent(proportion_topics(lda))
 
@@ -172,7 +174,7 @@ test_that("series functions works for rJST", {
   }
   expect_equal(agg, unclass(not_complete), check.attributes = FALSE)
 
-  sentopics_sentiment(rjst, override = TRUE)
+  sentopics_sentiment(rjst)
   sentnames <- names(sentopics_sentiment(rjst))
   sentnames <- sub("^\\.s_", "", sentnames[grepl("^\\.s_", sentnames)])
   expect_equal(

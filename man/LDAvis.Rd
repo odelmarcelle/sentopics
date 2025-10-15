@@ -2,7 +2,7 @@
 % Please edit documentation in R/conversions.R
 \name{LDAvis}
 \alias{LDAvis}
-\title{Visualize a LDA model using \pkg{LDAvis}}
+\title{Visualize an LDA model using \pkg{LDAvis}}
 \usage{
 LDAvis(x, ...)
 }

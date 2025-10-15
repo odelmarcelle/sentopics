@@ -84,25 +84,30 @@ negative and positive sentiments.
 }
 
 \examples{
-\donttest{# example dataset already contains ".sentiment" docvar
-docvars(ECB_press_conferences_tokens)
-# sentiment is automatically stored in the sentopicsmodel object
+\donttest{# sentiment from an external source can be added to the model
 lda <- LDA(ECB_press_conferences_tokens)
+scores <- compute_PicaultRenault_scores(ECB_press_conferences)
+sentopics_sentiment(lda) <- scores[names(lda$tokens), "EC"]
+
+# using the helper function extracts the stored sentiment
 sentopics_sentiment(lda)
+
+# internally, the sentiment is stored in the docvars of the tokens
+docvars(lda$tokens, ".sentiment")
 
 # sentiment can be removed or modified by the assignment operator
 sentopics_sentiment(lda) <- NULL
-sentopics_sentiment(lda) <- docvars(ECB_press_conferences_tokens, ".sentiment")
+sentopics_sentiment(lda) <- scores[names(lda$tokens), "EC"]
 
 # for JST models, sentiment can be computed from the output of the model
 jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 jst <- fit(jst, 100)
-sentopics_sentiment(jst, override = TRUE) # replace existing sentiment
+sentopics_sentiment(jst) # compute sentiment
 
 ## for rJST models one sentiment value is computed by topic
 rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 rjst <- fit(rjst, 100)
-sentopics_sentiment(rjst, override = TRUE)}
+sentopics_sentiment(rjst)}
 }
 \seealso{
 Other sentopics helpers: 

@@ -161,7 +161,7 @@ test_that("merge_topics works", {
   expect_identical(merged, model)
 
   sentopics_sentiment(model) <- NULL
-  sentopics_sentiment(model, override = TRUE)
+  sentopics_sentiment(model)
   merged <- merge_topics(model, list(1:4, 5))
   sentopics_sentiment(model)
   top_words(merged)

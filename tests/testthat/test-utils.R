@@ -12,7 +12,11 @@ test_that("virtualDocuments works", {
 })
 
 test_that("as.tokens.dfm works", {
-  toks <- ECB_press_conferences_tokens[1:10]
+  ## quanteda (>= 4.5.0) no longer compacts the type table when subsetting, so
+  ## `[1:10]` retains phantom types from the parent object. Reconstructing from
+  ## a dfm always yields compacted tokens, so recompile the reference to make
+  ## the round-trip comparison meaningful.
+  toks <- recompileTypes(ECB_press_conferences_tokens[1:10])
   dfm <- quanteda::dfm(toks, tolower = FALSE)
   expect_silent(LDA <- LDA(dfm))
   expect_silent(JST <- JST(dfm))

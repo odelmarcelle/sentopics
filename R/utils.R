@@ -826,6 +826,22 @@ custom_handler <- function() {
   }
 }
 
+## Drop types that no longer appear in a tokens object. quanteda compacted the
+## type table automatically on subsetting before 4.5.0; from 4.5.0 onwards this
+## must be requested explicitly via the (internal) tokens_recompile(force=).
+## Only meaningful for user-supplied tokens/dfm: the conversion helpers build
+## tokens from an external vocabulary whose unused entries must be preserved.
+recompileTypes <- function(toks) {
+  tokens_recompile <- get("tokens_recompile", envir = getNamespace("quanteda"))
+  if ("force" %in% names(formals(tokens_recompile))) {
+    tokens_recompile(toks, force = TRUE)
+  } else {
+    ## Older quanteda already compacts on subset; recompile as a no-op safeguard.
+    tokens_recompile(toks)
+  }
+}
+
+
 makeVocabulary <- function(toks, dictionary, S) {
 
   ## CMD checks

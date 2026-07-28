@@ -97,7 +97,7 @@ test_that("test convergence", {
 })
 
 test_that("from LDA works", {
-  toks <- ECB_press_conferences_tokens[1:10]
+  toks <- quanteda::tokens_trim(ECB_press_conferences_tokens[1:10])
   LDA <- fit(LDA(toks), 10, displayProgress = FALSE)
   rJST <- rJST(LDA, lexicon = LoughranMcDonald)
 

@@ -12,8 +12,8 @@ test_that("virtualDocuments works", {
 })
 
 test_that("as.tokens.dfm works", {
-  toks <- ECB_press_conferences_tokens[1:10]
-  dfm <- quanteda::dfm(toks, tolower = FALSE)
+  toks <- quanteda::tokens_trim(ECB_press_conferences_tokens[1:10])
+  dfm <- quanteda::dfm(toks, tolower = FALSE, trim = FALSE)
   expect_silent(LDA <- LDA(dfm))
   expect_silent(JST <- JST(dfm))
   expect_silent(rJST <- rJST(dfm))
@@ -21,7 +21,7 @@ test_that("as.tokens.dfm works", {
   expect_identical(as.tokens(dfm, tokens = toks), toks)
 
   dfm <- quanteda::dfm(ECB_press_conferences_tokens)
-  toks <- as.tokens.dfm(dfm)
+  toks <- as.tokens(dfm)
   expect_identical(nrow(dfm), length(toks))
   expect_identical(colnames(dfm), quanteda::types(toks))
   expect_equal(

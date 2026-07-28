@@ -31,9 +31,8 @@ NULL
 #' Corpus of press conferences from the European Central Bank
 #'
 #' @description A corpus of 260 ECB press conference, split into 4224
-#'   paragraphs. The corpus contains a number of *docvars* indicating the date
-#'   of the press conference and a measured sentiment based on the
-#'   Loughran-McDonald lexicon.
+#'   paragraphs. The corpus contains a *docvars* indicating the date
+#'   of the press conference.
 #'
 #'
 #' @examples

@@ -92,6 +92,8 @@ document d.
 \examples{
 \donttest{lda <- LDA(ECB_press_conferences_tokens)
 lda <- fit(lda, 100)
+scores <- compute_PicaultRenault_scores(ECB_press_conferences)
+sentopics_sentiment(lda) <- scores[names(lda$tokens), "EC"]
 sentiment_topics(lda)
 
 # plot shortcut
@@ -102,7 +104,7 @@ plot_sentiment_topics(lda, period = "month", plot_ridgelines = FALSE)
 # also available for rJST models with internal sentiment computation
 rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 rjst <- fit(rjst, 100)
-sentopics_sentiment(rjst, override = TRUE)
+sentopics_sentiment(rjst)
 sentiment_topics(rjst)}
 }
 \seealso{

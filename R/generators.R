@@ -312,7 +312,7 @@ vocabFromList <- function(list) {
       ifelse(is.list(x), length(x), 1)
     }))
   } else {
-    S = 0
+    S <- 0
   }
   if (S == 0) {
     S <- 1

@@ -21,7 +21,7 @@ estimated with \code{\link[=fit.sentopicsmodel]{fit()}}}
 \item{method}{the coherence method used.}
 
 \item{window}{optional. The maximum distance between two tokens to be
-considered \emph{co-occuring} for the coherence measure. Distance is expressed in
+considered \emph{co-occurring} for the coherence measure. Distance is expressed in
 token positions. If \code{NULL}, use the default window for each coherence
 metric (10 for C_NPMI and 110 for C_V). Providing an integer or \code{"boolean"}
 to this argument will override the default. If \code{"boolean"}, co-occurences

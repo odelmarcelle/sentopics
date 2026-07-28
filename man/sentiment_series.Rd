@@ -53,22 +53,23 @@ and dates of a \code{sentopicsmodel}. The time series computation supports
 multiple sampling period and optionally allow computing a moving average.
 }
 \examples{
+\donttest{
 lda <- LDA(ECB_press_conferences_tokens)
+scores <- compute_PicaultRenault_scores(ECB_press_conferences)
+sentopics_sentiment(lda) <- scores[names(lda$tokens), "EC"]
 series <- sentiment_series(lda, period = "month")
 
 # JST and rJST models can use computed sentiment from the sentiment layer,
 # but the model must be estimated first.
 rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
-sentiment_series(rjst)
-
-sentopics_sentiment(rjst) <- NULL ## remove existing sentiment
-rjst <- fit(rjst, 10) ## estimating the model is then needed
+rjst <- fit(rjst, 10)
 sentiment_series(rjst)
 
 # note the presence of both raw and scaled sentiment values
 # in the initial object
 sentopics_sentiment(lda)
 sentopics_sentiment(rjst)
+}
 }
 \seealso{
 sentopics_sentiment sentopics_date

@@ -61,25 +61,30 @@
 #'
 #' @export
 #' @examples
-#' \donttest{# example dataset already contains ".sentiment" docvar
-#' docvars(ECB_press_conferences_tokens)
-#' # sentiment is automatically stored in the sentopicsmodel object
+#' \donttest{# sentiment from an external source can be added to the model
 #' lda <- LDA(ECB_press_conferences_tokens)
+#' scores <- compute_PicaultRenault_scores(ECB_press_conferences)
+#' sentopics_sentiment(lda) <- scores[names(lda$tokens), "EC"]
+#'
+#' # using the helper function extracts the stored sentiment
 #' sentopics_sentiment(lda)
+#'
+#' # internally, the sentiment is stored in the docvars of the tokens
+#' docvars(lda$tokens, ".sentiment")
 #'
 #' # sentiment can be removed or modified by the assignment operator
 #' sentopics_sentiment(lda) <- NULL
-#' sentopics_sentiment(lda) <- docvars(ECB_press_conferences_tokens, ".sentiment")
+#' sentopics_sentiment(lda) <- scores[names(lda$tokens), "EC"]
 #'
 #' # for JST models, sentiment can be computed from the output of the model
 #' jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' jst <- fit(jst, 100)
-#' sentopics_sentiment(jst, override = TRUE) # replace existing sentiment
+#' sentopics_sentiment(jst) # compute sentiment
 #'
 #' ## for rJST models one sentiment value is computed by topic
 #' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' rjst <- fit(rjst, 100)
-#' sentopics_sentiment(rjst, override = TRUE)}
+#' sentopics_sentiment(rjst)}
 sentopics_sentiment <- function(
   x,
   method = c("proportional", "proportionalPol"),
@@ -163,6 +168,15 @@ sentopics_sentiment <- function(
     }
   )
 
+  # Remove topic-specific sentiment and scaled values if any
+  if (".sentiment_scaled" %in% names(docvars)) {
+    docvars$`.sentiment_scaled` <- NULL
+  }
+  cols <- grep("^\\.s_", names(docvars), value = TRUE)
+  for (c in cols) {
+    docvars[[c]] <- NULL
+  }
+
   if (attr(x, "Sdim") == "L1") {
     ## then it is JST
 
@@ -237,12 +251,19 @@ sentopics_sentiment <- function(
   docvars <- attr(x$tokens, "docvars")
   if (".sentiment" %in% names(docvars) & !is.null(value)) {
     message("Replacing existing '.sentiment' docvars")
+    # Also remove topic-specific sentiment and scaled values if any
+    if (".sentiment_scaled" %in% names(docvars)) {
+      x$tokens$`.sentiment_scaled` <- NULL
+    }
+    cols <- grep("^\\.s_", names(docvars), value = TRUE)
+    for (c in cols) {
+      docvars(x$tokens, c) <- NULL
+    }
   }
 
   if (!is.null(value)) {
     x$tokens$`.sentiment` <- value
-  }
-  if (is.null(value)) {
+  } else if (is.null(value)) {
     x$tokens$`.sentiment` <- NULL
     idx <- names(docvars)[
       names(docvars) %in%
@@ -464,22 +485,23 @@ sentopics_labels <- function(x, flat = TRUE) {
 #' @export
 #' @seealso sentopics_sentiment sentopics_date
 #' @examples
+#' \donttest{
 #' lda <- LDA(ECB_press_conferences_tokens)
+#' scores <- compute_PicaultRenault_scores(ECB_press_conferences)
+#' sentopics_sentiment(lda) <- scores[names(lda$tokens), "EC"]
 #' series <- sentiment_series(lda, period = "month")
 #'
 #' # JST and rJST models can use computed sentiment from the sentiment layer,
 #' # but the model must be estimated first.
 #' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
-#' sentiment_series(rjst)
-#'
-#' sentopics_sentiment(rjst) <- NULL ## remove existing sentiment
-#' rjst <- fit(rjst, 10) ## estimating the model is then needed
+#' rjst <- fit(rjst, 10)
 #' sentiment_series(rjst)
 #'
 #' # note the presence of both raw and scaled sentiment values
 #' # in the initial object
 #' sentopics_sentiment(lda)
 #' sentopics_sentiment(rjst)
+#' }
 sentiment_series <- function(
   x,
   period = c("year", "quarter", "month", "day"),
@@ -652,6 +674,8 @@ sentiment_series <- function(
 #' @examples
 #' \donttest{lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- fit(lda, 100)
+#' scores <- compute_PicaultRenault_scores(ECB_press_conferences)
+#' sentopics_sentiment(lda) <- scores[names(lda$tokens), "EC"]
 #' sentiment_breakdown(lda)
 #'
 #' # plot shortcut
@@ -660,7 +684,7 @@ sentiment_series <- function(
 #' # also available for rJST models (with topic-level sentiment)
 #' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' rjst <- fit(rjst, 100)
-#' sentopics_sentiment(rjst, override = TRUE)
+#' sentopics_sentiment(rjst) # compute sentiment
 #' plot_sentiment_breakdown(rjst)}
 sentiment_breakdown <- function(
   x,
@@ -853,7 +877,7 @@ sentiment_breakdown <- function(
     ))
   ) {
     stop(
-      "Computation of breakdown failed. Please contact the author of the package to work on a solution."
+      "Computation of breakdown failed. Please contact the author of the package to report the issue."
     )
   }
 
@@ -1047,6 +1071,8 @@ plot_sentiment_breakdown <- function(
 #' @examples
 #' \donttest{lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- fit(lda, 100)
+#' scores <- compute_PicaultRenault_scores(ECB_press_conferences)
+#' sentopics_sentiment(lda) <- scores[names(lda$tokens), "EC"]
 #' sentiment_topics(lda)
 #'
 #' # plot shortcut
@@ -1057,7 +1083,7 @@ plot_sentiment_breakdown <- function(
 #' # also available for rJST models with internal sentiment computation
 #' rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 #' rjst <- fit(rjst, 100)
-#' sentopics_sentiment(rjst, override = TRUE)
+#' sentopics_sentiment(rjst)
 #' sentiment_topics(rjst)}
 sentiment_topics <- function(
   x,
@@ -1525,7 +1551,7 @@ proportion_topics <- function(
     ))
   ) {
     stop(
-      "Computation of breakdown failed. Please contact the author of the package to work on a solution."
+      "Computation of breakdown failed. Please contact the author of the package to report the issue."
     )
   }
 

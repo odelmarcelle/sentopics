@@ -59,6 +59,7 @@
 #' LDA <- as.LDA(lda, docs = AssociatedPress[1:20,])
 #'
 #' ## seededlda
+#' library("quanteda")
 #' library("seededlda")
 #' lda <- textmodel_lda(dfm(ECB_press_conferences_tokens),
 #'                      k = 6, max_iter = 100)
@@ -464,7 +465,7 @@ as.LDA_lda <- function(list, docs, alpha, eta) {
 #' @rdname as.LDA
 #' @export
 as.LDA.keyATM_output <- function(x, docs, ...) {
-  K = x$keyword_k + x$no_keyword_topics
+  K <- x$keyword_k + x$no_keyword_topics
 
   labels <- colnames(x$theta)
 
@@ -603,7 +604,7 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
 
 # To LDAvis ---------------------------------------------------------------
 
-#' Visualize a LDA model using \pkg{LDAvis}
+#' Visualize an LDA model using \pkg{LDAvis}
 #'
 #' This function call \pkg{LDAvis} to create a dynamic visualization of an
 #' estimated topic model.
@@ -682,7 +683,7 @@ as.sentopicsmodel_defaults <- function(x) {
   }
   if (is.null(x$L2post) & x$it > 0) {
     L2post <- array(1, dim = c(1, x$L1, length(x$tokens)))
-    dimnames(L2post) = c(
+    dimnames(L2post) <- c(
       list(L2 = levels(x$vocabulary$lexicon)),
       dimnames(x$L1post)[2],
       dimnames(x$L1post)[1]
@@ -881,7 +882,7 @@ as.LDA.sentopicsmodel <- function(x, ...) {
   }
   rename <- replace(rename, names(translate), translate)[rename]
   names(x) <- rename
-  # x$phi <- x$phi[,,] ## this drops un-needed sentiment dimension ### Need to account for labels..
+  # x$phi <- x$phi[,,] ## this drops unneeded sentiment dimension ### Need to account for labels..
   x$S <- x$gamma <- x$pi <- x$alphaCycle <- x$gammaCycle <- x$logLikelihoodS <- NULL
   class(x) <- union("LDA", class(x))
   x

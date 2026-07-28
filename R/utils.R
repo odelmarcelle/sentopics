@@ -155,7 +155,7 @@ check_integrity <- function(x, detailed = FALSE, fast = TRUE) {
     }
   }
 
-  flags = mget(sapply(expression(zaFlag, toksFlag, lexFlag), paste0))
+  flags <- mget(sapply(expression(zaFlag, toksFlag, lexFlag), paste0))
 
   if (x$it > 0) {
     if (
@@ -179,7 +179,7 @@ check_integrity <- function(x, detailed = FALSE, fast = TRUE) {
     L1Flag <- all(abs(rowSums(x$L1post) - 1) < sqrt(.Machine$double.eps))
     phiFlag <- all(abs(colSums(x$phi) - 1) < sqrt(.Machine$double.eps))
 
-    flags = c(flags, mget(sapply(expression(L2Flag, L1Flag, phiFlag), paste0)))
+    flags <- c(flags, mget(sapply(expression(L2Flag, L1Flag, phiFlag), paste0)))
   }
 
   if (detailed) {
@@ -315,7 +315,7 @@ rebuild_L2d_from_posterior <- function(L1D, L2post, L2prior) {
   ))
 }
 rebuild_zd_from_posterior <- function(x) {
-  doc.length = lengths(cleanPadding(x$tokens))
+  doc.length <- lengths(cleanPadding(x$tokens))
   L1D <- rebuild_L1d_from_posterior(doc.length, x$L1post, x$L1prior)
   L2D <- rebuild_L2d_from_posterior(L1D, x$L2post, x$L2prior)
   t(unname(L2D))
@@ -1116,7 +1116,7 @@ makeVocabulary <- function(toks, dictionary, S) {
       perl = TRUE
     )
 
-    ## remove the un-needed __INTERNAL__
+    ## remove the unneeded __INTERNAL__
     toks <- quanteda::tokens_replace(
       toks,
       quanteda::types(toks)[grepl(

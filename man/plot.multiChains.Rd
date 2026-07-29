@@ -31,6 +31,7 @@ and \code{\link[stats:cmdscale]{stats::cmdscale()}} for the implementation of th
 scaling.
 }
 \examples{
+\dontshow{data.table::setDTthreads(2)}
 models <- LDA(ECB_press_conferences_tokens)
 models <- fit(models, 10, nChains = 5)
 plot(models)

@@ -381,6 +381,7 @@ sentopics_labels <- function(x, flat = TRUE) {
 #' @export
 #' @seealso sentopics_sentiment sentopics_date
 #' @examples
+#' \dontshow{data.table::setDTthreads(2)}
 #' lda <- LDA(ECB_press_conferences_tokens)
 #' series <- sentiment_series(lda, period = "month")
 #'
@@ -1272,4 +1273,3 @@ sentopicmodel_params <- function(x) {
     L2_name = ifelse(attr(x, "reversed") == FALSE, "topic", "sentiment")
   )
 }
-

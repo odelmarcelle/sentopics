@@ -27,6 +27,7 @@ This function extracts the estimated document mixtures from a
 topic model and returns them in a long \link[data.table:data.table]{data.table::data.table} format.
 }
 \examples{
+\dontshow{data.table::setDTthreads(2)}
 # only returns topic proportion for LDA models
 lda <- LDA(ECB_press_conferences_tokens)
 lda <- fit(lda, 10)

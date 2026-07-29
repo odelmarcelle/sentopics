@@ -50,6 +50,7 @@ the model. Equivalent to \code{euclidean} for LDA models.
 }
 }
 \examples{
+\dontshow{data.table::setDTthreads(2)}
 model <- LDA(ECB_press_conferences_tokens)
 model <- fit(model, 10, nChains = 5)
 chainsDistances(model)

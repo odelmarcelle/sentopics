@@ -33,8 +33,8 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #' of the 18th ACM conference on Information and knowledge management*,
 #' 375--384.
 #'
-#' Lin, C., He, Y., Everson, R. and Ruger, S. (2012). [Weakly Supervised Joint
-#' Sentiment-Topic Detection from Text](https://ieeexplore.ieee.org/document/5710933).
+#' Lin, C., He, Y., Everson, R. and Ruger, S. (2012). Weakly Supervised Joint
+#' Sentiment-Topic Detection from Text. \doi{10.1109/TKDE.2011.48}.
 #' *IEEE Transactions on Knowledge and Data Engineering*, 24(6), 1134–-1145.
 #'
 #' @inherit sentopicmodel
@@ -162,8 +162,8 @@ rJST.LDA <- function(x,
 #' of the 18th ACM conference on Information and knowledge management*,
 #' 375--384.
 #'
-#' Lin, C., He, Y., Everson, R. and Ruger, S. (2012). [Weakly Supervised Joint
-#' Sentiment-Topic Detection from Text](https://ieeexplore.ieee.org/document/5710933).
+#' Lin, C., He, Y., Everson, R. and Ruger, S. (2012). Weakly Supervised Joint
+#' Sentiment-Topic Detection from Text. \doi{10.1109/TKDE.2011.48}.
 #' *IEEE Transactions on Knowledge and Data Engineering*, 24(6), 1134–-1145.
 #'
 #' @inherit rJST
@@ -302,4 +302,3 @@ sentopicmodel <- function(x, lexicon = NULL, L1 = 5, L2 = 3,
   # if (length(dictVal) > 0) attr(model$vocabulary, "compounds") <- compounds
   reorder_sentopicmodel(model)
 }
-

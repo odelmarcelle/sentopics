@@ -354,6 +354,7 @@ coherence.sentopicmodel <- function(x, nWords = 10, method = c("C_NPMI", "C_V"),
 #'
 #' @return A matrix of distance between the elements of `x`
 #' @examples
+#' \dontshow{data.table::setDTthreads(2)}
 #' model <- LDA(ECB_press_conferences_tokens)
 #' model <- fit(model, 10, nChains = 5)
 #' chainsDistances(model)

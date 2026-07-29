@@ -547,6 +547,7 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
 #' @seealso [plot.sentopicmodel()]
 #'
 #' @examples
+#' \dontshow{data.table::setDTthreads(2)}
 #' lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- fit(lda, 100)
 #' LDAvis(lda)

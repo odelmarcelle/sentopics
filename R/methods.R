@@ -107,6 +107,7 @@ print.topWords <- function(x, ...) {
 #' @export
 #' @seealso [topWords()] [LDAvis()]
 #' @examples
+#' \dontshow{data.table::setDTthreads(2)}
 #' lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- fit(lda, 100)
 #' plot(lda, nWords = 5)
@@ -228,6 +229,7 @@ plot.sentopicmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
 #'   multidimensional scaling.
 #'
 #' @examples
+#' \dontshow{data.table::setDTthreads(2)}
 #' models <- LDA(ECB_press_conferences_tokens)
 #' models <- fit(models, 10, nChains = 5)
 #' plot(models)
@@ -707,6 +709,7 @@ melt.default <- function(data, ...) {
 #'
 #' @export
 #' @examples
+#' \dontshow{data.table::setDTthreads(2)}
 #' # only returns topic proportion for LDA models
 #' lda <- LDA(ECB_press_conferences_tokens)
 #' lda <- fit(lda, 10)
@@ -860,4 +863,3 @@ docvars.sentopicmodel <- function(x, field = NULL) {
 #' @importFrom quanteda tokens
 #' @export
 quanteda::tokens
-

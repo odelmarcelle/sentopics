@@ -1,3 +1,7 @@
+# sentopics 0.7.7
+
+* Support quanteda 4.5.0.
+
 # sentopics 0.7.6
 
 * Fixed an example following change in suggested dependency.

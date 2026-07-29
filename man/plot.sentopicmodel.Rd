@@ -30,6 +30,7 @@ Summarize and plot a \strong{sentopics} model using a sunburst chart
 from the \link[plotly:plotly]{plotly::plotly} library.
 }
 \examples{
+\dontshow{data.table::setDTthreads(2)}
 lda <- LDA(ECB_press_conferences_tokens)
 lda <- fit(lda, 100)
 plot(lda, nWords = 5)

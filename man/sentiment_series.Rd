@@ -53,6 +53,7 @@ and dates of a \code{sentopicmodel}. The time series computation supports
 multiple sampling period and optionally allow computing a moving average.
 }
 \examples{
+\dontshow{data.table::setDTthreads(2)}
 lda <- LDA(ECB_press_conferences_tokens)
 series <- sentiment_series(lda, period = "month")
 

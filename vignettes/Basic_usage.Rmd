@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
   fig.height = 4,
   fig.align = "center"
 )
+data.table::setDTthreads(2)
 ```
 
 # Data
@@ -119,5 +120,4 @@ suppressWarnings({
 ```{r include=FALSE}
 knitr::include_graphics("plotly1.svg")
 ```
-
 

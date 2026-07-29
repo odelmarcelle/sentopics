@@ -1,8 +1,8 @@
 library("testthat")
-library("sentopics")
 
-# For solving 'Examples with CPU time > 2.5 times elapsed time'
-Sys.setenv("OMP_THREAD_LIMIT" = 2)
+# Keep the test suite within CRAN's two-core limit.
+data.table::setDTthreads(2)
+library("sentopics")
 
 if (Sys.getenv("R_COVR") != "true") {
   test_check("sentopics")

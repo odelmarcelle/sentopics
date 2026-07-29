@@ -99,7 +99,8 @@ Lin, C. and He, Y. (2009). \href{https://dl.acm.org/doi/10.1145/1645953.1646003}
 of the 18th ACM conference on Information and knowledge management},
 375--384.
 
-Lin, C., He, Y., Everson, R. and Ruger, S. (2012). \href{https://ieeexplore.ieee.org/document/5710933}{Weakly Supervised Joint Sentiment-Topic Detection from Text}.
+Lin, C., He, Y., Everson, R. and Ruger, S. (2012). Weakly Supervised Joint
+Sentiment-Topic Detection from Text. \doi{10.1109/TKDE.2011.48}.
 \emph{IEEE Transactions on Knowledge and Data Engineering}, 24(6), 1134–-1145.
 }
 \seealso{

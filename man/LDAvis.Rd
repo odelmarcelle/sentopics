@@ -26,6 +26,7 @@ the development version of \pkg{LDAvis} from github
 (\code{devtools::install_github("cpsievert/LDAvis")}).
 }
 \examples{
+\dontshow{data.table::setDTthreads(2)}
 lda <- LDA(ECB_press_conferences_tokens)
 lda <- fit(lda, 100)
 LDAvis(lda)

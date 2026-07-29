@@ -320,6 +320,13 @@ sentopicsmodel <- function(
 
   x <- quanteda::as.tokens(x)
 
+  ## Since quanteda 4.5.0, subsetting a tokens object no longer compacts its
+  ## type table: types inherited from the parent object are retained even when
+  ## they no longer appear. The vocabulary is built from the type table, so
+  ## these phantom types would inflate it (and break the type/feature alignment
+  ## in computeFcm()). Drop the unused types before building the model.
+  x <- recompileTypes(x)
+
   if (reverse) {
     S <- L2
   } else {

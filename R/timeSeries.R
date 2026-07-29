@@ -257,7 +257,7 @@ sentopics_sentiment <- function(
     }
     cols <- grep("^\\.s_", names(docvars), value = TRUE)
     for (c in cols) {
-      docvars(x$tokens, c) <- NULL
+      quanteda::docvars(x$tokens, c) <- NULL
     }
   }
 

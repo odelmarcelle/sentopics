@@ -3,6 +3,7 @@
 
 #include <RcppArmadillo.h>
 #include <RcppArmadilloExtensions/sample.h>
+#include <vector>
 #include "model.h"
 
 // un-comment the following line to enable debug messages
@@ -73,7 +74,9 @@ void model::init(SEXP intTokens_,
   }
 
   lexicon = lexicon_;
-  double initBeta = beta_;;
+  // assign the member, not a shadowing local: model::initBeta is exposed to R
+  // through the Rcpp module and was previously left uninitialized by init()
+  initBeta = beta_;
   alpha = alpha_;
   gamma = gamma_;
 
@@ -318,7 +321,7 @@ void model::iterate(uword iterations, bool displayProgress, bool computeLikeliho
   // branch to correct loop
   int LDAruns = 0;
   ///////////////////////////////////////////////////
-  if ( (L2 == 1) & (reverse == true) ) {LDAruns = iterations;} //branch to LDA if no sentiment and not JST model
+  if ( (L2 == 1) && (reverse == true) ) {LDAruns = iterations;} //branch to LDA if no sentiment and not JST model
   //////////////////////////////////////////////////
   DEBUG_MSG2("LDA runs : "<< LDAruns);
   DEBUG_MSG2("non-LDA runs : "<< (iterations - LDAruns));
@@ -347,6 +350,8 @@ void model::iterateLDA(uword start, uword iterations, bool computeLikelihood, Pr
   sumGamma = mat(L1, C);
   for (uword t = 0; t < L1; t++){sumGamma.row(t) = sum(gamma.rows(0 + t*L2, L2-1 + t*L2), 0);}
   DEBUG_MSG2("Re-initialized sum structures");
+
+  if (computeLikelihood) { cacheBetaTerms(); }
 
   l1d = cpp_rebuild_l1d(za, L1*L2, L2);
   l1w = cpp_rebuild_l1w(intTokens, za, L1*L2, V, L2);
@@ -434,6 +439,8 @@ void model::iteratel2(uword start, uword iterations, bool computeLikelihood, Pro
   sumGamma = mat(L1, C);
   for (uword t = 0; t < L1; t++){sumGamma.row(t) = sum(gamma.rows(0 + t*L2, L2-1 + t*L2), 0);}
   DEBUG_MSG2("Re-initialized sum structures");
+
+  if (computeLikelihood) { cacheBetaTerms(); }
 
   zw = cpp_rebuild_zw(intTokens, za, L1*L2, V);
   zd = cpp_rebuild_zd(za, L1*L2);
@@ -696,20 +703,19 @@ void model::updateAlpha() {
 
     DEBUG_MSG("Recomputing alpha for class: " << c);
     // preparing input for polya_fit_simple()
-    // data is an int** replicating sub_td
+    // storage owns the rows, data is the int** view polya_fit_simple expects
     // alpha_temp replicates alpha for a given c
-    int ** data;
-    double * alpha_temp;
-    data = new int*[L1];
-    alpha_temp = new double[L1];
+    std::vector<std::vector<int>> storage(L1, std::vector<int>(sub_D));
+    std::vector<int*> data(L1);
+    std::vector<double> alpha_temp(L1);
     for (uword t = 0; t < L1; t++) {
 
       alpha_temp[t] = alpha(t, c);
 
-      data[t] = new int[sub_D];
       for (uword d = 0; d < sub_D; d++) {
-        data[t][d] = sub_td(t, d);
+        storage[t][d] = sub_td(t, d);
       }
+      data[t] = storage[t].data();
     }
 
     DEBUG_MSG("Current alpha:");
@@ -717,9 +723,9 @@ void model::updateAlpha() {
     // Rcout << alpha << "\n";
 
     // estimate a new alpha_temp based on matrix data
-    polya_fit_simple(data, alpha_temp, L1, sub_D);
+    polya_fit_simple(data.data(), alpha_temp.data(), L1, sub_D);
     DEBUG_MSG("New alpha:");
-    DEBUG_MSG(arma::rowvec(alpha_temp, L1, false, false));
+    DEBUG_MSG(arma::rowvec(alpha_temp.data(), L1, false, false));
 
     // update alpha with the returned alpha_temp
     for (uword t = 0; t < L1; t++){
@@ -746,20 +752,15 @@ void model::updateGamma() {
     sub_tsd = zd.cols(index);
 
     // preparing input for polya_fit_simple()
-    // data is an int** replicating sub_tsd for a given t
+    // storage owns the rows, data is the int** view polya_fit_simple expects
     // gamma_temp replicates gamma for a given c and t
 
-    // initializing data and gamma_temp sizes
-    int ** data;
-    double * gamma_temp;
-    data = new int*[L2];
-    gamma_temp = new double[L2];
+    // initializing storage and gamma_temp sizes
+    std::vector<std::vector<int>> storage(L2, std::vector<int>(sub_D, 0));
+    std::vector<int*> data(L2);
+    std::vector<double> gamma_temp(L2, 0.0);
     for (uword s = 0; s < L2; s++) {
-      data[s] = new int[sub_D];
-      gamma_temp[s] = 0;
-      for (uword d = 0; d < sub_D; d++) {
-        data[s][d] = 0;
-      }
+      data[s] = storage[s].data();
     }
 
     // looping on t as a vector gamma is estimated once per t
@@ -769,12 +770,12 @@ void model::updateGamma() {
       for (uword s = 0; s < L2; s++) {
         gamma_temp[s] = gamma(t*L2 + s, c);
         for (uword d = 0; d < sub_D; d++) {
-          data[s][d] = sub_tsd(t*L2 + s, d);
+          storage[s][d] = sub_tsd(t*L2 + s, d);
         }
       }
 
       // estimate a new gamma_temp based on matrix data
-      polya_fit_simple(data, gamma_temp, L2, sub_D);
+      polya_fit_simple(data.data(), gamma_temp.data(), L2, sub_D);
 
       // update gamma with the returned gamma_temp
       for (uword s = 0; s < L2; s++) {
@@ -783,6 +784,23 @@ void model::updateGamma() {
     }
   }
   for (uword t = 0; t < L1; t++){sumGamma.row(t) = sum(gamma.rows(0 + t*L2, L2-1 + t*L2), 0);}
+}
+
+// pre-compute the beta-dependent lgamma() terms used by computeLogLikelihoodW().
+// beta is set once by initBetaLex() and is never modified while sampling (only
+// alpha and gamma are re-estimated), so these terms are constant across
+// iterations. Must be called after sumBeta has been refreshed.
+void model::cacheBetaTerms() {
+
+  double epsilon = 0.000000001; // matches computeLogLikelihoodW()
+
+  lgammaBeta = arma::lgamma(beta + epsilon);
+  lgammaSumBeta = arma::lgamma(sumBeta);
+
+  sumLgammaBeta = vec(L1*L2);
+  for (uword z = 0; z < L1*L2; z++) {
+    sumLgammaBeta(z) = sum(lgamma(beta.row(z) + epsilon));
+  }
 }
 
 // compute component p(w|t,s) of the likelihood
@@ -801,11 +819,18 @@ double model::computeLogLikelihoodW() {
 
   for (uword z = 0; z < L1*L2; z++) {
 
-    numOne = lgamma(sumBeta(z));
-    denomOne = sum(lgamma(beta.row(z) + epsilon));
+    // numOne and denomOne depend only on beta, which does not change while
+    // sampling: both are read from the cache filled by cacheBetaTerms()
+    numOne = lgammaSumBeta(z);
+    denomOne = sumLgammaBeta(z);
     numTwo = 0;
     for (uword w = 0; w < V; w++) {
-      numTwo += lgamma(zw(z, w) + beta(z, w) + epsilon);
+      // zw is sparse. Wherever the count is zero the term collapses to
+      // lgamma(beta(z, w) + epsilon), which is already cached, so the great
+      // majority of the lgamma() evaluations here can be skipped.
+      numTwo += (zw(z, w) == 0) ?
+        lgammaBeta(z, w) :
+        lgamma(zw(z, w) + beta(z, w) + epsilon);
     }
     denomTwo = lgamma(count_z(z) + sumBeta(z));
 
@@ -833,16 +858,24 @@ double model::computeLogLikelihoodL2() {
   double denomOne;
   double denomTwo;
 
-  uword c;
+  // there is a single document class, so c is constant throughout
+  uword c = 0;
+
+  // numOne and denomOne vary with the topic but not with the document. Hoisting
+  // them out of the document loop turns D x L1 evaluations into L1.
+  vec numOneByL1(L1);
+  vec denomOneByL1(L1);
+  for (uword t = 0; t < L1; t++) {
+    numOneByL1(t) = lgamma(sumGamma(t, c));
+    denomOneByL1(t) = sum(lgamma(vectorise(gamma.rows(0 + t*L2, L2-1 + t*L2)) + epsilon));
+  }
 
   for (uword d = 0; d < D; d++) {
 
-    c = 0;
-
     for (uword t = 0; t < L1; t++) {
 
-      numOne = lgamma(sumGamma(t, c));
-      denomOne = sum(lgamma(vectorise(gamma.rows(0 + t*L2, L2-1 + t*L2)) + epsilon));
+      numOne = numOneByL1(t);
+      denomOne = denomOneByL1(t);
 
       numTwo = 0;
       for (uword s = 0; s < L2; s++) {
@@ -871,14 +904,18 @@ double model::computeLogLikelihoodL1() {
   double denomOne;
   double denomTwo;
 
-  uword c;
+  // there is a single document class, so c is constant throughout
+  uword c = 0;
+
+  // neither numOne nor denomOne depends on the document: evaluate them once
+  // rather than once per document.
+  const double numOneConst = lgamma(sumAlpha(c));
+  const double denomOneConst = sum(lgamma(alpha.col(c) + epsilon));
 
   for (uword d = 0; d < D; d++) {
 
-    c = 0;
-
-    numOne = lgamma(sumAlpha(c));
-    denomOne =  sum(lgamma(alpha.col(c) + epsilon));
+    numOne = numOneConst;
+    denomOne = denomOneConst;
 
     numTwo = 0;
     for (uword t = 0; t < L1; t++) {

@@ -8,7 +8,7 @@
 A \link[quanteda:corpus]{quanteda::corpus} object.
 }
 \source{
-\url{https://www.ecb.europa.eu/press/key/date/html/index.en.html}.
+\url{https://www.ecb.europa.eu/press/pubbydate/html/index.en.html}.
 }
 \usage{
 ECB_press_conferences

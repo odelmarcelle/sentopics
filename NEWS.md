@@ -1,3 +1,45 @@
+# sentopics 1.0.1
+
+All changes below are internal. Estimates, log-likelihoods and random number
+consumption are unchanged: fitted models are bit-identical to those produced by
+version 1.0.0 for the same seed.
+
+### Bug fixes
+
+* Fixed memory leaks in the Dirichlet hyperparameter optimization routines.
+  `updateAlpha()`, `updateGamma()` and `polya_fit_simple()` allocated their
+  working buffers with `new[]` and never released them, leaking on every call.
+  This affected models fitted with `alphaCycle` or `gammaCycle` greater than
+  zero; the default (`0`, no optimization) was unaffected.
+
+* Fixed an uninitialized member read: `model::init()` assigned the initial
+  `beta` to a shadowing local variable, leaving the `initBeta` field of the
+  C++ model exposed to R holding indeterminate memory.
+
+* The Dirichlet fixed-point iteration now leaves a hyperparameter at its
+  previous value instead of propagating a non-finite or non-positive update,
+  and stops early on a degenerate denominator.
+
+* Updated the ECB source URL in the documentation of `ECB_press_conferences`
+  and `ECB_press_conferences_tokens` following a change to the ECB website.
+
+### Performance
+
+* Sped up model fitting with the default `computeLikelihood = TRUE` by about a
+  fifth (about a quarter at larger `K`). The terms of `p(w | topic, sentiment)`
+  that depend only on `beta` are constant while sampling and are now computed
+  once per run rather than once per iteration, and the sparsity of the
+  topic-word counts is used to skip the majority of the remaining `lgamma()`
+  evaluations.
+
+* Sped up the document components of the likelihood by moving the quantities
+  that do not vary across documents out of the document loop.
+
+* Sped up Dirichlet hyperparameter optimization by about a quarter. The `sum_h`
+  term of the fixed-point iteration does not depend on the dimension being
+  updated and is now computed once per iteration rather than once per
+  dimension, and zero counts reuse an already available `digamma()` value.
+
 # sentopics 1.0.0
 
 ### Breaking changes

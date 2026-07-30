@@ -21,9 +21,14 @@ class model {
 public:
   bool reverse; // true means topic > sentiment (rJST), false means sentiment > topic (JST)
 
+  // L1 and L2 index the outer and inner layer of the document mixture, in that
+  // order -- they are NOT fixed to topic and sentiment. With reverse == true
+  // (rJST/LDA) L1 = K topics and L2 = S sentiments; with reverse == false (JST)
+  // the hierarchy is inverted, so L1 = S sentiments and L2 = K topics.
+  // Assignments are flattened as z = l1 * L2 + l2 throughout.
   uword V;  // vocabulary size
-  uword L1;  // number of topics
-  uword L2;  // number of sentiments
+  uword L1;  // size of the outer layer (topics if reverse, else sentiments)
+  uword L2;  // size of the inner layer (sentiments if reverse, else topics)
   uword D;  // number of documents in the corpus
   uword C;  // number of document classes
 
@@ -42,6 +47,14 @@ public:
 
   mat L1beta;      // cube V x T x S storing the parameter beta for each topic & sentiment
   vec L1sumBeta;    // matrix T x S containing the sum of betas for each topic & sentiment
+
+  // beta is fixed for the duration of a sampling run, so every lgamma() term it
+  // contributes to computeLogLikelihoodW() is constant across iterations. These
+  // caches are filled once by cacheBetaTerms() instead of being recomputed for
+  // each of the (L1 x L2) x V entries on every iteration.
+  mat lgammaBeta;     // (L1 x L2) x V, lgamma(beta + epsilon)
+  vec lgammaSumBeta;  // L1 x L2, lgamma(sumBeta(z))
+  vec sumLgammaBeta;  // L1 x L2, sum_w lgamma(beta(z, w) + epsilon)
 
   uword alphaCycle;  // indicates at which frequency is estimated the Dirichlet parameter alpha
   uword gammaCycle;  // indicates at which frequency is estimated the Dirichlet parameter gamma
@@ -98,6 +111,7 @@ public:
 
   void initBetaLex(double initBeta);        // initialize beta with lexicon information
   void initAssignments();   // randomly assign topic and sentiment to all words
+  void cacheBetaTerms();    // pre-compute the beta-dependent lgamma() terms of the likelihood
 
 
   // model inference

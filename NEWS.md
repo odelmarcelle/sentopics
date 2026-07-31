@@ -70,6 +70,12 @@ version 1.0.0 for the same seed.
 * Reformatted codebase using Air.
 * Removed a comprehensive assessment from the `PicaultRenault_data` dataset
   not present in the original paper.
+* Fixed the vocabulary construction for **quanteda** 4.5.0 and later. Since
+  that release, subsetting a `tokens` object no longer compacts its type
+  table, so types inherited from the parent object were retained even when
+  they no longer occurred. Those phantom types inflated the vocabulary of a
+  model built from a subset corpus and broke the type/feature alignment used
+  by the coherence measures. Unused types are now dropped explicitly.
 
 # sentopics 0.7.5
 

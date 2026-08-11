@@ -113,5 +113,7 @@ int polya_fit_simple(int ** data, double * alpha, int _K, int _nSample) {
 		}
 
 	}
+	delete[] old_alpha;
+	delete[] data_row_sum;
   return 0;
 }

@@ -3,6 +3,7 @@
 
 #include <RcppArmadillo.h>
 #include <RcppArmadilloExtensions/sample.h>
+#include <vector>
 #include "model.h"
 
 // un-comment the following line to enable debug messages
@@ -696,20 +697,19 @@ void model::updateAlpha() {
 
     DEBUG_MSG("Recomputing alpha for class: " << c);
     // preparing input for polya_fit_simple()
-    // data is an int** replicating sub_td
+    // storage owns the rows; data provides the int** view expected by polya_fit_simple()
     // alpha_temp replicates alpha for a given c
-    int ** data;
-    double * alpha_temp;
-    data = new int*[L1];
-    alpha_temp = new double[L1];
+    std::vector<std::vector<int>> storage(L1, std::vector<int>(sub_D));
+    std::vector<int*> data(L1);
+    std::vector<double> alpha_temp(L1);
     for (uword t = 0; t < L1; t++) {
 
       alpha_temp[t] = alpha(t, c);
 
-      data[t] = new int[sub_D];
       for (uword d = 0; d < sub_D; d++) {
-        data[t][d] = sub_td(t, d);
+        storage[t][d] = sub_td(t, d);
       }
+      data[t] = storage[t].data();
     }
 
     DEBUG_MSG("Current alpha:");
@@ -717,9 +717,9 @@ void model::updateAlpha() {
     // Rcout << alpha << "\n";
 
     // estimate a new alpha_temp based on matrix data
-    polya_fit_simple(data, alpha_temp, L1, sub_D);
+    polya_fit_simple(data.data(), alpha_temp.data(), L1, sub_D);
     DEBUG_MSG("New alpha:");
-    DEBUG_MSG(arma::rowvec(alpha_temp, L1, false, false));
+    DEBUG_MSG(arma::rowvec(alpha_temp.data(), L1, false, false));
 
     // update alpha with the returned alpha_temp
     for (uword t = 0; t < L1; t++){
@@ -746,20 +746,15 @@ void model::updateGamma() {
     sub_tsd = zd.cols(index);
 
     // preparing input for polya_fit_simple()
-    // data is an int** replicating sub_tsd for a given t
+    // storage owns the rows; data provides the int** view expected by polya_fit_simple()
     // gamma_temp replicates gamma for a given c and t
 
     // initializing data and gamma_temp sizes
-    int ** data;
-    double * gamma_temp;
-    data = new int*[L2];
-    gamma_temp = new double[L2];
+    std::vector<std::vector<int>> storage(L2, std::vector<int>(sub_D, 0));
+    std::vector<int*> data(L2);
+    std::vector<double> gamma_temp(L2, 0.0);
     for (uword s = 0; s < L2; s++) {
-      data[s] = new int[sub_D];
-      gamma_temp[s] = 0;
-      for (uword d = 0; d < sub_D; d++) {
-        data[s][d] = 0;
-      }
+      data[s] = storage[s].data();
     }
 
     // looping on t as a vector gamma is estimated once per t
@@ -769,12 +764,12 @@ void model::updateGamma() {
       for (uword s = 0; s < L2; s++) {
         gamma_temp[s] = gamma(t*L2 + s, c);
         for (uword d = 0; d < sub_D; d++) {
-          data[s][d] = sub_tsd(t*L2 + s, d);
+          storage[s][d] = sub_tsd(t*L2 + s, d);
         }
       }
 
       // estimate a new gamma_temp based on matrix data
-      polya_fit_simple(data, gamma_temp, L2, sub_D);
+      polya_fit_simple(data.data(), gamma_temp.data(), L2, sub_D);
 
       // update gamma with the returned gamma_temp
       for (uword s = 0; s < L2; s++) {
@@ -910,4 +905,3 @@ SEXP model::get_intTokens() {
   UNPROTECT(1);
   return tmp;
 }
-

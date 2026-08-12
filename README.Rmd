@@ -38,7 +38,8 @@ The latest development version can be installed from GitHub:
 devtools::install_github("odelmarcelle/sentopics") 
 ```
 
-The development version requires the appropriate tools to compile C++ and Fortran source code.
+Installing the development version from source requires the platform's R
+package build tools and a compatible C++ compiler.
 
 ## Basic usage
 
@@ -69,7 +70,7 @@ Two visualization are also implemented: `plot_top_words()` display the most prob
 plot(lda)
 ```
 ```{r plot-lda, warning=FALSE, fig.align='center', fig.width = 5, echo = FALSE}
-plot(lda) |> plotly::layout(width = 500, height = 500)
+plotly::layout(plot(lda), width = 500, height = 500)
 ```
 
 
@@ -77,18 +78,17 @@ plot(lda) |> plotly::layout(width = 500, height = 500)
 After properly incorporating date and sentiment metadata data (if they are not already present in the `tokens` input), time series functions allows to study the evolution of topic proportions and related sentiment.
 
 ```{r series, message=FALSE, out.width="100%"}
-sentopics_date(lda)  |> head(2)
-sentopics_sentiment(lda) |> head(2)
-proportion_topics(lda, period = "month") |> head(2)
+head(sentopics_date(lda), 2)
+head(sentopics_sentiment(lda), 2)
+head(proportion_topics(lda, period = "month"), 2)
 plot_sentiment_breakdown(lda, period = "quarter", rolling_window = 3)
 ```
 
 ## Advanced usage
 
-Feel free to refer to the vignettes of the package for a more extensive introduction to the features of the package. Because the package is not yet on CRAN, you'll have to build the vignettes locally.
+See the package vignettes for a more extensive introduction to its features.
 
 ```{r, eval = FALSE}
 vignette("Basic_usage", package = "sentopics")
 vignette("Topical_time_series", package = "sentopics")
 ```
-

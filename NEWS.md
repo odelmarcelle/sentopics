@@ -35,6 +35,8 @@
   and JST coherence dimension labels.
 * Restored R-backed token and assignment indices after sampling errors, and
   record unevaluated log-likelihoods as `NA` when `computeLikelihood = FALSE`.
+* LDA inference performance improvements.
+* Miscellaneous test improvements.
 
 # sentopics 0.7.5
 

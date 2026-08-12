@@ -344,39 +344,47 @@ test_that("scores & distances works", {
     )
   )
   expect_false(anyNA(scores))
-  expect_silent(distances <- chains_distances(generated_sentopicsmodel))
-  expect_true(is.matrix(distances))
-  expect_false(anyNA(distances))
   expect_silent(
-    distances <- chains_distances(generated_sentopicsmodel, method = "cosine")
+    euclidean_distances <- chains_distances(generated_sentopicsmodel)
   )
-  expect_false(anyNA(distances))
+  expect_true(is.matrix(euclidean_distances))
+  expect_false(anyNA(euclidean_distances))
   expect_silent(
-    distances <- chains_distances(
+    cosine_distances <- chains_distances(
+      generated_sentopicsmodel,
+      method = "cosine"
+    )
+  )
+  expect_false(anyNA(cosine_distances))
+  expect_silent(
+    hellinger_distances <- chains_distances(
       generated_sentopicsmodel,
       method = "hellinger"
     )
   )
-  expect_false(anyNA(distances))
+  expect_false(anyNA(hellinger_distances))
   expect_silent(
-    distances <- chains_distances(generated_sentopicsmodel, method = "minMax")
+    min_max_distances <- chains_distances(
+      generated_sentopicsmodel,
+      method = "minMax"
+    )
   )
-  expect_false(anyNA(distances))
+  expect_false(anyNA(min_max_distances))
   expect_silent(
-    distances2 <- chains_distances(
+    invariant_distances <- chains_distances(
       generated_sentopicsmodel,
       method = "invariantEuclidean"
     )
   )
-  expect_false(anyNA(distances))
-  expect_true(all(distances <= distances2))
+  expect_false(anyNA(invariant_distances))
+  expect_true(all(euclidean_distances <= invariant_distances + 1e-12))
   expect_silent(
-    distances <- chains_distances(
+    naive_distances <- chains_distances(
       generated_sentopicsmodel,
       method = "naiveEuclidean"
     )
   )
-  expect_false(anyNA(distances))
+  expect_false(anyNA(naive_distances))
 })
 
 
@@ -394,6 +402,25 @@ test_that("equality between euclidean distances", {
     chains_distances(rJSTs),
     chains_distances(rJSTs, method = "invariantEuclidean")
   )
+})
+
+
+test_that("invariant euclidean distance respects the JST hierarchy", {
+  toks <- ECB_press_conferences_tokens[1:10]
+  JSTs <- fit(
+    JST(toks, S = 2, K = 3, lexicon = LoughranMcDonald),
+    10,
+    displayProgress = FALSE,
+    nChains = 3
+  )
+  euclidean_distances <- chains_distances(JSTs)
+  invariant_distances <- chains_distances(
+    JSTs,
+    method = "invariantEuclidean"
+  )
+
+  expect_false(anyNA(invariant_distances))
+  expect_true(all(euclidean_distances <= invariant_distances + 1e-12))
 })
 
 

@@ -102,7 +102,6 @@ test_that("relabeling preserves raw and scaled sentiment docvars", {
   expect_identical(docvars$.s_second_scaled, seq_along(model$tokens) + 30)
 })
 
-sentopics_sentiment(jst) <- ECB_press_conferences_tokens$.sentiment
 sentopics_date(jst) <- ECB_press_conferences_tokens$.date
 
 test_that("sentiment_series works", {

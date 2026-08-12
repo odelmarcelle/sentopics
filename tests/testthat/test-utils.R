@@ -38,9 +38,9 @@ test_that("as.tokens.dfm works", {
     "The function was re-exported from the quanteda package."
   ))
 
-  dfm <- quanteda::dfm(toks) |>
-    quanteda::dfm_remove(quanteda::stopwords("en")) |>
-    quanteda::dfm_trim(max_termfreq = 1)
+  dfm <- quanteda::dfm(toks)
+  dfm <- quanteda::dfm_remove(dfm, quanteda::stopwords("en"))
+  dfm <- quanteda::dfm_trim(dfm, max_termfreq = 1)
 
   toks_recomposed <- as.tokens(dfm, tokens = toks)
   toks_processed <-

@@ -5,7 +5,7 @@ Version: 1.0.0
 Authors@R: c(
   person("Olivier", "Delmarcelle", email = "delmarcelle.olivier@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-4347-070X")),
   person("Samuel", "Borms", email = "samuel.borms@unine.ch", role = c("ctb"), comment = c(ORCID = "0000-0001-9533-1870")),
-  person("Chengua", "Lin", email = "chenghua.lin@abdn.ac.uk", role = "cph", comment = "Original JST implementation"),
+  person("Chenghua", "Lin", email = "chenghua.lin@abdn.ac.uk", role = "cph", comment = "Original JST implementation"),
   person("Yulan", "He", email = "yulan.he@warwick.ac.uk", role = "cph", comment = "Original JST implementation"),
   person("Jose", "Bernardo", role = "cph", comment = "Original JST implementation"),
   person("David", "Robinson", , "admiral.david@gmail.com", role = "cph", comment = "Implementation of reorder_within()"),

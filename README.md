@@ -26,8 +26,8 @@ The latest development version can be installed from GitHub:
 devtools::install_github("odelmarcelle/sentopics") 
 ```
 
-The development version requires the appropriate tools to compile C++
-and Fortran source code.
+Installing the development version from source requires the platform's R
+package build tools and a compatible C++ compiler.
 
 ## Basic usage
 
@@ -123,17 +123,17 @@ allows to study the evolution of topic proportions and related
 sentiment.
 
 ``` r
-sentopics_date(lda)  |> head(2)
+head(sentopics_date(lda), 2)
 #       .id      .date
 #    <char>     <Date>
 # 1:    1_1 1998-06-09
 # 2:    1_2 1998-06-09
-sentopics_sentiment(lda) |> head(2)
+head(sentopics_sentiment(lda), 2)
 #       .id  .sentiment
 #    <char>       <num>
 # 1:    1_1 -0.01470588
 # 2:    1_2 -0.02500000
-proportion_topics(lda, period = "month") |> head(2)
+head(proportion_topics(lda, period = "month"), 2)
 #                topic1    topic2     topic3
 # 1998-06-01 0.04004786 0.9100265 0.04992568
 # 1998-07-01 0.17387955 0.7276814 0.09843903
@@ -144,9 +144,8 @@ plot_sentiment_breakdown(lda, period = "quarter", rolling_window = 3)
 
 ## Advanced usage
 
-Feel free to refer to the vignettes of the package for a more extensive
-introduction to the features of the package. Because the package is not
-yet on CRAN, you’ll have to build the vignettes locally.
+See the package vignettes for a more extensive introduction to its
+features.
 
 ``` r
 vignette("Basic_usage", package = "sentopics")

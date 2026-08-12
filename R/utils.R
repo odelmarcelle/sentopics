@@ -629,8 +629,7 @@ invariantEuclideanOptim <- function(
       }
       ## topic-sentiment pairs
       matches <- do.call(rbind, tmp2)
-      ## max distance among topic-sentiment pairs
-      d <- max(tmp[matches])
+      d <- FUN_aggregate(tmp[matches])
     } else if (!strict) {
       tmp2 <- matrix(0, L1, L1)
       tmpPairs <- array(list(), dim = c(L1, L1))
@@ -650,11 +649,9 @@ invariantEuclideanOptim <- function(
       }
       pairs <- RcppHungarian::HungarianSolver(tmp2)$pairs
 
-      # tmp2[pairs]
       ## topic-sentiment pairs
       matches <- do.call(rbind, tmpPairs[pairs])
-      ## max distance among topic-sentiment pairs
-      d <- max(tmp[matches])
+      d <- FUN_aggregate(tmp[matches])
     }
 
     distMatrix[cb[[i]][1], cb[[i]][2]] <- d

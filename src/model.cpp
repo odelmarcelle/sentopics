@@ -467,16 +467,9 @@ void model::iteratel2(uword start, uword iterations, bool computeLikelihood, Pro
 
       DEBUG_MSG("Probabilities caching...");
 
-      double tmpL1;
-      double tmpL2;
-
       // caching ps_td and pt_d for document
       for (uword t = 0; t < L1; t++){
-        tmpL1 = (l1d(t, d) + alpha(t, c)) / (l1d(t, d) + sumGamma(t, c));
-        for (uword s = 0; s < L2; s++) {
-          tmpL2 = (zd(t*L2 + s, d) + gamma(t*L2 + s, c)) / (count_z(t*L2 + s) + sumBeta(t*L2 + s));
-          CACHEDzProbs(t*L2 + s) = tmpL1 * tmpL2;
-        }
+        refreshCachedZProbs(t, c, d);
       }
 
       DEBUG_MSG("Cached probs for document: " << d);
@@ -527,6 +520,20 @@ void model::iteratel2(uword start, uword iterations, bool computeLikelihood, Pro
 }
 
 
+// refresh cached probabilities sharing the same first-layer label
+void model::refreshCachedZProbs(uword l1, uword c, uword d) {
+
+  const double l1Prob = (l1d(l1, d) + alpha(l1, c)) /
+    (l1d(l1, d) + sumGamma(l1, c));
+
+  for (uword s = 0; s < L2; s++) {
+    const uword z = l1 * L2 + s;
+    CACHEDzProbs(z) = l1Prob *
+      (zd(z, d) + gamma(z, c)) / (count_z(z) + sumBeta(z));
+  }
+}
+
+
 // sample a new topic and sentiment for a word
 void model::sampling(const uword& word, uword& zLeave, uword c, uword d)  {
 
@@ -544,11 +551,9 @@ void model::sampling(const uword& word, uword& zLeave, uword c, uword d)  {
   // count_d(d) -= 1; // doesn't change following assignment anyway
 
 
-  // Computation of stProbs taking advantage of cached results. Non-word dependent element access are pre-computed for the document
-  // Instead of recomputing these element once for each topic/sentiment, only the element of CACHEDstProbs corresponding to the
-  // current topic/sentiment of the word is updated. After the re-sampling, CACHEDstProbs is updated for the sampled topic/sentiment
-  CACHEDzProbs(zLeave) = (l1d(l1, d) + alpha(l1, c)) / (l1d(l1, d) + sumGamma(l1, c)) *
-    (zd(zLeave, d) + gamma(zLeave, c)) / (count_z(zLeave) + sumBeta(zLeave));
+  // Removing the word changes the first-layer factor shared by all L2 entries
+  // below l1, as well as the second-layer factor for zLeave.
+  refreshCachedZProbs(l1, c, d);
 
   DEBUG_MSG("Cached probs before sampling");
   DEBUG_MSG(trans(CACHEDzProbs));
@@ -591,8 +596,8 @@ void model::sampling(const uword& word, uword& zLeave, uword c, uword d)  {
 
   DEBUG_MSG("Caching probabilities");
 
-  CACHEDzProbs(zLeave) = (l1d(l1, d) + alpha(l1, c)) / (l1d(l1, d) + sumGamma(l1, c)) *
-    (zd(zLeave, d) + gamma(zLeave, c)) / (count_z(zLeave) + sumBeta(zLeave));
+  // Adding the word likewise changes every cached entry below the sampled l1.
+  refreshCachedZProbs(l1, c, d);
 
   DEBUG_MSG("Cached probs after sampling");
   DEBUG_MSG(trans(CACHEDzProbs));

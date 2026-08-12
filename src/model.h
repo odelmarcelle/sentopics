@@ -105,6 +105,7 @@ public:
   void iterateLDA(uword start, uword iterations, bool computeLikelihood, Progress& p);
   void iteratel2(uword start, uword iterations, bool computeLikelihood, Progress& p);
 
+  void refreshCachedZProbs(uword l1, uword c, uword d);
   void sampling(const uword& word, uword& zLeave, uword c, uword d); // sampling of a single word's topic
   void samplingLDA(const uword& word, uword& zLeave, uword c, uword d); // sampling of a single word's topic corrected
 

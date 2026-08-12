@@ -23,6 +23,8 @@
 
 * Removed `.sentiment` docvars in `ECB_press_conferences` dataset.
 
+* Fixed a bias in JST and rJST models caused by cached probabilities.
+
 ### Other changes
 
 * Reformatted codebase using Air.

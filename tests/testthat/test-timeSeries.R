@@ -72,6 +72,36 @@ test_that("date works", {
   )
 })
 
+test_that("partial labels retain their semantic dimensions", {
+  model <- rJST(toks[1:10], K = 2, S = 3, lexicon = LoughranMcDonald)
+  sentiment_labels <- c("negative", "neutral", "positive")
+
+  sentopics_labels(model) <- list(sentiment = sentiment_labels)
+  labels <- sentopics_labels(model, flat = FALSE)
+
+  expect_identical(labels$topic, paste0("topic", 1:2))
+  expect_identical(labels$sentiment, sentiment_labels)
+})
+
+test_that("relabeling preserves raw and scaled sentiment docvars", {
+  model <- rJST(toks[1:10], K = 2, lexicon = LoughranMcDonald)
+  model$tokens$.s_topic1 <- seq_along(model$tokens)
+  model$tokens$.s_topic2 <- seq_along(model$tokens) + 10
+  model$tokens$.s_topic1_scaled <- seq_along(model$tokens) + 20
+  model$tokens$.s_topic2_scaled <- seq_along(model$tokens) + 30
+
+  sentopics_labels(model) <- list(topic = c("first", "second"))
+  docvars <- quanteda::docvars(model$tokens)
+  sentiment_columns <- names(docvars)[startsWith(names(docvars), ".s_")]
+
+  expect_identical(
+    sentiment_columns,
+    c(".s_first", ".s_second", ".s_first_scaled", ".s_second_scaled")
+  )
+  expect_identical(docvars$.s_first_scaled, seq_along(model$tokens) + 20)
+  expect_identical(docvars$.s_second_scaled, seq_along(model$tokens) + 30)
+})
+
 sentopics_sentiment(jst) <- ECB_press_conferences_tokens$.sentiment
 sentopics_date(jst) <- ECB_press_conferences_tokens$.date
 
@@ -103,6 +133,14 @@ test_that("sentiment_series works", {
 
   expect_s3_class(s1_1, "xts")
   expect_s3_class(sentiment_series(lda, as.xts = FALSE), "data.frame")
+  expect_silent(
+    sentiment_series(
+      lda,
+      as.xts = FALSE,
+      na.rm = FALSE,
+      trim = 0.1
+    )
+  )
 
   sentiment_series(lda, period = "day", rolling_window = 30, as.xts = FALSE)
 

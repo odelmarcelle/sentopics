@@ -393,7 +393,8 @@ sentopics_labels <- function(x, flat = TRUE) {
   res <- create_labels(x, flat = flat)
   if (!flat) {
     params <- sentopicsmodel_params(x)
-    names(res) <- c(params$L1_name, params$L2_name)[seq_along(res)]
+    dimension_names <- c(L1 = params$L1_name, L2 = params$L2_name)
+    names(res) <- unname(dimension_names[names(res)])
   }
   res
 }
@@ -423,6 +424,9 @@ sentopics_labels <- function(x, flat = TRUE) {
   }
 
   params <- sentopicsmodel_params(x)
+  old_topic_labels <- if (!is.null(value$topic)) {
+    sentopics_labels(x, flat = FALSE)$topic
+  }
   if (is.null(attr(x, "labels"))) {
     attr(x, "labels") <- list()
   }
@@ -458,9 +462,18 @@ sentopics_labels <- function(x, flat = TRUE) {
 
   ## manually adjust stored sentiment in docvars (if any)
   docvars <- attr(x$tokens, "docvars")
-  idx <- grepl("^\\.s_", names(docvars))
-  if (any(idx) & !is.null(value$topic)) {
-    names(docvars)[idx] <- paste0(".s_", value$topic)
+  if (!is.null(docvars) && !is.null(value$topic)) {
+    old_columns <- paste0(".s_", old_topic_labels)
+    new_columns <- paste0(".s_", value$topic)
+    docvar_names <- names(docvars)
+
+    for (suffix in c("", "_scaled")) {
+      idx <- match(paste0(old_columns, suffix), docvar_names)
+      matched <- !is.na(idx)
+      docvar_names[idx[matched]] <- paste0(new_columns[matched], suffix)
+    }
+
+    names(docvars) <- docvar_names
     attr(x$tokens, "docvars") <- docvars
   }
 
@@ -598,12 +611,8 @@ sentiment_series <- function(
     }
     ## Set default parameter for scaling
     dots <- list(...)
-    if (is.null(dots$na.rm)) {
-      na.rm <- TRUE
-    }
-    if (is.null(dots$trim)) {
-      trim <- 0
-    }
+    na.rm <- if (is.null(dots$na.rm)) TRUE else dots$na.rm
+    trim <- if (is.null(dots$trim)) 0 else dots$trim
     params <- res[
       date >= scaling_period[1] & date <= scaling_period[2],
       c(

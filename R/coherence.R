@@ -133,10 +133,12 @@ C_NPMI <- function(
   }
 
   coherence <- matrix(0, length(topics), length(sentiments))
+  params <- sentopicsmodel_params(x)
   dimnames(coherence) <- list(
-    paste0("topic", topics),
-    paste0("sentiment", sentiments)
+    paste0(params$L1_name, topics),
+    paste0(params$L2_name, sentiments)
   )
+  names(dimnames(coherence)) <- c(params$L1_name, params$L2_name)
 
   for (t in 1:length(topics)) {
     for (s in 1:length(sentiments)) {
@@ -197,10 +199,12 @@ C_V <- function(
     NPMIs <- computeNPMI(x$tokens, window)
   }
   coherence <- matrix(0, length(topics), length(sentiments))
+  params <- sentopicsmodel_params(x)
   dimnames(coherence) <- list(
-    paste0("topic", topics),
-    paste0("sentiment", sentiments)
+    paste0(params$L1_name, topics),
+    paste0(params$L2_name, sentiments)
   )
+  names(dimnames(coherence)) <- c(params$L1_name, params$L2_name)
 
   tops <- merge(
     top_words_dt(x, nWords, top_method),

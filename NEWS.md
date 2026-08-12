@@ -30,6 +30,9 @@
 * Reformatted codebase using Air.
 * Removed a comprehensive assessment from the `PicaultRenault_data` dataset
   not present in the original paper.
+* Fixed model relabelling with stored scaled sentiment, optional arguments in
+  `sentiment_series()`, `melt()` dispatch with current **data.table** versions,
+  and JST coherence dimension labels.
 
 # sentopics 0.7.5
 

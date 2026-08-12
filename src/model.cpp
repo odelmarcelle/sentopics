@@ -3,6 +3,7 @@
 
 #include <RcppArmadillo.h>
 #include <RcppArmadilloExtensions/sample.h>
+#include <type_traits>
 #include <vector>
 #include "model.h"
 
@@ -368,6 +369,99 @@ void model::iterateLDA(uword start, uword iterations, bool computeLikelihood, Pr
   double* const cachedL1ProbsPtr = CACHEDl1Probs.memptr();
   double* const l1ProbsPtr = l1Probs.memptr();
 
+  // LDA() initializes beta to a single value, but converted or merged models
+  // can carry a non-uniform matrix. Detect the common case once so its hot
+  // loop does not need to stream a beta column for every token.
+  const double scalarBeta = betaPtr[0];
+  bool hasScalarBeta = true;
+  for (uword i = 1; i < beta.n_elem; ++i) {
+    if (betaPtr[i] != scalarBeta) {
+      hasScalarBeta = false;
+      break;
+    }
+  }
+  const double scalarSumBeta = sumBetaPtr[0];
+
+  const auto sampleDocument = [&](uword d, auto scalarBetaTag) {
+    constexpr bool useScalarBeta = decltype(scalarBetaTag)::value;
+
+    auto* const documentCounts = l1dPtr + d * L1;
+
+    DEBUG_MSG("Probabilities caching...");
+
+    // caching ps_td and pt_d for document
+    for (uword t = 0; t < L1; t++){
+      const double betaSum = useScalarBeta ? scalarSumBeta : sumBetaPtr[t];
+      cachedL1ProbsPtr[t] = (documentCounts[t] + alphaPtr[t]) /
+        (countL1Ptr[t] + betaSum);
+    }
+    DEBUG_MSG("Cached probs for document: " << d);
+    DEBUG_MSG(trans(CACHEDl1Probs));
+
+    const uword size = intTokens[d]->size();
+    const uword* const words = intTokens[d]->memptr();
+    uword* const assignments = za[d]->memptr();
+
+    // per word sampling
+    for (uword w = 0; w < size; w++){
+      DEBUG_MSG("Word/document index: [" << d << "]-" << w);
+      const uword word = words[w];
+      const uword oldTopic = assignments[w];
+      auto* const wordCounts = l1wPtr + word * L1;
+      const double* const wordBeta = betaPtr + word * L1;
+      const double oldCachedProb = cachedL1ProbsPtr[oldTopic];
+
+      DEBUG_MSG("Vocabulary index : (" << word << ")");
+
+      // Remove the current assignment from the leave-one-out counts.
+      --documentCounts[oldTopic];
+      --wordCounts[oldTopic];
+      --countL1Ptr[oldTopic];
+      const double oldTopicBetaSum = useScalarBeta ?
+        scalarSumBeta : sumBetaPtr[oldTopic];
+      cachedL1ProbsPtr[oldTopic] =
+        (documentCounts[oldTopic] + alphaPtr[oldTopic]) /
+        (countL1Ptr[oldTopic] + oldTopicBetaSum);
+
+      // Build the cumulative conditional distribution over topics.
+      double cumulative = 0.0;
+      for (uword t = 0; t < L1; ++t) {
+        const double betaValue = useScalarBeta ? scalarBeta : wordBeta[t];
+        cumulative += cachedL1ProbsPtr[t] * (wordCounts[t] + betaValue);
+        l1ProbsPtr[t] = cumulative;
+      }
+
+      const double draw = unif_rand() * cumulative;
+      uword newTopic = oldTopic;
+
+      for (uword t = 0; t < L1; ++t) {
+        if (l1ProbsPtr[t] > draw) {
+          newTopic = t;
+          break;
+        }
+      }
+
+      assignments[w] = newTopic;
+      ++documentCounts[newTopic];
+      ++wordCounts[newTopic];
+      ++countL1Ptr[newTopic];
+
+      if (newTopic == oldTopic) {
+        // All counts returned to their pre-sampling values, so the cached
+        // probability is already available without a second division.
+        cachedL1ProbsPtr[oldTopic] = oldCachedProb;
+      } else {
+        const double newTopicBetaSum = useScalarBeta ?
+          scalarSumBeta : sumBetaPtr[newTopic];
+        cachedL1ProbsPtr[newTopic] =
+          (documentCounts[newTopic] + alphaPtr[newTopic]) /
+          (countL1Ptr[newTopic] + newTopicBetaSum);
+      }
+
+      DEBUG_MSG("Word re-sampled");
+    }
+  };
+
   for (uword i = start; i < (iterations + start); i++){
 
     if (Progress::check_abort()) {
@@ -379,74 +473,10 @@ void model::iterateLDA(uword start, uword iterations, bool computeLikelihood, Pr
     for (uword d = 0; d < D; d++){
       DEBUG_MSG("Starting document: " << d);
 
-      auto* const documentCounts = l1dPtr + d * L1;
-
-      DEBUG_MSG("Probabilities caching...");
-
-      // caching ps_td and pt_d for document
-      for (uword t = 0; t < L1; t++){
-        cachedL1ProbsPtr[t] = (documentCounts[t] + alphaPtr[t]) /
-          (countL1Ptr[t] + sumBetaPtr[t]);
-      }
-      DEBUG_MSG("Cached probs for document: " << d);
-      DEBUG_MSG(trans(CACHEDl1Probs));
-
-      const uword size = intTokens[d]->size();
-      const uword* const words = intTokens[d]->memptr();
-      uword* const assignments = za[d]->memptr();
-
-      // per word sampling
-      for (uword w = 0; w < size; w++){
-        DEBUG_MSG("Word/document index: [" << d << "]-" << w);
-        const uword word = words[w];
-        const uword oldTopic = assignments[w];
-        auto* const wordCounts = l1wPtr + word * L1;
-        const double* const wordBeta = betaPtr + word * L1;
-        const double oldCachedProb = cachedL1ProbsPtr[oldTopic];
-
-        DEBUG_MSG("Vocabulary index : (" << word << ")");
-
-        // Remove the current assignment from the leave-one-out counts.
-        --documentCounts[oldTopic];
-        --wordCounts[oldTopic];
-        --countL1Ptr[oldTopic];
-        cachedL1ProbsPtr[oldTopic] =
-          (documentCounts[oldTopic] + alphaPtr[oldTopic]) /
-          (countL1Ptr[oldTopic] + sumBetaPtr[oldTopic]);
-
-        // Build the cumulative conditional distribution over topics.
-        double cumulative = 0.0;
-        for (uword t = 0; t < L1; ++t) {
-          cumulative += cachedL1ProbsPtr[t] * (wordCounts[t] + wordBeta[t]);
-          l1ProbsPtr[t] = cumulative;
-        }
-
-        const double draw = unif_rand() * cumulative;
-        uword newTopic = oldTopic;
-
-        for (uword t = 0; t < L1; ++t) {
-          if (l1ProbsPtr[t] > draw) {
-            newTopic = t;
-            break;
-          }
-        }
-
-        assignments[w] = newTopic;
-        ++documentCounts[newTopic];
-        ++wordCounts[newTopic];
-        ++countL1Ptr[newTopic];
-
-        if (newTopic == oldTopic) {
-          // All counts returned to their pre-sampling values, so the cached
-          // probability is already available without a second division.
-          cachedL1ProbsPtr[oldTopic] = oldCachedProb;
-        } else {
-          cachedL1ProbsPtr[newTopic] =
-            (documentCounts[newTopic] + alphaPtr[newTopic]) /
-            (countL1Ptr[newTopic] + sumBetaPtr[newTopic]);
-        }
-
-        DEBUG_MSG("Word re-sampled");
+      if (hasScalarBeta) {
+        sampleDocument(d, std::true_type{});
+      } else {
+        sampleDocument(d, std::false_type{});
       }
 
       DEBUG_MSG("Ended document: " << d);

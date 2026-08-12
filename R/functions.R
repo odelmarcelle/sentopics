@@ -562,15 +562,18 @@ chains_scores <- function(x, window = 110, nWords = 10) {
   x <- as.list(x, copy = FALSE)
 
   FUN <- function(x) {
+    multLikelihood <- get("multLikelihood", envir = getNamespace("sentopics"))
+    logLikelihood <- c(utils::tail(x$logLikelihood, 1))
+    if (is.na(logLikelihood) || logLikelihood == 0) {
+      logLikelihood <- multLikelihood(x)[1, 1]
+    }
+    evaluatedLikelihoods <- x$logLikelihood[!is.na(x$logLikelihood)]
+
     score <- data.table::data.table(
       # name = name,
-      logLikelihood = c(utils::tail(x$logLikelihood, 1)),
-      max_logLikelihood = max(x$logLikelihood)
+      logLikelihood = logLikelihood,
+      max_logLikelihood = max(c(evaluatedLikelihoods, logLikelihood))
     )
-    if (score$logLikelihood == 0) {
-      multLikelihood <- get("multLikelihood", envir = getNamespace("sentopics"))
-      score$logLikelihood <- multLikelihood(x)[1, 1]
-    }
     ## Coherence measures
     score$C_NPMI <- mean(sentopics::coherence(
       x,

@@ -27,6 +27,61 @@
 using namespace Rcpp;
 using namespace arma;
 
+namespace {
+
+class RIndexGuard {
+public:
+  explicit RIndexGuard(
+    std::vector<std::unique_ptr<arma::uvec>>& indices_
+  ) : primary(indices_), secondary(nullptr) {
+    decrement(primary);
+  }
+
+  RIndexGuard(
+    std::vector<std::unique_ptr<arma::uvec>>& tokens_,
+    std::vector<std::unique_ptr<arma::uvec>>& assignments_
+  ) : primary(tokens_), secondary(&assignments_) {
+    if (primary.size() != secondary->size()) {
+      Rcpp::stop("Internal error: token and assignment dimensions differ.");
+    }
+
+    decrement(primary);
+    decrement(*secondary);
+  }
+
+  ~RIndexGuard() noexcept {
+    increment(primary);
+    if (secondary != nullptr) {
+      increment(*secondary);
+    }
+  }
+
+  RIndexGuard(const RIndexGuard&) = delete;
+  RIndexGuard& operator=(const RIndexGuard&) = delete;
+
+private:
+  static void decrement(
+    std::vector<std::unique_ptr<arma::uvec>>& indices
+  ) noexcept {
+    for (arma::uword d = 0; d < indices.size(); ++d) {
+      *indices[d] -= 1;
+    }
+  }
+
+  static void increment(
+    std::vector<std::unique_ptr<arma::uvec>>& indices
+  ) noexcept {
+    for (arma::uword d = 0; d < indices.size(); ++d) {
+      *indices[d] += 1;
+    }
+  }
+
+  std::vector<std::unique_ptr<arma::uvec>>& primary;
+  std::vector<std::unique_ptr<arma::uvec>>* secondary;
+};
+
+}  // namespace
+
 // constructor default values
 void model::set_default_values(bool reverse_) {
   reverse = reverse_;
@@ -212,16 +267,9 @@ arma::imat wrapper_cpp_rebuild_zw(SEXP intTokens_, SEXP za_, arma::uword Z, arma
     int len = LENGTH(VECTOR_ELT(intTokens_, i));
     intTokens[i] =  std::unique_ptr<arma::uvec>(new arma::uvec( reinterpret_cast<arma::uword*>(INTEGER(VECTOR_ELT(intTokens_, i))), len, false, true));
     za[i] =  std::unique_ptr<arma::uvec>(new arma::uvec( reinterpret_cast<arma::uword*>(INTEGER(VECTOR_ELT(za_, i))), len, false, true));
-    *intTokens[i] -= 1;
-    *za[i] -= 1;
   }
-  arma::imat zw = cpp_rebuild_zw(intTokens, za, Z, V);
-  // reverse indexing correction for R object
-  for (R_xlen_t i = 0; i < XLENGTH(intTokens_); i++) {
-    *intTokens[i] += 1;
-    *za[i] += 1;
-  }
-  return(zw);
+  RIndexGuard r_index_guard(intTokens, za);
+  return cpp_rebuild_zw(intTokens, za, Z, V);
 }
 
 arma::imat cpp_rebuild_zw(std::vector<std::unique_ptr<arma::uvec>>& intTokens, std::vector<std::unique_ptr<arma::uvec>>& za, arma::uword Z, arma::uword V) {
@@ -259,14 +307,9 @@ arma::imat wrapper_cpp_rebuild_zd(SEXP za_, arma::uword Z) {
   for (R_xlen_t i = 0; i < XLENGTH(za_); i++) {
     int len = LENGTH(VECTOR_ELT(za_, i));
     za[i] =  std::unique_ptr<arma::uvec>(new arma::uvec( reinterpret_cast<arma::uword*>(INTEGER(VECTOR_ELT(za_, i))), len, false, true));
-    *za[i] -= 1;
   }
-  arma::imat zd = cpp_rebuild_zd(za, Z);
-  // reverse indexing correction for R object
-  for (R_xlen_t i = 0; i < XLENGTH(za_); i++) {
-    *za[i] += 1;
-  }
-  return(zd);
+  RIndexGuard r_index_guard(za);
+  return cpp_rebuild_zd(za, Z);
 }
 
 arma::imat cpp_rebuild_zd(std::vector<std::unique_ptr<arma::uvec>>& za, arma::uword Z) {
@@ -301,18 +344,22 @@ void model::iterate(uword iterations, bool displayProgress, bool computeLikeliho
   RNGScope rngScope;
 
   // add "iterations" elements to the likelihood storage vectors
-  logLikelihoodW.resize(it + iterations);
-  logLikelihoodL1.resize(it + iterations);
-  logLikelihoodL2.resize(it + iterations);
+  const uword likelihoodEnd = it + iterations;
+  logLikelihoodW.resize(likelihoodEnd);
+  logLikelihoodL1.resize(likelihoodEnd);
+  logLikelihoodL2.resize(likelihoodEnd);
+  if (iterations > 0) {
+    logLikelihoodW.subvec(it, likelihoodEnd - 1).fill(NA_REAL);
+    logLikelihoodL1.subvec(it, likelihoodEnd - 1).fill(NA_REAL);
+    logLikelihoodL2.subvec(it, likelihoodEnd - 1).fill(NA_REAL);
+  }
 
   // RcppProgress tracking object
   Progress p(iterations, displayProgress);
 
-  // correct indexing
-  for (uword d = 0; d < D; d++){
-    *intTokens[d] -= 1;
-    *za[d] -= 1;
-  }
+  // Temporarily shift the R-backed vectors to zero-based indexing. The guard
+  // restores them on normal return, interruption, and exception unwinding.
+  RIndexGuard indexGuard(intTokens, za);
 
   DEBUG_MSG2("Branching to loops");
 
@@ -329,11 +376,11 @@ void model::iterate(uword iterations, bool displayProgress, bool computeLikeliho
 
   if ((iterations - LDAruns) > 0) { iteratel2(LDAruns, iterations - LDAruns, computeLikelihood, p); DEBUG_MSG2("non-LDA performed");}
 
-  // reverse indexing correction
-  for (uword d = 0; d < D; d++){
-    *intTokens[d] += 1;
-    *za[d] += 1;
-  }
+  // An interrupted run may complete fewer iterations than requested. Remove
+  // the unexecuted tail rather than exposing phantom likelihood entries.
+  logLikelihoodW.resize(it);
+  logLikelihoodL1.resize(it);
+  logLikelihoodL2.resize(it);
 }
 
 void model::iterateLDA(uword start, uword iterations, bool computeLikelihood, Progress& p) {

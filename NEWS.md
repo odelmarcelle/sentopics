@@ -33,6 +33,8 @@
 * Fixed model relabelling with stored scaled sentiment, optional arguments in
   `sentiment_series()`, `melt()` dispatch with current **data.table** versions,
   and JST coherence dimension labels.
+* Restored R-backed token and assignment indices after sampling errors, and
+  record unevaluated log-likelihoods as `NA` when `computeLikelihood = FALSE`.
 
 # sentopics 0.7.5
 

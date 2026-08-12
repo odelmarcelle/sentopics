@@ -127,6 +127,61 @@ test_that("fit0 doesn't alter anything", {
   expect_identical(model, fit(model, 0, displayProgress = FALSE))
 })
 
+test_that("unevaluated likelihoods are recorded as missing", {
+  models <- list(
+    LDA(ECB_press_conferences_tokens[1:2], K = 2),
+    rJST(ECB_press_conferences_tokens[1:2], K = 2, S = 2)
+  )
+
+  for (model in models) {
+    model <- fit(
+      model,
+      2,
+      displayProgress = FALSE,
+      computeLikelihood = FALSE
+    )
+    components <- attr(model$logLikelihood, "components")
+
+    expect_length(model$logLikelihood, 2)
+    expect_true(all(is.na(model$logLikelihood)))
+    expect_true(all(vapply(components, function(x) all(is.na(x)), logical(1))))
+
+    model <- fit(model, 1, displayProgress = FALSE)
+    expect_true(all(is.na(model$logLikelihood[1:2])))
+    expect_true(is.finite(model$logLikelihood[3]))
+  }
+})
+
+test_that("sampling errors restore R-backed indices", {
+  model <- as.sentopicsmodel(LDA(ECB_press_conferences_tokens[1:2], K = 2))
+  base <- core(model)
+  base$cleaned[[1]][1] <- nrow(model$vocabulary) + 1L
+  tokens_before <- lapply(base$cleaned, function(x) x + 0L)
+  assignments_before <- lapply(model$za, function(x) x + 0L)
+  cpp_model <- rebuild_cppModel(model, base)
+
+  expect_error(cpp_model$iterate(1, FALSE, TRUE))
+  expect_identical(base$cleaned, tokens_before)
+  expect_identical(model$za, assignments_before)
+})
+
+test_that("rebuild errors restore R-backed indices", {
+  int_tokens <- list(c(1L, 2L))
+  assignments <- list(c(1L, 3L))
+  tokens_before <- lapply(int_tokens, function(x) x + 0L)
+  assignments_before <- lapply(assignments, function(x) x + 0L)
+
+  expect_error(wrapper_cpp_rebuild_zw(int_tokens, assignments, 2L, 2L))
+  expect_identical(int_tokens, tokens_before)
+  expect_identical(assignments, assignments_before)
+
+  assignments <- list(c(1L, 3L))
+  assignments_before <- lapply(assignments, function(x) x + 0L)
+
+  expect_error(wrapper_cpp_rebuild_zd(assignments, 2L))
+  expect_identical(assignments, assignments_before)
+})
+
 scores <- compute_PicaultRenault_scores(ECB_press_conferences)
 EC <- scores[names(ECB_press_conferences_tokens), "EC"]
 

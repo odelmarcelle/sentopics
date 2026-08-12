@@ -74,7 +74,7 @@ void model::init(SEXP intTokens_,
   }
 
   lexicon = lexicon_;
-  double initBeta = beta_;;
+  this->initBeta = beta_;
   alpha = alpha_;
   gamma = gamma_;
 
@@ -82,7 +82,7 @@ void model::init(SEXP intTokens_,
   gammaCycle = gammaCycle_;
 
   // initialize beta
-  initBetaLex(initBeta);
+  initBetaLex(this->initBeta);
 
   // initialize topic assignments, sentiment assignments and count structures
   initAssignments();

@@ -21,9 +21,12 @@ class model {
 public:
   bool reverse; // true means topic > sentiment (rJST), false means sentiment > topic (JST)
 
+  // L1 and L2 are the outer and inner hierarchy layers, respectively. With
+  // reverse == true (rJST/LDA), L1 contains topics and L2 sentiments. With
+  // reverse == false (JST), L1 contains sentiments and L2 topics.
   uword V;  // vocabulary size
-  uword L1;  // number of topics
-  uword L2;  // number of sentiments
+  uword L1;  // size of the outer hierarchy layer
+  uword L2;  // size of the inner hierarchy layer
   uword D;  // number of documents in the corpus
   uword C;  // number of document classes
 
@@ -39,6 +42,9 @@ public:
 
   mat beta;      // matrix S x (T x S) storing the parameter beta for each topic & sentiment
   vec sumBeta;    // matrix T x S containing the sum of betas for each topic & sentiment
+  mat lgammaBeta;     // cached lgamma(beta + epsilon)
+  vec lgammaSumBeta;  // cached lgamma(sumBeta)
+  vec sumLgammaBeta;  // cached row sums of lgammaBeta
 
   uword alphaCycle;  // indicates at which frequency is estimated the Dirichlet parameter alpha
   uword gammaCycle;  // indicates at which frequency is estimated the Dirichlet parameter gamma
@@ -95,6 +101,7 @@ public:
 
   void initBetaLex(double initBeta);        // initialize beta with lexicon information
   void initAssignments();   // randomly assign topic and sentiment to all words
+  void cacheBetaTerms();
 
 
   // model inference

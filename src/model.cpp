@@ -339,6 +339,7 @@ void model::iterateLDA(uword start, uword iterations, bool computeLikelihood, Pr
 
   // re-initialize sum and count structures
   sumBeta = sum(beta, 1); // still needed for likelihood
+  if (computeLikelihood) { cacheBetaTerms(); }
 
   sumAlpha = trans(sum(alpha, 0));
   sumGamma = mat(L1, C);
@@ -488,6 +489,7 @@ void model::iteratel2(uword start, uword iterations, bool computeLikelihood, Pro
 
   // re-initialize sum and count structures
   sumBeta = sum(beta, 1);
+  if (computeLikelihood) { cacheBetaTerms(); }
   sumAlpha = trans(sum(alpha, 0));
   sumGamma = mat(L1, C);
   for (uword t = 0; t < L1; t++){sumGamma.row(t) = sum(gamma.rows(0 + t*L2, L2-1 + t*L2), 0);}
@@ -767,32 +769,47 @@ void model::updateGamma() {
   for (uword t = 0; t < L1; t++){sumGamma.row(t) = sum(gamma.rows(0 + t*L2, L2-1 + t*L2), 0);}
 }
 
+void model::cacheBetaTerms() {
+  const double epsilon = 0.000000001;
+  lgammaBeta = lgamma(beta + epsilon);
+  lgammaSumBeta = lgamma(sumBeta);
+  sumLgammaBeta = sum(lgammaBeta, 1);
+}
+
 // compute component p(w|t,s) of the likelihood
 double model::computeLogLikelihoodW() {
 
-  double epsilon = 0.000000001; // a very small epsilon is added to avoid lgamma(0)
+  const double epsilon = 0.000000001; // a very small epsilon is added to avoid lgamma(0)
+  const uword Z = L1 * L2;
 
   double logLik = 0; // initialize the likelihood
 
-  // computation is done in four subcomponents. two variables for the numerator
-  // and two for the denominator
-  double numOne;
-  double numTwo;
-  double denomOne;
-  double denomTwo;
+  const auto* zwPtr = zw.memptr();
+  const double* betaPtr = beta.memptr();
+  const double* lgammaBetaPtr = lgammaBeta.memptr();
+  vec numTwo(Z, fill::zeros);
+  double* const numTwoPtr = numTwo.memptr();
 
-  for (uword z = 0; z < L1*L2; z++) {
-
-    numOne = lgamma(sumBeta(z));
-    denomOne = sum(lgamma(beta.row(z) + epsilon));
-    numTwo = 0;
-    for (uword w = 0; w < V; w++) {
-      numTwo += lgamma(zw(z, w) + beta(z, w) + epsilon);
+  // Armadillo stores matrices column-major. Traverse each word column
+  // contiguously while retaining word-order accumulation for every z.
+  for (uword w = 0; w < V; w++) {
+    for (uword z = 0; z < Z; z++) {
+      const auto count = *zwPtr++;
+      const double betaValue = *betaPtr++;
+      numTwoPtr[z] += (count == 0) ?
+        *lgammaBetaPtr :
+        lgamma(count + betaValue + epsilon);
+      ++lgammaBetaPtr;
     }
-    denomTwo = lgamma(count_z(z) + sumBeta(z));
+  }
 
-    // increments the log-likelihood with the result of the four subcomponents
-    logLik += numOne + numTwo - denomOne - denomTwo;
+  const double* const lgammaSumBetaPtr = lgammaSumBeta.memptr();
+  const double* const sumLgammaBetaPtr = sumLgammaBeta.memptr();
+  const auto* const countZPtr = count_z.memptr();
+  const double* const sumBetaPtr = sumBeta.memptr();
+  for (uword z = 0; z < Z; z++) {
+    logLik += lgammaSumBetaPtr[z] + numTwoPtr[z] - sumLgammaBetaPtr[z] -
+      lgamma(countZPtr[z] + sumBetaPtr[z]);
   }
 
 
@@ -804,7 +821,7 @@ double model::computeLogLikelihoodW() {
 // compute component p(s|t) of the likelihood
 double model::computeLogLikelihoodL2() {
 
-  double epsilon = 0.000000001; // a very small epsilon is added to avoid lgamma(0)
+  const double epsilon = 0.000000001; // a very small epsilon is added to avoid lgamma(0)
 
   double logLik = 0; // initialize the likelihood
 
@@ -815,22 +832,41 @@ double model::computeLogLikelihoodL2() {
   double denomOne;
   double denomTwo;
 
-  uword c;
+  // There is currently a single document class, so c is constant throughout.
+  const uword c = 0;
+
+  // These terms vary by first-layer label, but not by document.
+  vec lgammaGamma = lgamma(gamma.col(c) + epsilon);
+  vec numOneByL1(L1);
+  vec denomOneByL1(L1);
+  for (uword t = 0; t < L1; t++) {
+    numOneByL1(t) = lgamma(sumGamma(t, c));
+    denomOneByL1(t) = sum(lgammaGamma.rows(t*L2, L2-1 + t*L2));
+  }
+
+  const auto* zdPtr = zd.memptr();
+  const auto* l1dPtr = l1d.memptr();
+  const double* const gammaPtr = gamma.memptr();
+  const double* const lgammaGammaPtr = lgammaGamma.memptr();
+  const double* const sumGammaPtr = sumGamma.memptr();
 
   for (uword d = 0; d < D; d++) {
 
-    c = 0;
-
+    uword z = 0;
     for (uword t = 0; t < L1; t++) {
 
-      numOne = lgamma(sumGamma(t, c));
-      denomOne = sum(lgamma(vectorise(gamma.rows(0 + t*L2, L2-1 + t*L2)) + epsilon));
+      numOne = numOneByL1(t);
+      denomOne = denomOneByL1(t);
 
       numTwo = 0;
       for (uword s = 0; s < L2; s++) {
-        numTwo += lgamma(zd(t*L2+s, d) + gamma(t*L2+s, c) + epsilon);
+        const auto count = *zdPtr++;
+        numTwo += (count == 0) ?
+          lgammaGammaPtr[z] :
+          lgamma(count + gammaPtr[z] + epsilon);
+        ++z;
       }
-      denomTwo = lgamma(l1d(t, d) + sumGamma(t, c));
+      denomTwo = lgamma(*l1dPtr++ + sumGammaPtr[t]);
 
       // increments the log-likelihood with the result of the four subcomponents
       logLik += numOne + numTwo - denomOne - denomTwo;
@@ -842,7 +878,7 @@ double model::computeLogLikelihoodL2() {
 // compute component p(t) of the likelihood
 double model::computeLogLikelihoodL1() {
 
-  double epsilon = 0.000000001; // a very small epsilon is added to avoid lgamma(0)
+  const double epsilon = 0.000000001; // a very small epsilon is added to avoid lgamma(0)
 
   double logLik = 0; // initialize the likelihood
 
@@ -853,20 +889,31 @@ double model::computeLogLikelihoodL1() {
   double denomOne;
   double denomTwo;
 
-  uword c;
+  // There is currently a single document class, so c is constant throughout.
+  const uword c = 0;
+
+  // These terms do not depend on the document.
+  vec lgammaAlpha = lgamma(alpha.col(c) + epsilon);
+  const double numOneConst = lgamma(sumAlpha(c));
+  const double denomOneConst = sum(lgammaAlpha);
+  const auto* l1dPtr = l1d.memptr();
+  const double* const alphaPtr = alpha.memptr();
+  const double* const lgammaAlphaPtr = lgammaAlpha.memptr();
+  const auto* const countDPtr = count_d.memptr();
 
   for (uword d = 0; d < D; d++) {
 
-    c = 0;
-
-    numOne = lgamma(sumAlpha(c));
-    denomOne =  sum(lgamma(alpha.col(c) + epsilon));
+    numOne = numOneConst;
+    denomOne = denomOneConst;
 
     numTwo = 0;
     for (uword t = 0; t < L1; t++) {
-      numTwo += lgamma(l1d(t, d) + alpha(t, c)+ epsilon);
+      const auto count = *l1dPtr++;
+      numTwo += (count == 0) ?
+        lgammaAlphaPtr[t] :
+        lgamma(count + alphaPtr[t] + epsilon);
     }
-    denomTwo = lgamma(count_d(d) + sumAlpha(c));
+    denomTwo = lgamma(countDPtr[d] + sumAlpha(c));
 
     // increments the log-likelihood with the result of the four subcomponents
     logLik += numOne + numTwo - denomOne - denomTwo;

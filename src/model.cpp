@@ -339,10 +339,6 @@ void model::iterateLDA(uword start, uword iterations, bool computeLikelihood, Pr
 
   // re-initialize sum and count structures
   sumBeta = sum(beta, 1); // still needed for likelihood
-  // beta need special treatment to reach L1 x V dimension
-  L1beta = mat(L1, V);
-  for (uword t = 0; t < L1; t++){L1beta.row(t) = sum(beta.rows(0 + t*L2, L2-1 + t*L2), 0);}
-  L1sumBeta = sum(L1beta, 1);
 
   sumAlpha = trans(sum(alpha, 0));
   sumGamma = mat(L1, C);
@@ -359,6 +355,18 @@ void model::iterateLDA(uword start, uword iterations, bool computeLikelihood, Pr
   l1Probs = vec(L1);
   CACHEDl1Probs = vec(L1);
 
+  // iterateLDA() is only dispatched when L2 == 1. Work directly with the
+  // underlying column-major storage to avoid checked Armadillo access in the
+  // per-token, per-topic hot loop.
+  auto* const l1dPtr = l1d.memptr();
+  auto* const l1wPtr = l1w.memptr();
+  auto* const countL1Ptr = count_l1.memptr();
+  const double* const alphaPtr = alpha.memptr();
+  const double* const betaPtr = beta.memptr();
+  const double* const sumBetaPtr = sumBeta.memptr();
+  double* const cachedL1ProbsPtr = CACHEDl1Probs.memptr();
+  double* const l1ProbsPtr = l1Probs.memptr();
+
   for (uword i = start; i < (iterations + start); i++){
 
     if (Progress::check_abort()) {
@@ -370,24 +378,73 @@ void model::iterateLDA(uword start, uword iterations, bool computeLikelihood, Pr
     for (uword d = 0; d < D; d++){
       DEBUG_MSG("Starting document: " << d);
 
-      // store class number of current document
-      uword c = 0;
+      auto* const documentCounts = l1dPtr + d * L1;
 
       DEBUG_MSG("Probabilities caching...");
 
       // caching ps_td and pt_d for document
       for (uword t = 0; t < L1; t++){
-        CACHEDl1Probs(t) = (l1d(t, d) + alpha(t, c)) / (count_l1(t) + L1sumBeta(t));
+        cachedL1ProbsPtr[t] = (documentCounts[t] + alphaPtr[t]) /
+          (countL1Ptr[t] + sumBetaPtr[t]);
       }
       DEBUG_MSG("Cached probs for document: " << d);
       DEBUG_MSG(trans(CACHEDl1Probs));
 
-      uword size = intTokens[d]->size();
+      const uword size = intTokens[d]->size();
+      const uword* const words = intTokens[d]->memptr();
+      uword* const assignments = za[d]->memptr();
+
       // per word sampling
       for (uword w = 0; w < size; w++){
         DEBUG_MSG("Word/document index: [" << d << "]-" << w);
-        DEBUG_MSG("Vocabulary index : (" << intTokens[d]->at(w) << ")");
-        samplingLDA(intTokens[d]->at(w), za[d]->at(w), c, d);
+        const uword word = words[w];
+        const uword oldTopic = assignments[w];
+        auto* const wordCounts = l1wPtr + word * L1;
+        const double* const wordBeta = betaPtr + word * L1;
+        const double oldCachedProb = cachedL1ProbsPtr[oldTopic];
+
+        DEBUG_MSG("Vocabulary index : (" << word << ")");
+
+        // Remove the current assignment from the leave-one-out counts.
+        --documentCounts[oldTopic];
+        --wordCounts[oldTopic];
+        --countL1Ptr[oldTopic];
+        cachedL1ProbsPtr[oldTopic] =
+          (documentCounts[oldTopic] + alphaPtr[oldTopic]) /
+          (countL1Ptr[oldTopic] + sumBetaPtr[oldTopic]);
+
+        // Build the cumulative conditional distribution over topics.
+        double cumulative = 0.0;
+        for (uword t = 0; t < L1; ++t) {
+          cumulative += cachedL1ProbsPtr[t] * (wordCounts[t] + wordBeta[t]);
+          l1ProbsPtr[t] = cumulative;
+        }
+
+        const double draw = unif_rand() * cumulative;
+        uword newTopic = oldTopic;
+
+        for (uword t = 0; t < L1; ++t) {
+          if (l1ProbsPtr[t] > draw) {
+            newTopic = t;
+            break;
+          }
+        }
+
+        assignments[w] = newTopic;
+        ++documentCounts[newTopic];
+        ++wordCounts[newTopic];
+        ++countL1Ptr[newTopic];
+
+        if (newTopic == oldTopic) {
+          // All counts returned to their pre-sampling values, so the cached
+          // probability is already available without a second division.
+          cachedL1ProbsPtr[oldTopic] = oldCachedProb;
+        } else {
+          cachedL1ProbsPtr[newTopic] =
+            (documentCounts[newTopic] + alphaPtr[newTopic]) /
+            (countL1Ptr[newTopic] + sumBetaPtr[newTopic]);
+        }
+
         DEBUG_MSG("Word re-sampled");
       }
 
@@ -602,81 +659,6 @@ void model::sampling(const uword& word, uword& zLeave, uword c, uword d)  {
   DEBUG_MSG("Cached probs after sampling");
   DEBUG_MSG(trans(CACHEDzProbs));
 }
-
-
-// sample a new topic and sentiment for a word
-void model::samplingLDA(const uword& word, uword& zLeave, uword c, uword d)  {
-
-  // uniform random draw
-  double u;
-
-  uword l1 = zLeave / L2;
-  uword l2 = zLeave % L2;
-
-  DEBUG_MSG("l1w before sampling: " << trans(l1w.col(word)));
-  DEBUG_MSG(size(L1beta));
-  DEBUG_MSG("l1Beta for current word: " << trans(L1beta.col(word)));
-
-  // update count structures
-  l1d(l1, d) -= 1;
-  l1w(l1, word) -= 1;
-  count_l1(l1) -= 1;
-
-  CACHEDl1Probs(l1) = (l1d(l1, d) + alpha(l1, c)) / (count_l1(l1) + L1sumBeta(l1));
-
-  DEBUG_MSG("Cached probs before sampling");
-  DEBUG_MSG(trans(CACHEDl1Probs));
-
-  DEBUG_MSG("count_l1");
-  DEBUG_MSG(trans(count_l1));
-
-  l1Probs(0) = CACHEDl1Probs(0) * (l1w(0, word) + L1beta(0, word));
-  for (uword t = 1; t < L1; t++) {
-    l1Probs(t) = l1Probs(t-1) + CACHEDl1Probs(t) * (l1w(t, word) + L1beta(t, word));
-  }
-  DEBUG_MSG("Cumulated probabilities");
-  DEBUG_MSG(trans(l1Probs));
-
-
-  // sampling a new topic and sentiment
-
-  DEBUG_MSG("Pre sample");
-  DEBUG_MSG("z: " << zLeave);
-  DEBUG_MSG("l1: " << l1);
-
-  u  = unif_rand() * l1Probs(L1 - 1);
-  for (uword t = 0; t < L1 ; t++) {
-    if(l1Probs(t) >  u ) {
-      DEBUG_MSG("Sampled t: " << t);
-      zLeave = t*L2 + l2;
-      break;
-    }
-  }
-
-  DEBUG_MSG("Post sample");
-  DEBUG_MSG("z: " << zLeave);
-
-
-  l1 = zLeave / L2;
-
-  DEBUG_MSG("l1: " << l1);
-
-  // update count structures
-  l1d(l1, d) += 1;
-  // count_d(d) += 1;  // doesn't change following assignment anyway
-  l1w(l1, word) += 1;
-  count_l1(l1) += 1;
-
-  DEBUG_MSG("l1w after sampling: " << trans(l1w.col(word)));
-
-
-  CACHEDl1Probs(l1) = (l1d(l1, d) + alpha(l1, c)) / (count_l1(l1) + L1sumBeta(l1));
-
-  DEBUG_MSG("Cached probs after sampling");
-  DEBUG_MSG(trans(CACHEDl1Probs));
-}
-
-
 
 
 // estimation of the parameter alpha

@@ -40,9 +40,6 @@ public:
   mat beta;      // matrix S x (T x S) storing the parameter beta for each topic & sentiment
   vec sumBeta;    // matrix T x S containing the sum of betas for each topic & sentiment
 
-  mat L1beta;      // cube V x T x S storing the parameter beta for each topic & sentiment
-  vec L1sumBeta;    // matrix T x S containing the sum of betas for each topic & sentiment
-
   uword alphaCycle;  // indicates at which frequency is estimated the Dirichlet parameter alpha
   uword gammaCycle;  // indicates at which frequency is estimated the Dirichlet parameter gamma
 
@@ -107,7 +104,6 @@ public:
 
   void refreshCachedZProbs(uword l1, uword c, uword d);
   void sampling(const uword& word, uword& zLeave, uword c, uword d); // sampling of a single word's topic
-  void samplingLDA(const uword& word, uword& zLeave, uword c, uword d); // sampling of a single word's topic corrected
 
   void updateAlpha(); // update the value of the Dirichlet parameter alpha based on count matrices
   void updateGamma(); // update the value of the Dirichlet parameter gamma based on count matrices

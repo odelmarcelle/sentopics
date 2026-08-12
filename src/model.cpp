@@ -319,7 +319,7 @@ void model::iterate(uword iterations, bool displayProgress, bool computeLikeliho
   // branch to correct loop
   int LDAruns = 0;
   ///////////////////////////////////////////////////
-  if ( (L2 == 1) & (reverse == true) ) {LDAruns = iterations;} //branch to LDA if no sentiment and not JST model
+  if ( (L2 == 1) && (reverse == true) ) {LDAruns = iterations;} //branch to LDA if no sentiment and not JST model
   //////////////////////////////////////////////////
   DEBUG_MSG2("LDA runs : "<< LDAruns);
   DEBUG_MSG2("non-LDA runs : "<< (iterations - LDAruns));

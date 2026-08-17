@@ -30,6 +30,13 @@ using namespace arma;
 
 namespace {
 
+// R integer vectors are exposed as int*, but the model views them as
+// arma::uword*.  This is only safe while Armadillo uses 32-bit indices.
+static_assert(
+  sizeof(int) == sizeof(arma::uword),
+  "sentopics requires arma::uword to have the same width as R's int"
+);
+
 bool validDirichletParameters(const std::vector<double>& parameters) {
   for (const double parameter : parameters) {
     if (!std::isfinite(parameter) || parameter <= 0.0) {

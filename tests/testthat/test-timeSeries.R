@@ -135,6 +135,22 @@ test_that("internal rJST sentiment follows theta topic order", {
   expect_equal(sentiment$.sentiment, expected)
 })
 
+test_that("internal rJST sentiment follows numeric topic order for K >= 10", {
+  model <- fit(
+    rJST(toks[1:20], K = 12, lexicon = LoughranMcDonald),
+    1,
+    displayProgress = FALSE
+  )
+
+  sentiment <- sentopics_sentiment(model, include_docvars = TRUE)
+  topic_cols <- paste0(".s_", colnames(model$theta))
+  expected <- rowSums(
+    as.matrix(sentiment[, topic_cols, with = FALSE]) * model$theta
+  )
+
+  expect_equal(sentiment$.sentiment, expected)
+})
+
 sentopics_date(jst) <- ECB_press_conferences_tokens$.date
 
 test_that("sentiment_series works", {
@@ -205,6 +221,26 @@ test_that("series functions works for LDA", {
   plot_sentiment_breakdown(lda, period = "day", rolling_window = 30)
   plot_proportion_topics(lda, period = "day", rolling_window = 30)
   plot_proportion_topics(lda, plot_ridgelines = FALSE)
+})
+
+test_that("identity period returns document-level breakdowns", {
+  model <- fit(LDA(toks[1:10]), 1, displayProgress = FALSE)
+  sentopics_sentiment(model) <- seq_along(model$tokens)
+  sentopics_date(model) <- as.Date("2020-01-01") + seq_along(model$tokens) - 1
+
+  result <- sentiment_breakdown(
+    model,
+    period = "identity",
+    as.xts = FALSE
+  )
+  topic_cols <- sentopics_labels(model, flat = FALSE)[["topic"]]
+
+  expect_equal(nrow(result), length(model$tokens))
+  expect_equal(result$sentiment, seq_along(model$tokens))
+  expect_equal(
+    rowSums(as.matrix(result[, topic_cols, with = FALSE])),
+    result$sentiment
+  )
 })
 
 test_that("series functions works for rJST", {

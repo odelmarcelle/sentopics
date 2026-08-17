@@ -82,15 +82,40 @@ test_that("top_words methods works", {
   expect_output(print(tops), "FREX")
 })
 
-test_that("Updates works", {
-  alphaU <- sentopicsmodel(toks, L1cycle = 2)
-  alphaU <- fit(alphaU, 5, displayProgress = FALSE)
-  expect_false(isTRUE(all.equal(rep(1, 5), alphaU$alpha)))
+test_that("hyperparameter update cycles update the correct priors", {
+  set.seed(1)
+  initial <- sentopicsmodel(
+    toks,
+    L1 = 5,
+    L2 = 3,
+    L1prior = 1,
+    L2prior = 5,
+    L1cycle = 1,
+    L2cycle = 1
+  )
+  fitted <- fit(initial, 5, displayProgress = FALSE)
 
-  alphaU <- LDA(toks)
-  alphaU$alphaCycle <- 2
-  alphaU <- fit(alphaU, 5, displayProgress = FALSE)
-  expect_false(isTRUE(all.equal(rep(1, 5), alphaU$alpha)))
+  expect_equal(dim(fitted$L1prior), c(5L, 1L))
+  expect_equal(dim(fitted$L2prior), c(15L, 1L))
+  expect_true(all(is.finite(fitted$L1prior)))
+  expect_true(all(fitted$L1prior > 0))
+  expect_true(all(is.finite(fitted$L2prior)))
+  expect_true(all(fitted$L2prior > 0))
+  expect_gt(max(abs(fitted$L1prior - initial$L1prior)), 0)
+  expect_gt(max(abs(fitted$L2prior - initial$L2prior)), 0)
+
+  ## Exercise the LDA-specific iteration path as well.
+  initial_lda <- sentopicsmodel(
+    toks,
+    L1 = 5,
+    L2 = 1,
+    L1prior = 1,
+    L2prior = 0,
+    L1cycle = 1
+  )
+  fitted_lda <- fit(initial_lda, 5, displayProgress = FALSE)
+  expect_equal(dim(fitted_lda$L1prior), c(5L, 1L))
+  expect_gt(max(abs(fitted_lda$L1prior - initial_lda$L1prior)), 0)
 })
 
 ### TODO: add test for utils functions such as getTheta()

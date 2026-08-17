@@ -162,10 +162,10 @@ void model::init(SEXP intTokens_,
 }
 
 
-void model::initBetaLex(double initBeta) {
+void model::initBetaLex(double initBeta_) {
 
   beta = arma::mat(L1*L2, V);
-  beta.fill(initBeta);
+  beta.fill(initBeta_);
 
   for (uword w = 0; w < V; w++){
 
@@ -643,11 +643,9 @@ void model::iteratel2(uword start, uword iterations, bool computeLikelihood, Pro
       }
     }
 
-    if ( (it + 1) > 0 ) {
-      if (gammaCycle > 0) {
-        if ((it + 1) % gammaCycle == 0) {
-          updateGamma();
-        }
+    if (gammaCycle > 0) {
+      if ((it + 1) % gammaCycle == 0) {
+        updateGamma();
       }
     }
 
@@ -759,6 +757,10 @@ void model::updateAlpha() {
   DEBUG_MSG("Updating alpha");
   bool discarded_update = false;
 
+  if (D == 0) {
+    return;
+  }
+
   uvec index;  // temporary index of document belonging in a given class
   imat sub_td;  // subset of tsd for a given class
   uword sub_D;   // number of document belonging to a given class
@@ -827,6 +829,10 @@ void model::updateAlpha() {
 void model::updateGamma() {
 
   bool discarded_update = false;
+
+  if (D == 0) {
+    return;
+  }
 
   uvec index;    // temporary index of document belonging in a given class
   imat sub_tsd;  // subset of tsd for a given class
@@ -1041,7 +1047,9 @@ double model::computeLogLikelihoodL1() {
 SEXP model::get_za() {
   SEXP tmp = PROTECT(Rf_allocVector(VECSXP, za.size()));
   for (uword d = 0; d < D; d++) {
-    SET_VECTOR_ELT(tmp, d,  wrap( arma::conv_to<arma::ivec>::from(*(za[d]))));
+    SEXP value = PROTECT(wrap(arma::conv_to<arma::ivec>::from(*(za[d]))));
+    SET_VECTOR_ELT(tmp, d, value);
+    UNPROTECT(1);
   }
   UNPROTECT(1);
   return tmp;
@@ -1051,7 +1059,9 @@ SEXP model::get_za() {
 SEXP model::get_intTokens() {
   SEXP tmp = PROTECT(Rf_allocVector(VECSXP, intTokens.size()));
   for (uword d = 0; d < D; d++) {
-    SET_VECTOR_ELT(tmp, d,  wrap( arma::conv_to<arma::ivec>::from(*(intTokens[d]))));
+    SEXP value = PROTECT(wrap(arma::conv_to<arma::ivec>::from(*(intTokens[d]))));
+    SET_VECTOR_ELT(tmp, d, value);
+    UNPROTECT(1);
   }
   UNPROTECT(1);
   return tmp;

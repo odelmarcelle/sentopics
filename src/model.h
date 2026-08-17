@@ -99,7 +99,7 @@ public:
             uword gammaCycle_
             );
 
-  void initBetaLex(double initBeta);        // initialize beta with lexicon information
+  void initBetaLex(double initBeta_);      // initialize beta with lexicon information
   void initAssignments();   // randomly assign topic and sentiment to all words
   void cacheBetaTerms();
 

@@ -3,6 +3,7 @@
 
 #include <RcppArmadillo.h>
 #include <RcppArmadilloExtensions/sample.h>
+#include <cmath>
 #include <type_traits>
 #include <vector>
 #include "model.h"
@@ -28,6 +29,15 @@ using namespace Rcpp;
 using namespace arma;
 
 namespace {
+
+bool validDirichletParameters(const std::vector<double>& parameters) {
+  for (const double parameter : parameters) {
+    if (!std::isfinite(parameter) || parameter <= 0.0) {
+      return false;
+    }
+  }
+  return true;
+}
 
 class RIndexGuard {
 public:
@@ -744,6 +754,7 @@ void model::sampling(const uword& word, uword& zLeave, uword c, uword d)  {
 void model::updateAlpha() {
 
   DEBUG_MSG("Updating alpha");
+  bool discarded_update = false;
 
   uvec index;  // temporary index of document belonging in a given class
   imat sub_td;  // subset of tsd for a given class
@@ -787,11 +798,23 @@ void model::updateAlpha() {
     DEBUG_MSG("New alpha:");
     DEBUG_MSG(arma::rowvec(alpha_temp.data(), L1, false, false));
 
-    // update alpha with the returned alpha_temp
-    for (uword t = 0; t < L1; t++){
-      alpha(t, c) = alpha_temp[t];
+    // Do not copy invalid optimizer output into the model. A class or topic
+    // with no observations can make the fixed-point update undefined; in
+    // that case retain the previous valid hyperparameters.
+    if (validDirichletParameters(alpha_temp)) {
+      for (uword t = 0; t < L1; t++){
+        alpha(t, c) = alpha_temp[t];
+      }
+    } else {
+      discarded_update = true;
     }
     sumAlpha(c) = sum(alpha.col(c));
+  }
+
+  if (discarded_update) {
+    Rcpp::warning(
+      "Invalid alpha hyperparameter update discarded; retaining previous values."
+    );
   }
 }
 
@@ -799,6 +822,8 @@ void model::updateAlpha() {
 
 // estimation of the parameter gamma
 void model::updateGamma() {
+
+  bool discarded_update = false;
 
   uvec index;    // temporary index of document belonging in a given class
   imat sub_tsd;  // subset of tsd for a given class
@@ -837,13 +862,25 @@ void model::updateGamma() {
       // estimate a new gamma_temp based on matrix data
       polya_fit_simple(data.data(), gamma_temp.data(), L2, sub_D);
 
-      // update gamma with the returned gamma_temp
-      for (uword s = 0; s < L2; s++) {
-        gamma(t*L2 + s, c) = gamma_temp[s];
+      // Do not copy invalid optimizer output into the model. A topic with no
+      // observations makes the fixed-point update undefined; retain its
+      // previous valid gamma values instead.
+      if (validDirichletParameters(gamma_temp)) {
+        for (uword s = 0; s < L2; s++) {
+          gamma(t*L2 + s, c) = gamma_temp[s];
+        }
+      } else {
+        discarded_update = true;
       }
     }
   }
   for (uword t = 0; t < L1; t++){sumGamma.row(t) = sum(gamma.rows(0 + t*L2, L2-1 + t*L2), 0);}
+
+  if (discarded_update) {
+    Rcpp::warning(
+      "Invalid gamma hyperparameter update discarded; retaining previous values."
+    );
+  }
 }
 
 void model::cacheBetaTerms() {

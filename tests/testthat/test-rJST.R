@@ -24,6 +24,26 @@ test_that("rJST works", {
   expect_true(all(sapply(rJST2, check_integrity, fast = FALSE)))
 })
 
+test_that("invalid hyperparameter updates do not corrupt the model", {
+  model <- rJST(
+    ECB_press_conferences_tokens[1],
+    K = 20,
+    lexicon = LoughranMcDonald,
+    alphaCycle = 1,
+    gammaCycle = 1
+  )
+
+  expect_warning(
+    model <- fit(model, 3, displayProgress = FALSE),
+    "Invalid (alpha|gamma) hyperparameter update discarded"
+  )
+  expect_true(all(is.finite(model$alpha)))
+  expect_true(all(model$alpha > 0))
+  expect_true(all(is.finite(model$gamma)))
+  expect_true(all(model$gamma > 0))
+  expect_true(check_integrity(model, fast = FALSE))
+})
+
 rJST <- fit(rJST, 2, displayProgress = FALSE)
 
 test_that("functions works", {

@@ -189,6 +189,7 @@ void model::initBetaLex(double initBeta) {
 // initialize topic/sentiments assignments and count structures
 void model::initAssignments() {
   RNGScope rngScope;
+  RIndexGuard indexGuard(intTokens, za);
 
   uvec zSet = regspace<uvec>(0, (L1*L2)-1);
 
@@ -198,7 +199,6 @@ void model::initAssignments() {
   for (uword d = 0; d < D; d++){
 
     DEBUG_MSG("Starting document " << d << "...");
-    *intTokens[d] -=1;
 
     uword W = intTokens[d]->size();
 
@@ -211,10 +211,6 @@ void model::initAssignments() {
         za[d]->at(w) = as_scalar(Rcpp::RcppArmadillo::sample(zSet, 1, true, beta.col(intTokens[d]->at(w)) ));
       }
     }
-
-    // reverse indexing correction
-    *za[d] += 1;
-    *intTokens[d] += 1;
   }
 }
 

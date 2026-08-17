@@ -234,6 +234,15 @@ test_that("merge_topics works", {
   proportion_topics(merged, period = "day")
 })
 
+test_that("merge_topics rejects out-of-range topic indices", {
+  model <- LDA(ECB_press_conferences_tokens[1:50], K = 5)
+
+  expect_error(
+    merge_topics(model, list(1:2, c(3, 4, 99))),
+    "out of range"
+  )
+})
+
 test_that("rebuild counts from posterior works", {
   rjst <- rJST(ECB_press_conferences_tokens)
   rjst <- fit(rjst, 10, displayProgress = FALSE)

@@ -57,17 +57,30 @@ merge_topics <- function(x, merging_list) {
   if (is.null(names(merging_list)) | any(is.na(names(merging_list)))) {
     names(merging_list) <- paste0("theme", 1:length(merging_list))
   }
+  topic_indices <- unlist(merging_list, use.names = FALSE)
+  invalid_indices <- topic_indices[!(topic_indices %in% seq_len(x$K))]
   flag <- all(
-    length(unlist(merging_list)) == x$K,
-    length(unique(unlist(merging_list))) == x$K
+    is.numeric(topic_indices),
+    length(topic_indices) == x$K,
+    length(unique(topic_indices)) == x$K,
+    length(invalid_indices) == 0
     # all(unlist(merging_list) %in% seq_len(nrow(textmodel_lda$phi))),
     # all(unlist(merging_list) %in% seq_len(ncol(textmodel_lda$theta)))
     # all(unlist(merging_list) %in% dimnames(x$phi)),
     # all(unlist(merging_list) %in% colnames(x$theta))
   )
   if (!flag) {
-    dups <- unname(unlist(merging_list)[duplicated(unlist(merging_list))])
-    miss <- setdiff(1:x$K, unique(unlist(merging_list)))
+    dups <- unname(topic_indices[duplicated(topic_indices)])
+    miss <- setdiff(seq_len(x$K), unique(topic_indices))
+
+    if (length(invalid_indices) > 0) {
+      invalid_mess <- paste0(
+        "\n    The following indice(s) are out of range: ",
+        paste0(unique(invalid_indices), collapse = ", ")
+      )
+    } else {
+      invalid_mess <- ""
+    }
 
     if (length(dups) > 0) {
       dup_mess <- paste0(
@@ -88,7 +101,8 @@ merge_topics <- function(x, merging_list) {
     error_message <- paste0(
       "The aggregation list is not valid. Make sure to include all existing topics and to avoid duplicates.",
       dup_mess,
-      miss_mess
+      miss_mess,
+      invalid_mess
     )
     stop(error_message)
   }
@@ -105,10 +119,7 @@ merge_topics <- function(x, merging_list) {
 
   newK <- length(merging_list)
 
-  reAssign <- rep(1:newK, times = lengths(merging_list))[order(unlist(
-    merging_list,
-    use.names = FALSE
-  ))]
+  reAssign <- rep(1:newK, times = lengths(merging_list))[order(topic_indices)]
   if (is.null(x$S)) {
     S <- 1
   } else {

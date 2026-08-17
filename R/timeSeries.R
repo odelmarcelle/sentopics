@@ -254,32 +254,25 @@ sentopics_sentiment <- function(
   }
 
   docvars <- attr(x$tokens, "docvars")
-  if (".sentiment" %in% names(docvars) & !is.null(value)) {
+  if (".sentiment" %in% names(docvars) && !is.null(value)) {
     message("Replacing existing '.sentiment' docvars")
-    # Also remove topic-specific sentiment and scaled values if any
-    if (".sentiment_scaled" %in% names(docvars)) {
-      x$tokens$`.sentiment_scaled` <- NULL
-    }
-    cols <- grep("^\\.s_", names(docvars), value = TRUE)
-    for (c in cols) {
-      quanteda::docvars(x$tokens, c) <- NULL
-    }
   }
 
-  if (!is.null(value)) {
-    x$tokens$`.sentiment` <- value
-  } else if (is.null(value)) {
+  # Sentiment values and their scaled counterparts are always replaced
+  # together, regardless of whether a new sentiment value is provided.
+  cleanup_cols <- c(
+    ".sentiment_scaled",
+    grep("^\\.s_", names(docvars), value = TRUE)
+  )
+  cleanup_cols <- cleanup_cols[cleanup_cols %in% names(docvars)]
+  for (c in cleanup_cols) {
+    quanteda::docvars(x$tokens, c) <- NULL
+  }
+
+  if (is.null(value)) {
     x$tokens$`.sentiment` <- NULL
-    idx <- names(docvars)[
-      names(docvars) %in%
-        paste0(".s_", sentopics_labels(x, flat = FALSE)[["topic"]])
-    ]
-    if (length(idx) > 0) {
-      for (i in idx) {
-        eval(substitute(x$tokens$y <- NULL, list(y = i)))
-        # eval(data.table::substitute2(x$tokens$y <- NULL, list(y = i)))
-      }
-    }
+  } else {
+    x$tokens$`.sentiment` <- value
   }
   attr(x, "sentiment_not_external") <- NULL
 

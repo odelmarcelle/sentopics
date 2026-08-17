@@ -12,6 +12,22 @@ test_that("removal works", {
   expect_null(jst$tokens$.sentiment)
 })
 
+test_that("sentiment replacement clears stale sentiment docvars", {
+  for (value in list(NULL, seq_along(toks[1:10]))) {
+    model <- rJST(toks[1:10], lexicon = LoughranMcDonald)
+    model$tokens$.sentiment <- seq_along(model$tokens)
+    model$tokens$.sentiment_scaled <- seq_along(model$tokens) + 10
+    model$tokens$.s_topic1 <- seq_along(model$tokens) + 20
+    model$tokens$.s_topic1_scaled <- seq_along(model$tokens) + 30
+
+    sentopics_sentiment(model) <- value
+    docvars <- quanteda::docvars(model$tokens)
+
+    expect_false(any(grepl("_scaled$", names(docvars))))
+    expect_false(any(startsWith(names(docvars), ".s_")))
+  }
+})
+
 
 test_that("sentiment works", {
   expect_message(

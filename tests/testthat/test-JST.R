@@ -54,6 +54,7 @@ test_that("functions works", {
   expect_silent(print(p))
   expect_silent(m <- melt(JST))
   expect_s3_class(m, "data.table")
+  expect_output(print(JST, extended = TRUE), "melt")
   # expect_equal(ncol(m), 6)
   skip_if_not_installed("plotly")
   expect_silent(p <- plot(JST))

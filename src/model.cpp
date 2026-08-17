@@ -882,7 +882,7 @@ void model::updateGamma() {
 void model::cacheBetaTerms() {
   const double epsilon = 0.000000001;
   lgammaBeta = lgamma(beta + epsilon);
-  lgammaSumBeta = lgamma(sumBeta);
+  lgammaSumBeta = lgamma(sumBeta + epsilon);
   sumLgammaBeta = sum(lgammaBeta, 1);
 }
 

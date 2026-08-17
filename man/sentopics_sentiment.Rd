@@ -63,6 +63,11 @@ proportions.
 The internal sentiment is stored internally in the \emph{docvars} of the
 topic model. This means that sentiment may also be accessed through the
 \code{\link[=docvars]{docvars()}} function, although this is discouraged.
+
+When sentiment is computed, the result is cached by modifying the model's
+\code{tokens} docvars. If a \code{.sentiment} docvar already exists and
+\code{override = FALSE}, the value is returned without recomputing or modifying
+the model.
 }
 \section{Methods}{
 

@@ -59,6 +59,11 @@
 #'   topic model. This means that sentiment may also be accessed through the
 #'   [docvars()] function, although this is discouraged.
 #'
+#'   When sentiment is computed, the result is cached by modifying the model's
+#'   `tokens` docvars. If a `.sentiment` docvar already exists and
+#'   `override = FALSE`, the value is returned without recomputing or modifying
+#'   the model.
+#'
 #' @export
 #' @examples
 #' \donttest{# sentiment from an external source can be added to the model

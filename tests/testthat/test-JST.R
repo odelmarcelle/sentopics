@@ -24,6 +24,26 @@ test_that("JST works", {
   expect_true(all(sapply(JST2, check_integrity, fast = FALSE)))
 })
 
+test_that("sentopicsmodel printing respects JST layer order", {
+  jst <- JST(toks, S = 3, K = 4, lexicon = LoughranMcDonald)
+  expect_output(
+    print(as.sentopicsmodel(jst), extended = TRUE),
+    "A sentopicsmodel topic model with 4 topics and 3 sentiments"
+  )
+
+  generic <- sentopicsmodel(
+    toks,
+    L1 = 3,
+    L2 = 4,
+    lexicon = LoughranMcDonald,
+    reverse = FALSE
+  )
+  expect_output(
+    print(generic, extended = TRUE),
+    "A sentopicsmodel topic model with 4 topics and 3 sentiments"
+  )
+})
+
 JST <- fit(JST, 2, displayProgress = FALSE)
 
 test_that("functions works", {

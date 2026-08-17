@@ -34,11 +34,18 @@ sentopics_print_extend <- function(extended = FALSE) {
 #'
 #' @export
 print.sentopicsmodel <- function(x, extended = FALSE, ...) {
+  if (identical(attr(x, "reverse"), FALSE)) {
+    topics <- x$L2
+    sentiments <- x$L1
+  } else {
+    topics <- x$L1
+    sentiments <- x$L2
+  }
   cat(
     "A sentopicsmodel topic model with",
-    x$L1,
+    topics,
     "topics and",
-    x$L2,
+    sentiments,
     "sentiments. Currently fitted by",
     x$it,
     "Gibbs sampling iterations.\n"

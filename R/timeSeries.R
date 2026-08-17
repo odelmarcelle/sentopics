@@ -211,6 +211,11 @@ sentopics_sentiment <- function(
     res <- data.table::rbindlist(LIST, idcol = "topic")
     res <- dcast(res, .id ~ topic, value.var = ".sentiment")
 
+    ## dcast sorts the character topic labels, but theta is ordered by topic
+    ## index. Restore the model's topic order before multiplying positionally.
+    topic_cols <- paste0(".s_", colnames(x$theta))
+    data.table::setcolorder(res, c(".id", topic_cols))
+
     ## recover initial ordering
     setkey(res, NULL)
     # res <- res[order(ord)]

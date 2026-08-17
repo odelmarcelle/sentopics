@@ -102,6 +102,23 @@ test_that("relabeling preserves raw and scaled sentiment docvars", {
   expect_identical(docvars$.s_second_scaled, seq_along(model$tokens) + 30)
 })
 
+test_that("internal rJST sentiment follows theta topic order", {
+  model <- fit(
+    rJST(toks[1:10], K = 3, lexicon = LoughranMcDonald),
+    1,
+    displayProgress = FALSE
+  )
+  sentopics_labels(model) <- list(topic = c("zeta", "alpha", "mu"))
+
+  sentiment <- sentopics_sentiment(model, include_docvars = TRUE)
+  topic_cols <- paste0(".s_", colnames(model$theta))
+  expected <- rowSums(
+    as.matrix(sentiment[, topic_cols, with = FALSE]) * model$theta
+  )
+
+  expect_equal(sentiment$.sentiment, expected)
+})
+
 sentopics_date(jst) <- ECB_press_conferences_tokens$.date
 
 test_that("sentiment_series works", {

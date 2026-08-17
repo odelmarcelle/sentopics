@@ -25,6 +25,8 @@
 
 * Fixed a bias in JST and rJST models caused by cached probabilities.
 
+* Fixed a labeling error when extracting sentiment time series for rJST models.
+
 ### Other changes
 
 * Reformatted codebase using Air.

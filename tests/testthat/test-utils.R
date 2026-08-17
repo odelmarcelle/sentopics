@@ -182,6 +182,24 @@ test_that("rebuild errors restore R-backed indices", {
   expect_identical(assignments, assignments_before)
 })
 
+test_that("rebuild rejects inconsistent token and assignment dimensions", {
+  model <- rJST(ECB_press_conferences_tokens[1:3], K = 2, S = 2)
+
+  short_list <- model
+  short_list$za <- short_list$za[-1]
+  expect_error(
+    fit(short_list, 1, displayProgress = FALSE),
+    "document count.*za"
+  )
+
+  short_document <- model
+  short_document$za[[1]] <- short_document$za[[1]][-1]
+  expect_error(
+    fit(short_document, 1, displayProgress = FALSE),
+    "same length"
+  )
+})
+
 scores <- compute_PicaultRenault_scores(ECB_press_conferences)
 EC <- scores[names(ECB_press_conferences_tokens), "EC"]
 

@@ -242,6 +242,20 @@ void model::rebuild(uword V_,
                     double initBeta_
 ) {
 
+  if (static_cast<R_xlen_t>(D_) != XLENGTH(intTokens_)) {
+    Rcpp::stop("The supplied document count does not match intTokens_.");
+  }
+  if (static_cast<R_xlen_t>(D_) != XLENGTH(za_)) {
+    Rcpp::stop("The supplied document count does not match za_.");
+  }
+  for (R_xlen_t i = 0; i < XLENGTH(intTokens_); ++i) {
+    if (XLENGTH(VECTOR_ELT(intTokens_, i)) != XLENGTH(VECTOR_ELT(za_, i))) {
+      Rcpp::stop(
+        "The token and assignment vectors must have the same length for every document."
+      );
+    }
+  }
+
   // imported variables
   V = V_;
   L1 = L1_;
@@ -250,8 +264,8 @@ void model::rebuild(uword V_,
   C = C_;
   it = it_;
   initBeta = initBeta_;
-  intTokens.resize(LENGTH(intTokens_));
-  za.resize(LENGTH(za_));
+  intTokens.resize(D_);
+  za.resize(D_);
   for (R_xlen_t i = 0; i < XLENGTH(intTokens_); i++) {
 
     int len = LENGTH(VECTOR_ELT(intTokens_, i));
@@ -1046,7 +1060,7 @@ double model::computeLogLikelihoodL1() {
 
 SEXP model::get_za() {
   SEXP tmp = PROTECT(Rf_allocVector(VECSXP, za.size()));
-  for (uword d = 0; d < D; d++) {
+  for (uword d = 0; d < za.size(); d++) {
     SEXP value = PROTECT(wrap(arma::conv_to<arma::ivec>::from(*(za[d]))));
     SET_VECTOR_ELT(tmp, d, value);
     UNPROTECT(1);
@@ -1058,7 +1072,7 @@ SEXP model::get_za() {
 
 SEXP model::get_intTokens() {
   SEXP tmp = PROTECT(Rf_allocVector(VECSXP, intTokens.size()));
-  for (uword d = 0; d < D; d++) {
+  for (uword d = 0; d < intTokens.size(); d++) {
     SEXP value = PROTECT(wrap(arma::conv_to<arma::ivec>::from(*(intTokens[d]))));
     SET_VECTOR_ELT(tmp, d, value);
     UNPROTECT(1);

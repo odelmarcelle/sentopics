@@ -1,3 +1,8 @@
+# sentopics 1.0.1
+
+* Fixed double topic weighting in rJST sentiment extraction with
+  `method = "proportional"`.
+
 # sentopics 1.0.0
 
 ### Breaking changes

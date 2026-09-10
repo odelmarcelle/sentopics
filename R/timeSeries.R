@@ -33,10 +33,10 @@
 #'   For [JST], the sentiment is computed on a per-document basis according to
 #'   the document-level sentiment mixtures.
 #'
-#'   For a [rJST] model, a sentiment is computed for each topic, resulting in
-#'   `K` sentiment values per document. In that case, the `.sentiment` column is
-#'   an average of the `K` sentiment values, weighted by they respective topical
-#'   proportions.
+#'   For a [rJST] model, sentiment is computed from the sentiment probabilities
+#'   conditional on each topic, resulting in `K` sentiment values per document
+#'   in the `.s_` columns. The `.sentiment` column is an average of these values,
+#'   weighted once by their respective topic proportions.
 #'
 #' @section Methods:
 #'
@@ -210,7 +210,8 @@ sentopics_sentiment <- function(
         nm = paste0(".s_", levels(melted$topic))
       ),
       function(t) {
-        fn(dcast(melted[topic == t], .id ~ sent, value.var = "prob"))
+        # L2_prob is conditional on topic; prob already includes its weight.
+        fn(dcast(melted[topic == t], .id ~ sent, value.var = "L2_prob"))
       }
     )
     res <- data.table::rbindlist(LIST, idcol = "topic")

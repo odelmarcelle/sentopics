@@ -54,10 +54,10 @@ sentiment computation is not possible.
 For \link{JST}, the sentiment is computed on a per-document basis according to
 the document-level sentiment mixtures.
 
-For a \link{rJST} model, a sentiment is computed for each topic, resulting in
-\code{K} sentiment values per document. In that case, the \code{.sentiment} column is
-an average of the \code{K} sentiment values, weighted by they respective topical
-proportions.
+For a \link{rJST} model, sentiment is computed from the sentiment probabilities
+conditional on each topic, resulting in \code{K} sentiment values per document
+in the \code{.s_} columns. The \code{.sentiment} column is an average of these values,
+weighted once by their respective topic proportions.
 }
 \note{
 The internal sentiment is stored internally in the \emph{docvars} of the

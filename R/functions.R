@@ -42,7 +42,7 @@
 #'   score:
 #'   \deqn{\text{FREX}_{k,v}=\left(\frac{w}{\text{ECDF}\left(
 #'   \frac{\phi_{k,v}}{\sum_{j=1}^K\phi_{k,v}}\right)}
-#'   + \frac{1-w}{\text{ECDF}\left(\phi_{k,v}\right)} \right),} for
+#'   + \frac{1-w}{\text{ECDF}\left(\phi_{k,v}\right)} \right)^{-1},} for
 #'   topic \eqn{k}, vocabulary word \eqn{v}, number of topics \eqn{K} and
 #'   weight \eqn{w}, where \eqn{\text{ECDF}} is the empirical cumulative
 #'   distribution function.
@@ -263,8 +263,8 @@ top_words_dt <- function(
           list(
             word,
             value = (w /
-              (data.table::frank(exclusivity) / .N) +
-              (1 - w) / (data.table::frank(value) / .N))^-1
+              (data.table::frank(exclusivity, ties.method = "max") / .N) +
+              (1 - w) / (data.table::frank(value, ties.method = "max") / .N))^-1
           ),
           by = c("L1", "L2")
         ]

@@ -421,10 +421,22 @@ get_ECB_press_conferences <- function(
 #' @param return_dfm if `TRUE`, returns the scaled word-per-document score under
 #'   two [quanteda::dfm], on for the Monetary Policy and one for the Economic Condition
 #'   categories. If `FALSE`, returns the sum of all word scores per document.
+#' @param stopwords words removed before matching lexicon n-grams. Set to
+#'   `character(0)` to disable removal. Words are lowercased and stemmed using
+#'   the same procedure as the input text.
 #'
 #' @details The computation is done on a per-document basis, such as each
 #'   document is scored with a value between -1 and 1. This is relevant to the
 #'   computation of the denominator of the score.
+#'
+#'   Stop words must be removed before matching because the lexicon was built
+#'   from stop-word-filtered text. Picault and Renault (2017) report removing
+#'   32 stop words, but only name five examples in the paper: "a", "the", "an",
+#'   "of", and "to". These five words form the default here. The complete
+#'   original list has not been verified; supply it through `stopwords` if
+#'   available for exact preprocessing replication. A general English stop
+#'   list can remove meaningful words retained by the lexicon, including
+#'   negations, and should not be substituted without checking its contents.
 #'
 #'   It is possible to compute the score for paragraphs and sentences for a
 #'   [quanteda::corpus] segmented using [quanteda::corpus_reshape]. Segmenting a
@@ -454,7 +466,8 @@ get_ECB_press_conferences <- function(
 compute_PicaultRenault_scores <- function(
   x,
   min_ngram = 2,
-  return_dfm = FALSE
+  return_dfm = FALSE,
+  stopwords = c("a", "the", "an", "of", "to")
 ) {
   PicaultRenault <- PicaultRenault[PicaultRenault$ngram >= min_ngram, ]
   x <- quanteda::tokens(
@@ -467,6 +480,10 @@ compute_PicaultRenault_scores <- function(
   x <- quanteda::tokens_remove(x, " ")
   x <- quanteda::tokens_wordstem(x)
   x <- quanteda::tokens_tolower(x)
+  if (length(stopwords) > 0) {
+    stopwords <- quanteda::char_wordstem(tolower(stopwords))
+    x <- quanteda::tokens_remove(x, stopwords, valuetype = "fixed")
+  }
 
   x <- quanteda::tokens_compound(
     x,

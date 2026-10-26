@@ -4,7 +4,12 @@
 \alias{compute_PicaultRenault_scores}
 \title{Compute scores using the Picault-Renault lexicon}
 \usage{
-compute_PicaultRenault_scores(x, min_ngram = 2, return_dfm = FALSE)
+compute_PicaultRenault_scores(
+  x,
+  min_ngram = 2,
+  return_dfm = FALSE,
+  stopwords = c("a", "the", "an", "of", "to")
+)
 }
 \arguments{
 \item{x}{a \link[quanteda:corpus]{quanteda::corpus} object.}
@@ -14,6 +19,10 @@ compute_PicaultRenault_scores(x, min_ngram = 2, return_dfm = FALSE)
 \item{return_dfm}{if \code{TRUE}, returns the scaled word-per-document score under
 two \link[quanteda:dfm]{quanteda::dfm}, on for the Monetary Policy and one for the Economic Condition
 categories. If \code{FALSE}, returns the sum of all word scores per document.}
+
+\item{stopwords}{words removed before matching lexicon n-grams. Set to
+\code{character(0)} to disable removal. Words are lowercased and stemmed using
+the same procedure as the input text.}
 }
 \value{
 A matrix with two columns, indicating respectively the MP (Monetary
@@ -27,6 +36,15 @@ Picault-Renault lexicon for central bank communication.
 The computation is done on a per-document basis, such as each
 document is scored with a value between -1 and 1. This is relevant to the
 computation of the denominator of the score.
+
+Stop words must be removed before matching because the lexicon was built
+from stop-word-filtered text. Picault and Renault (2017) report removing
+32 stop words, but only name five examples in the paper: "a", "the", "an",
+"of", and "to". These five words form the default here. The complete
+original list has not been verified; supply it through \code{stopwords} if
+available for exact preprocessing replication. A general English stop
+list can remove meaningful words retained by the lexicon, including
+negations, and should not be substituted without checking its contents.
 
 It is possible to compute the score for paragraphs and sentences for a
 \link[quanteda:corpus]{quanteda::corpus} segmented using \link[quanteda:corpus_reshape]{quanteda::corpus_reshape}. Segmenting a

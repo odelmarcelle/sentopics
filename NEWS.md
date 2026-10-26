@@ -19,6 +19,11 @@
   in reconstructed source probabilities using a slower, deterministic optimizer.
   Both methods preserve required document, word and topic totals.
 
+* Remove the five documented stop words (`a`, `the`, `an`, `of`, `to`)
+  before n-gram matching in `compute_PicaultRenault_scores()`. The original
+  full stop list remains unavailable. The new `stopwords` argument accepts
+  a custom list; `character(0)` disables removal.
+
 # sentopics 1.0.1
 
 * Fixed double topic weighting in rJST sentiment extraction with

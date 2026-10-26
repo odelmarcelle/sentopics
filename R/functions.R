@@ -224,7 +224,6 @@ top_words_dt <- function(
 
   method <- match.arg(method)
 
-  nClusters <- max(phiStats$L1) * max(phiStats$L2)
   switch(
     method,
     "frequency" = {
@@ -247,7 +246,7 @@ top_words_dt <- function(
           list(
             L1,
             L2,
-            value = value * log(value / prod(value)^(1 / nClusters))
+            value = value * (log(value) - mean(log(value)))
           ),
           by = word
         ]

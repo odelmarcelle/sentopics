@@ -12,6 +12,13 @@
 * Clarified that `sentiment_topics(period = "identity")` returns topic-weighted
   sentiment contributions for each document, before aggregation.
 
+* Corrected integer count reconstruction when converting **stm**, **topicmodels**
+  (variational LDA), and **keyATM** models. The default `count_method = "heuristic"`
+  retains the original fast strategy with corrected residual selection and
+  unit-count removal. Set `count_method = "optimized"` to minimize squared error
+  in reconstructed source probabilities using a slower, deterministic optimizer.
+  Both methods preserve required document, word and topic totals.
+
 # sentopics 1.0.1
 
 * Fixed double topic weighting in rJST sentiment extraction with

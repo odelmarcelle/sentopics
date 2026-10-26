@@ -1,5 +1,241 @@
 # From other packages -----------------------------------------------------
 
+# Original round-then-repair strategy, with residual choices based on the
+# untouched source counts and a unit-donor fallback for stalled row corrections.
+round_posterior_counts_heuristic <- function(expected, col_totals, row_totals) {
+  counts <- pmax(round(expected), 0)
+  difference <- col_totals - colSums(counts)
+  for (j in which(difference != 0)) {
+    while (difference[j] != 0) {
+      possible <- if (difference[j] > 0) {
+        rep(TRUE, nrow(counts))
+      } else {
+        counts[, j] > 0
+      }
+      residual <- (expected[possible, j] - counts[possible, j]) *
+        sign(difference[j])
+      i <- which(possible)[which.max(residual)]
+      counts[i, j] <- counts[i, j] + sign(difference[j])
+      difference[j] <- col_totals[j] - sum(counts[, j])
+    }
+  }
+  if (!is.null(row_totals)) {
+    difference <- as.integer(row_totals - rowSums(counts))
+    while (any(difference < 0)) {
+      threshold <- 1L
+      repeat {
+        pool <- counts[difference < 0]
+        nonzero <- sum(pool > threshold)
+        if (nonzero == 0L) {
+          threshold <- 0L
+          deduct <- 1L
+          break
+        }
+        deduct <- ceiling(abs(min(difference)) / nonzero)
+        if (deduct <= threshold) {
+          break
+        }
+        threshold <- threshold + 1L
+      }
+      counts[difference < 0][counts[difference < 0] > threshold] <-
+        counts[difference < 0][counts[difference < 0] > threshold] - deduct
+      difference <- as.integer(row_totals - rowSums(counts))
+    }
+    col_difference <- as.integer(col_totals - colSums(counts))
+    if (sum(difference) > 0) {
+      if (nrow(counts) == 1L) {
+        counts <- counts + matrix(col_difference, nrow = 1)
+      } else if (ncol(counts) == 1L) {
+        counts <- counts + matrix(difference, ncol = 1)
+      } else {
+        counts <- counts + stats::r2dtable(1, difference, col_difference)[[1]]
+      }
+    }
+  }
+  storage.mode(counts) <- "integer"
+  stopifnot(all(colSums(counts) == col_totals), all(counts >= 0))
+  if (!is.null(row_totals)) {
+    stopifnot(all(rowSums(counts) == row_totals))
+  }
+  counts
+}
+
+# Choose the fast corrected original heuristic or the exact weighted optimizer.
+# For the optimizer, source probability error is sum(weights * (counts - expected)^2)
+# when weights are inverse squared posterior denominators. Do not rescale the
+# source expectations: prior subtraction can make valid expectations negative.
+round_posterior_counts <- function(
+  expected,
+  col_totals,
+  row_totals = NULL,
+  weights = NULL,
+  method = c("heuristic", "optimized")
+) {
+  method <- match.arg(method)
+  stopifnot(
+    is.matrix(expected),
+    all(is.finite(expected)),
+    length(col_totals) == ncol(expected),
+    all(is.finite(col_totals)),
+    all(col_totals >= 0),
+    all(col_totals == as.integer(col_totals))
+  )
+  if (!is.null(row_totals)) {
+    stopifnot(
+      length(row_totals) == nrow(expected),
+      all(is.finite(row_totals)),
+      all(row_totals >= 0),
+      all(row_totals == as.integer(row_totals)),
+      sum(row_totals) == sum(col_totals)
+    )
+  }
+  expected <- unname(expected)
+  if (method == "heuristic") {
+    return(round_posterior_counts_heuristic(expected, col_totals, row_totals))
+  }
+  if (is.null(weights)) {
+    weights <- matrix(1, nrow(expected), ncol(expected))
+  }
+  stopifnot(
+    identical(dim(weights), dim(expected)),
+    all(is.finite(weights)),
+    all(weights > 0)
+  )
+  weights <- weights / max(weights)
+  # Start at the unconstrained cell optima, then solve each column exactly.
+  counts <- pmax(round(expected), 0)
+  for (j in seq_len(ncol(counts))) {
+    left <- col_totals[j] - sum(counts[, j])
+    while (left != 0) {
+      if (left > 0) {
+        cost <- weights[, j] * (2 * (counts[, j] - expected[, j]) + 1)
+      } else {
+        cost <- weights[, j] * (2 * (expected[, j] - counts[, j]) + 1)
+        cost[counts[, j] == 0] <- Inf
+      }
+      # Prefer earlier rows for tied allocations, later rows for tied removals.
+      i <- if (left > 0) {
+        which.min(cost)
+      } else {
+        utils::tail(which(cost == min(cost)), 1L)
+      }
+      counts[i, j] <- counts[i, j] + sign(left)
+      left <- left - sign(left)
+    }
+  }
+  if (!is.null(row_totals) && any(rowSums(counts) != row_totals)) {
+    # The column optima have no negative-cost residual cycles. Successive
+    # shortest paths preserve optimality while correcting their row totals.
+    # A row-to-row edge transfers one token within a column; its cost is the
+    # exact change in the quadratic objective. Retain the cheapest such column.
+    # https://courses.csail.mit.edu/6.854/17/Scribe/s11-minCostFlow.html
+    excess <- rowSums(counts) - row_totals
+    nr <- nrow(counts)
+    add <- weights * (2 * (counts - expected) + 1)
+    remove <- weights * (2 * (expected - counts) + 1)
+    remove[counts == 0] <- Inf
+    costs <- matrix(Inf, nr, nr)
+    columns <- matrix(0L, nr, nr)
+    for (i in seq_len(nr)) {
+      for (k in seq_len(nr)) {
+        if (i == k) {
+          next
+        }
+        j <- which.min(remove[i, ] + add[k, ])
+        costs[i, k] <- remove[i, j] + add[k, j]
+        columns[i, k] <- j
+      }
+    }
+    while (any(excess > 0)) {
+      distance <- rep(Inf, nr)
+      distance[excess > 0] <- 0
+      error <- rep(0, nr)
+      parent <- integer(nr)
+      # Bellman-Ford permits negative transfer costs. Track accumulated floating
+      # point error so mathematically tied paths do not form predecessor cycles.
+      for (iteration in seq_len(nr - 1L)) {
+        changed <- FALSE
+        for (i in seq_len(nr)) {
+          if (!is.finite(distance[i])) {
+            next
+          }
+          candidate <- distance[i] + costs[i, ]
+          candidate_error <- error[i] +
+            32 * .Machine$double.eps * (abs(distance[i]) + abs(costs[i, ]))
+          improved <- which(
+            is.finite(candidate) &
+              (!is.finite(distance) |
+                candidate < distance - candidate_error - error)
+          )
+          if (length(improved)) {
+            distance[improved] <- candidate[improved]
+            error[improved] <- candidate_error[improved]
+            parent[improved] <- i
+            changed <- TRUE
+          }
+        }
+        if (!changed) break
+      }
+      sinks <- which(excess < 0)
+      end <- sinks[which.min(distance[sinks])]
+      stopifnot(is.finite(distance[end]))
+      sink <- end
+      path_length <- 0L
+      touched <- matrix(integer(0), ncol = 2)
+      while (parent[end] != 0L) {
+        path_length <- path_length + 1L
+        stopifnot(path_length < nr)
+        i <- parent[end]
+        j <- columns[i, end]
+        counts[i, j] <- counts[i, j] - 1
+        counts[end, j] <- counts[end, j] + 1
+        touched <- rbind(touched, c(i, j), c(end, j))
+        end <- i
+      }
+      stopifnot(excess[end] > 0)
+      excess[end] <- excess[end] - 1
+      excess[sink] <- excess[sink] + 1
+      touched <- unique(touched)
+      add[touched] <- weights[touched] *
+        (2 * (counts[touched] - expected[touched]) + 1)
+      remove[touched] <- weights[touched] *
+        (2 * (expected[touched] - counts[touched]) + 1)
+      remove[touched[counts[touched] == 0, , drop = FALSE]] <- Inf
+      # Only edges touching changed cells can have a different cheapest column.
+      # Rescan a row pair only when its cached minimum has increased.
+      for (j in unique(touched[, 2])) {
+        affected <- unique(touched[touched[, 2] == j, 1])
+        pairs <- unique(rbind(
+          as.matrix(expand.grid(affected, seq_len(nr))),
+          as.matrix(expand.grid(seq_len(nr), affected))
+        ))
+        for (pair in seq_len(nrow(pairs))) {
+          i <- pairs[pair, 1]
+          k <- pairs[pair, 2]
+          if (i == k) {
+            next
+          }
+          cost <- remove[i, j] + add[k, j]
+          if (columns[i, k] == j && cost > costs[i, k]) {
+            best <- which.min(remove[i, ] + add[k, ])
+            costs[i, k] <- remove[i, best] + add[k, best]
+            columns[i, k] <- best
+          } else if (cost < costs[i, k]) {
+            costs[i, k] <- cost
+            columns[i, k] <- j
+          }
+        }
+      }
+    }
+  }
+  storage.mode(counts) <- "integer"
+  stopifnot(all(colSums(counts) == col_totals), all(counts >= 0))
+  if (!is.null(row_totals)) {
+    stopifnot(all(rowSums(counts) == row_totals))
+  }
+  counts
+}
+
 #' Conversions from other packages to LDA
 #'
 #' @description These functions converts estimated models from other topic
@@ -9,6 +245,12 @@
 #'   \pkg{seededlda}.
 #' @param list the list containing an estimated model from \pkg{lda}.
 #' @param docs for some objects, the documents used to initialize the model.
+#' @param count_method how integer counts are reconstructed for \pkg{stm},
+#'   variational \pkg{topicmodels}, and \pkg{keyATM} models. `"heuristic"` (the
+#'   default) uses the original fast round-then-repair strategy with corrected
+#'   residual selection and a unit-donor fallback. `"optimized"` minimizes squared
+#'   error in the reconstructed conditional probabilities at greater computational
+#'   cost. Both preserve the required document, word and topic totals.
 #' @param alpha for \pkg{lda} models, the document-topic mixture hyperparameter.
 #'   If missing, the hyperparameter will be set to `50/K`.
 #' @param eta for \pkg{lda} models, the topic-word mixture hyperparameter. Other
@@ -26,6 +268,17 @@
 #'   function `as.LDA_lda()` is not related to the other methods and should be
 #'   applied directly on lists containing a model.
 #'
+#'   With `count_method = "heuristic"`, any remaining count deficits are filled
+#'   using [stats::r2dtable()]. This follows R's current random state; use
+#'   [set.seed()] before conversion for reproducible results.
+#'
+#'   With `count_method = "optimized"`, each reconstructed integer count table
+#'   minimizes the sum of squared differences between its implied conditional
+#'   probabilities and the source probabilities, subject to its required margins.
+#'   The implied probabilities include the conversion's model priors. This uses
+#'   a deterministic integer minimum-cost flow computation, up to floating-point
+#'   precision. Both methods retain the source `theta` and `phi` unchanged.
+#'
 #' @return A S3 list of class `LDA`, as if it was created and estimated using
 #'   [LDA()] and \code{\link[=fit.sentopicsmodel]{fit()}}.
 #'
@@ -39,6 +292,8 @@
 #'            prevalence=~rating, data=poliblog5k.meta,
 #'            max.em.its=2, init.type="Spectral")
 #' as.LDA(stm, docs = poliblog5k.docs)
+#' # Opt in to the closest feasible conditional probabilities
+#' as.LDA(stm, docs = poliblog5k.docs, count_method = "optimized")
 #'
 #' ## lda
 #' library("lda")
@@ -79,7 +334,13 @@ as.LDA <- function(x, ...) {
 }
 #' @rdname as.LDA
 #' @export
-as.LDA.STM <- function(x, docs, ...) {
+as.LDA.STM <- function(
+  x,
+  docs,
+  count_method = c("heuristic", "optimized"),
+  ...
+) {
+  count_method <- match.arg(count_method)
   ## TODO: better identification of priors
   ## mu + sigma for logistic-normal => translate to? using eta instead?
   ## prior for beta? 0?
@@ -93,20 +354,7 @@ as.LDA.STM <- function(x, docs, ...) {
   zd <- rebuild_L1d_from_posterior(doc.length, theta, theta_prior)
   zd <- t(zd)
 
-  ## adjust zd to integer
-  diff <- doc.length - as.integer(colSums(round(zd)))
-  for (i in which(diff != 0)) {
-    while (diff[i] != 0L) {
-      possible <- zd[, i] > (-diff[i] - .5)
-      idx <- which.min((zd[possible, i] - round(zd[possible, i]) * diff[i]))
-      zd[which(possible)[idx], i] <- zd[which(possible)[idx], i] +
-        1 * sign(diff[i])
-      diff[i] <- as.integer(doc.length[i] - sum(round(zd[, i])))
-    }
-  }
-  zd <- round(zd)
-  storage.mode(zd) <- "integer"
-  stopifnot(isTRUE(all.equal(colSums(zd), doc.length)))
+  zd <- round_posterior_counts(zd, doc.length, method = count_method)
 
   phi <- t(exp(x$beta$logbeta[[1]]))
   beta <- t(phi)
@@ -114,41 +362,21 @@ as.LDA.STM <- function(x, docs, ...) {
 
   ## adjust zw to integer
   zw <- rebuild_zw_from_posterior2(zd, phi, beta)
-  diff <- x$settings$dim$wcounts$x - as.integer(colSums(round(zw)))
-  for (i in which(diff != 0)) {
-    while (diff[i] != 0L) {
-      possible <- (zw[, i] > (-diff[i] - .5))
-      idx <- which.min((zw[possible, i] - round(zw[possible, i]) * diff[i]))
-      zw[which(possible)[idx], i] <- zw[which(possible)[idx], i] +
-        1 * sign(diff[i])
-      diff[i] <- as.integer(x$settings$dim$wcounts$x[i] - sum(round(zw[, i])))
-    }
+  weights <- NULL
+  if (count_method == "optimized") {
+    weights <- matrix(
+      1 / pmax(rowSums(zd) + rowSums(beta), 1)^2,
+      nrow(zw),
+      ncol(zw)
+    )
   }
-  zw <- round(zw)
-  diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
-  ## quickly adjust second dimension
-  while (any(diff2 < 0)) {
-    count <- 1L
-    while (TRUE) {
-      non_zero <- length(zw[diff2 < 0][zw[diff2 < 0] > count])
-      deduct <- ceiling(abs(min(diff2)) / non_zero)
-      if (deduct <= count) {
-        break
-      } else {
-        count <- count + 1
-      }
-    }
-    zw[diff2 < 0][zw[diff2 < 0] > count] <- zw[diff2 < 0][
-      zw[diff2 < 0] > count
-    ] -
-      deduct
-    diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
-  }
-  diff <- x$settings$dim$wcounts$x - as.integer(colSums(round(zw)))
-  zw <- zw + stats::r2dtable(1, diff2, diff)[[1]]
-  storage.mode(zw) <- "integer"
-  stopifnot(isTRUE(all.equal(colSums(zw), x$settings$dim$wcounts$x)))
-  stopifnot(isTRUE(all.equal(rowSums(zw), rowSums(zd))))
+  zw <- round_posterior_counts(
+    zw,
+    x$settings$dim$wcounts$x,
+    rowSums(zd),
+    weights,
+    method = count_method
+  )
 
   ## Attempt to recreate ZA (not working)
   # za <- rebuild_za_ARRAY(zd, zw)
@@ -246,7 +474,13 @@ as.LDA.LDA_Gibbs <- function(x, docs, ...) {
 
 #' @rdname as.LDA
 #' @export
-as.LDA.LDA_VEM <- function(x, docs, ...) {
+as.LDA.LDA_VEM <- function(
+  x,
+  docs,
+  count_method = c("heuristic", "optimized"),
+  ...
+) {
+  count_method <- match.arg(count_method)
   K <- x@k
   alpha <- x@alpha
   alpha <- rep(alpha, K)
@@ -260,20 +494,7 @@ as.LDA.LDA_VEM <- function(x, docs, ...) {
   zd <- rebuild_L1d_from_posterior(lengths(tokens), x@gamma, alpha)
   zd <- t(zd)
 
-  ## adjust zd to integer
-  diff <- doc.length - as.integer(colSums(round(zd)))
-  for (i in which(diff != 0)) {
-    while (diff[i] != 0L) {
-      possible <- zd[, i] > (-diff[i] - .5)
-      idx <- which.min((zd[possible, i] - round(zd[possible, i]) * diff[i]))
-      zd[which(possible)[idx], i] <- zd[which(possible)[idx], i] +
-        1 * sign(diff[i])
-      diff[i] <- as.integer(doc.length[i] - sum(round(zd[, i])))
-    }
-  }
-  zd <- round(zd)
-  storage.mode(zd) <- "integer"
-  stopifnot(isTRUE(all.equal(colSums(zd), doc.length)))
+  zd <- round_posterior_counts(zd, doc.length, method = count_method)
 
   phi <- t(exp(x@beta))
   beta <- x@beta
@@ -281,41 +502,21 @@ as.LDA.LDA_VEM <- function(x, docs, ...) {
 
   ## adjust zw to integer
   zw <- rebuild_zw_from_posterior2(zd, phi, beta)
-  diff <- as.integer(colSums(dfm) - colSums(round(zw)))
-  for (i in which(diff != 0)) {
-    while (diff[i] != 0L) {
-      possible <- (zw[, i] > (-diff[i] - .5))
-      idx <- which.min((zw[possible, i] - round(zw[possible, i]) * diff[i]))
-      zw[which(possible)[idx], i] <- zw[which(possible)[idx], i] +
-        1 * sign(diff[i])
-      diff[i] <- as.integer(sum(dfm[, i]) - sum(round(zw[, i])))
-    }
+  weights <- NULL
+  if (count_method == "optimized") {
+    weights <- matrix(
+      1 / pmax(rowSums(zd) + rowSums(beta), 1)^2,
+      nrow(zw),
+      ncol(zw)
+    )
   }
-  zw <- round(zw)
-  diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
-  ## quickly adjust second dimension
-  while (any(diff2 < 0)) {
-    count <- 1L
-    while (TRUE) {
-      non_zero <- length(zw[diff2 < 0][zw[diff2 < 0] > count])
-      deduct <- ceiling(abs(min(diff2)) / non_zero)
-      if (deduct <= count) {
-        break
-      } else {
-        count <- count + 1
-      }
-    }
-    zw[diff2 < 0][zw[diff2 < 0] > count] <- zw[diff2 < 0][
-      zw[diff2 < 0] > count
-    ] -
-      deduct
-    diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
-  }
-  diff <- as.integer(colSums(dfm)) - as.integer(colSums(round(zw)))
-  zw <- zw + stats::r2dtable(1, diff2, diff)[[1]]
-  storage.mode(zw) <- "integer"
-  stopifnot(isTRUE(all.equal(colSums(zw), unname(colSums(dfm)))))
-  stopifnot(isTRUE(all.equal(rowSums(zw), rowSums(zd))))
+  zw <- round_posterior_counts(
+    zw,
+    colSums(dfm),
+    rowSums(zd),
+    weights,
+    method = count_method
+  )
 
   LDA <- structure(
     list(
@@ -464,7 +665,13 @@ as.LDA_lda <- function(list, docs, alpha, eta) {
 
 #' @rdname as.LDA
 #' @export
-as.LDA.keyATM_output <- function(x, docs, ...) {
+as.LDA.keyATM_output <- function(
+  x,
+  docs,
+  count_method = c("heuristic", "optimized"),
+  ...
+) {
+  count_method <- match.arg(count_method)
   K <- x$keyword_k + x$no_keyword_topics
 
   labels <- colnames(x$theta)
@@ -497,42 +704,20 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
   zd <- unname(t(zd))
   doc.length <- lengths(tokens, use.names = FALSE)
 
-  ## adjust zd to integer
-  diff <- doc.length - as.integer(colSums(round(zd)))
-  for (i in which(diff != 0)) {
-    while (diff[i] != 0L) {
-      possible <- zd[, i] > (-diff[i] - .5)
-      idx <- which.min((zd[possible, i] - round(zd[possible, i]) * diff[i]))
-      zd[which(possible)[idx], i] <- zd[which(possible)[idx], i] +
-        1 * sign(diff[i])
-      diff[i] <- as.integer(doc.length[i] - sum(round(zd[, i])))
-    }
+  weights <- NULL
+  if (count_method == "optimized") {
+    weights <- matrix(
+      rep(1 / pmax(doc.length + sum(alpha), 1)^2, each = nrow(zd)),
+      nrow(zd)
+    )
   }
-  zd <- round(zd)
-  diff2 <- as.integer(x$topic_counts - rowSums(zd))
-  ## quickly adjust second dimension
-  while (any(diff2 < 0)) {
-    count <- 1L
-    while (TRUE) {
-      non_zero <- length(zd[diff2 < 0][zd[diff2 < 0] > count])
-      deduct <- ceiling(abs(min(diff2)) / non_zero)
-      if (deduct <= count) {
-        break
-      } else {
-        count <- count + 1
-      }
-    }
-    zd[diff2 < 0][zd[diff2 < 0] > count] <- zd[diff2 < 0][
-      zd[diff2 < 0] > count
-    ] -
-      deduct
-    diff2 <- as.integer(x$topic_counts - rowSums(zd))
-  }
-  diff <- doc.length - as.integer(colSums(round(zd)))
-  zd <- zd + stats::r2dtable(1, diff2, diff)[[1]]
-  storage.mode(zd) <- "integer"
-  stopifnot(isTRUE(all.equal(colSums(zd), doc.length)))
-  stopifnot(isTRUE(all.equal(rowSums(zd), x$topic_counts)))
+  zd <- round_posterior_counts(
+    zd,
+    doc.length,
+    x$topic_counts,
+    weights,
+    method = count_method
+  )
 
   phi <- t(x$phi)
 
@@ -540,41 +725,21 @@ as.LDA.keyATM_output <- function(x, docs, ...) {
   dfm <- quanteda::dfm(tokens)
   dfm <- dfm[, vocabulary$vocabulary$word] # Ensure correct order
   zw <- rebuild_zw_from_posterior2(zd, phi, beta)
-  diff <- as.integer(quanteda::colSums(dfm) - colSums(round(zw)))
-  for (i in which(diff != 0)) {
-    while (diff[i] != 0L) {
-      possible <- (zw[, i] > (-diff[i] - .5))
-      idx <- which.min((zw[possible, i] - round(zw[possible, i]) * diff[i]))
-      zw[which(possible)[idx], i] <- zw[which(possible)[idx], i] +
-        1 * sign(diff[i])
-      diff[i] <- as.integer(sum(dfm[, i]) - sum(round(zw[, i])))
-    }
+  weights <- NULL
+  if (count_method == "optimized") {
+    weights <- matrix(
+      1 / pmax(rowSums(zd) + rowSums(beta), 1)^2,
+      nrow(zw),
+      ncol(zw)
+    )
   }
-  zw <- round(zw)
-  diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
-  ## quickly adjust second dimension
-  while (any(diff2 < 0)) {
-    count <- 1L
-    while (TRUE) {
-      non_zero <- length(zw[diff2 < 0][zw[diff2 < 0] > count])
-      deduct <- ceiling(abs(min(diff2)) / non_zero)
-      if (deduct <= count) {
-        break
-      } else {
-        count <- count + 1
-      }
-    }
-    zw[diff2 < 0][zw[diff2 < 0] > count] <- zw[diff2 < 0][
-      zw[diff2 < 0] > count
-    ] -
-      deduct
-    diff2 <- as.integer(rowSums(zd) - rowSums(round(zw)))
-  }
-  diff <- as.integer(quanteda::colSums(dfm)) - as.integer(colSums(round(zw)))
-  zw <- zw + stats::r2dtable(1, diff2, diff)[[1]]
-  storage.mode(zw) <- "integer"
-  stopifnot(isTRUE(all.equal(colSums(zw), unname(quanteda::colSums(dfm)))))
-  stopifnot(isTRUE(all.equal(rowSums(zw), rowSums(zd))))
+  zw <- round_posterior_counts(
+    zw,
+    quanteda::colSums(dfm),
+    rowSums(zd),
+    weights,
+    method = count_method
+  )
 
   LDA <- structure(
     list(

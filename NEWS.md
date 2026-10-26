@@ -9,6 +9,9 @@
 * Use metric-specific default coherence windows in `chains_scores()`
   when `window` is not supplied.
 
+* Clarified that `sentiment_topics(period = "identity")` returns topic-weighted
+  sentiment contributions for each document, before aggregation.
+
 # sentopics 1.0.1
 
 * Fixed double topic weighting in rJST sentiment extraction with

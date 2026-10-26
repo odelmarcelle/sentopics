@@ -88,6 +88,11 @@ proportion. For example, for a given topic, the topical sentiment in period
   \theta_d}{\sum_{d = 1}^D \theta_d}}, where \eqn{s_d} is the sentiment of
 the topic in document d and \eqn{theta_d} the topic proportion in a
 document d.
+
+With \code{period = "identity"}, the function returns topic-weighted sentiment
+contributions for each document: \eqn{s_d \times \theta_d}. These values
+are returned before aggregation and division by the sum of topic
+proportions.
 }
 \examples{
 \donttest{lda <- LDA(ECB_press_conferences_tokens)

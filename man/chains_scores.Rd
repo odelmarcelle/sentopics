@@ -4,7 +4,7 @@
 \alias{chains_scores}
 \title{Compute scores of topic models (chains)}
 \usage{
-chains_scores(x, window = 110, nWords = 10)
+chains_scores(x, window = NULL, nWords = 10)
 }
 \arguments{
 \item{x}{a valid \code{multi_chains} object, obtained through the estimation of a

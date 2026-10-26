@@ -542,7 +542,7 @@ chains_distances <- function(
 #' @seealso [chains_distances()] [coherence()]
 #'
 #' @export
-chains_scores <- function(x, window = 110, nWords = 10) {
+chains_scores <- function(x, window = NULL, nWords = 10) {
   if (!inherits(x, "multi_chains")) {
     stop("Please provide a correct multi_chains object")
   }

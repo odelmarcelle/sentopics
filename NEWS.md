@@ -6,6 +6,9 @@
 * Compute `top_words(method = "term-score")` in log space to avoid
   underflow with many topic and sentiment combinations.
 
+* Use metric-specific default coherence windows in `chains_scores()`
+  when `window` is not supplied.
+
 # sentopics 1.0.1
 
 * Fixed double topic weighting in rJST sentiment extraction with

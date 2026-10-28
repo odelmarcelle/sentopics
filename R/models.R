@@ -279,7 +279,9 @@ JST <- function(
 #' @param beta the hyperparameter of vocabulary distribution
 #' @param L1cycle integer specifying the cycle size between two updates of the hyperparameter L1prior
 #' @param L2cycle integer specifying the cycle size between two updates of the hyperparameter L2prior
-#' @param lexicon a `quanteda` dictionary with positive and negative categories
+#' @param lexicon a `quanteda` dictionary with positive and negative categories.
+#'   Optional valence shifters require the corresponding words and their
+#'   neighboring polarity words to remain in `x`; see [LoughranMcDonald].
 #' @param reverse indicates on which dimension should `lexicon` apply. When
 #'  `reverse=FALSE`, the lexicon is applied on the first layer of the document
 #'  mixture (as in a JST model). When `reverse=TRUE`, the lexicon is applied to

@@ -19,7 +19,9 @@ JST(
 \arguments{
 \item{x}{tokens object containing the texts. A coercion will be attempted if \code{x} is not a tokens.}
 
-\item{lexicon}{a \code{quanteda} dictionary with positive and negative categories}
+\item{lexicon}{a \code{quanteda} dictionary with positive and negative categories.
+Optional valence shifters require the corresponding words and their
+neighboring polarity words to remain in \code{x}; see \link{LoughranMcDonald}.}
 
 \item{S}{the number of sentiments}
 

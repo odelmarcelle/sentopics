@@ -18,13 +18,22 @@ The pre-processed and tokenized version of the
 \link{ECB_press_conferences} corpus of press conferences. The processing
 involved the following steps:
 \itemize{
-\item Subset paragraphs shorter than 10 words
+\item Remove paragraphs shorter than 10 words
 \item Removal of stop words
 \item Part-of-speech tagging, following which only nouns, proper nouns and
 adjective were retained.
 \item Detection and merging of frequent compound words
 \item Frequency-based cleaning of rare and very common words
 }
+}
+\details{
+This preprocessing is intended for topic analysis. None of the
+negators in \link{LoughranMcDonald} remains in the shipped tokens, so its
+negation handling has no effect on models initialized from this dataset.
+For an analysis that needs negation, start from \link{ECB_press_conferences}
+or other original text and retain negators and their neighboring sentiment
+words until the model's lexicon preprocessing has processed them. Removing
+stop words or selecting parts of speech first can discard this information.
 }
 \examples{
 LDA(ECB_press_conferences_tokens)

@@ -50,12 +50,20 @@ NULL
 #'   [ECB_press_conferences] corpus of press conferences. The processing
 #'   involved the following steps:
 #'
-#'   - Subset paragraphs shorter than 10 words
+#'   - Remove paragraphs shorter than 10 words
 #'   - Removal of stop words
 #'   - Part-of-speech tagging, following which only nouns, proper nouns and
 #'   adjective were retained.
 #'   - Detection and merging of frequent compound words
 #'   - Frequency-based cleaning of rare and very common words
+#'
+#' @details This preprocessing is intended for topic analysis. None of the
+#'   negators in [LoughranMcDonald] remains in the shipped tokens, so its
+#'   negation handling has no effect on models initialized from this dataset.
+#'   For an analysis that needs negation, start from [ECB_press_conferences]
+#'   or other original text and retain negators and their neighboring sentiment
+#'   words until the model's lexicon preprocessing has processed them. Removing
+#'   stop words or selecting parts of speech first can discard this information.
 #'
 #' @examples
 #' LDA(ECB_press_conferences_tokens)
@@ -73,6 +81,13 @@ NULL
 #'   valence-shifting words.
 #'
 #' @seealso [JST()], [rJST()]
+#'
+#' @details Valence shifters operate on the tokens supplied to the model:
+#'   recognized sequences of a negator and a polarity word (optionally with an
+#'   amplifier between them) are compounded and assigned the opposite polarity.
+#'   Shifters already removed during preprocessing cannot affect sentiment.
+#'   In particular, [ECB_press_conferences_tokens] contains no lexicon negators;
+#'   use the original text with suitable preprocessing when negation matters.
 #'
 #' @examples
 #' JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)

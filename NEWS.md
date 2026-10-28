@@ -1,5 +1,9 @@
 # sentopics 1.0.2 (unreleased)
 
+* Document the topic-oriented preprocessing of `ECB_press_conferences_tokens`,
+  the absence of lexicon negators, and the token requirements for valence
+  shifters to affect sentiment. The shipped dataset is unchanged.
+
 * Explain why `merge_topics()` recomputes rJST sentiment from pooled counts
   and priors, and how to aggregate original sentiment contributions instead.
   Add regression coverage for the pooled posterior calculation.

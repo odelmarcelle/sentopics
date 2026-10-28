@@ -20,6 +20,14 @@ The Loughran-McDonald lexicon for financial texts adapted for
 usage in \strong{sentopics}. The lexicon is enhanced with two list of
 valence-shifting words.
 }
+\details{
+Valence shifters operate on the tokens supplied to the model:
+recognized sequences of a negator and a polarity word (optionally with an
+amplifier between them) are compounded and assigned the opposite polarity.
+Shifters already removed during preprocessing cannot affect sentiment.
+In particular, \link{ECB_press_conferences_tokens} contains no lexicon negators;
+use the original text with suitable preprocessing when negation matters.
+}
 \examples{
 JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
 

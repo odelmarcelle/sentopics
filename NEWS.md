@@ -1,5 +1,11 @@
 # sentopics 1.0.2 (unreleased)
 
+* Isolate each chain's raw and scaled sentiment cache while keeping tokens,
+  ordinary document variables and fixed priors in a shared core. Accessing
+  chains with `[[`, `$`, or `as.list(copy = FALSE)` assembles temporary views;
+  `as.list()` produces independent models. Sentiment caches survive extraction
+  and zero-iteration fitting and are invalidated by further sampling.
+
 * Invalidate model-derived raw and scaled sentiment after continued fitting
   or reset, while retaining externally assigned sentiment and the input model.
 

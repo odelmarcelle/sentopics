@@ -330,6 +330,56 @@ plot.multi_chains <- function(
 
 # fit --------------------------------------------------------------------
 
+# Only sentiment is mutable by reference. Keep its columns in a small R object
+# owned by the chain; unlike an environment, object.size() includes its contents.
+new_chain_sentiment_cache <- function(tokens) {
+  cache <- list()
+  vars <- attr(tokens, "docvars")
+  attr(cache, "columns") <- vars[sentiment_columns(vars)]
+  attr(cache, "derived") <- isTRUE(attr(tokens, "sentiment_not_external"))
+  cache
+}
+
+restore_chain_core <- function(x, base, copy = FALSE) {
+  tokens <- x$tokens
+  cache <- attr(x, "sentiment_cache")
+  if (is.null(cache) && !is.null(tokens)) {
+    cache <- attr(tokens, "sentiment_cache")
+  }
+  core(x) <- if (copy) data.table::copy(base) else base
+  # Older objects stored tokens on every chain. Retain their metadata when
+  # restoring them, but newly fitted chains store only the sentiment cache.
+  if (!is.null(tokens)) {
+    x$tokens <- if (copy) data.table::copy(tokens) else tokens
+  }
+  if (is.null(cache)) {
+    cache <- new_chain_sentiment_cache(x$tokens)
+    if (!copy && !is.null(tokens)) {
+      data.table::setattr(tokens, "sentiment_cache", cache)
+      cache <- attr(tokens, "sentiment_cache")
+    }
+  } else if (copy) {
+    cache <- data.table::copy(cache)
+  }
+  vars <- attr(x$tokens, "docvars")
+  vars[sentiment_columns(vars)] <- NULL
+  columns <- attr(cache, "columns")
+  for (name in names(columns)) {
+    vars[[name]] <- columns[[name]]
+  }
+  # Ordinary attribute assignment makes a temporary token header. Its token
+  # vectors and non-sentiment docvar columns still reference the shared core.
+  attr(x$tokens, "docvars") <- vars
+  attr(x$tokens, "sentiment_not_external") <- if (
+    isTRUE(attr(cache, "derived"))
+  ) {
+    TRUE
+  }
+  attr(x$tokens, "sentiment_cache") <- if (!copy) cache
+  attr(x, "sentiment_cache") <- NULL
+  x
+}
+
 #' @importFrom generics fit
 #' @export
 generics::fit
@@ -366,6 +416,14 @@ generics::fit
 #'   using [future::plan()]. See the examples below.
 #'
 #' @seealso [LDA()], [JST()], [rJST()], [reset()]
+#'
+#' @section Chain metadata:
+#'   Tokens, non-sentiment document variables, vocabulary and fixed priors are
+#'   stored once in the shared core. Each chain stores only its own raw and
+#'   scaled sentiment columns. Accessing a chain assembles a temporary token
+#'   view with those columns; computing sentiment does not change another
+#'   chain's values. `as.list(chains)` makes independent copies; `copy = FALSE`
+#'   retains references to the shared core and each chain's sentiment cache.
 #' @export
 #' @examples
 #' model <- rJST(ECB_press_conferences_tokens)
@@ -468,6 +526,7 @@ fit.sentopicsmodel <- function(
   }
 
   if (nChains == 1) {
+    attr(object$tokens, "sentiment_cache") <- NULL
     if (!is.null(seed)) {
       set.seed(seed * (object$it + 1))
     }
@@ -483,6 +542,7 @@ fit.sentopicsmodel <- function(
     chains <- NULL
 
     base <- core(object)
+    attr(base$tokens, "sentiment_cache") <- NULL
     core(object) <- NULL
 
     if (!is.null(seed)) {
@@ -496,6 +556,11 @@ fit.sentopicsmodel <- function(
       ## need to duplicate memory location of x$za. Otherwise, all chains
       ## share the same memory location
       object$za <- data.table::copy(object$za)
+      new_chain_sentiment_cache <- get(
+        "new_chain_sentiment_cache",
+        envir = getNamespace("sentopics")
+      )
+      attr(object, "sentiment_cache") <- new_chain_sentiment_cache(base$tokens)
       rebuild_cppModel <- get(
         "rebuild_cppModel",
         envir = getNamespace("sentopics")
@@ -673,6 +738,16 @@ fit.multi_chains <- function(
   FUN <- function(object) {
     report_time <- Sys.time()
     report_processed <- 0L
+    new_chain_sentiment_cache <- get(
+      "new_chain_sentiment_cache",
+      envir = getNamespace("sentopics")
+    )
+    if (is.null(attr(object, "sentiment_cache"))) {
+      attr(object, "sentiment_cache") <- new_chain_sentiment_cache(
+        if (is.null(object$tokens)) base$tokens else object$tokens
+      )
+    }
+    object$tokens <- NULL
 
     rebuild_cppModel <- get(
       "rebuild_cppModel",
@@ -680,10 +755,15 @@ fit.multi_chains <- function(
     )
     cpp_model <- rebuild_cppModel(object, base)
 
-    for (chunk in c(
-      rep(chunkProgress, iterations %/% chunkProgress),
-      iterations %% chunkProgress
-    )) {
+    chunks <- if (iterations == 0) {
+      0
+    } else {
+      c(
+        rep(chunkProgress, iterations %/% chunkProgress),
+        iterations %% chunkProgress
+      )
+    }
+    for (chunk in chunks) {
       cpp_model$iterate(chunk, FALSE, computeLikelihood)
 
       report_processed <- report_processed + chunk
@@ -1019,7 +1099,7 @@ melt.sentopicsmodel <- function(data, ..., include_docvars = FALSE) {
   containedClass <- attr(x, "containedClass")
 
   x <- NextMethod()
-  core(x) <- base
+  x <- restore_chain_core(x, base)
 
   fun <- get(paste0("as.", containedClass))
   fun(reorder_sentopicsmodel(x))
@@ -1036,7 +1116,7 @@ melt.sentopicsmodel <- function(data, ..., include_docvars = FALSE) {
     base <- attr(x, "base")
     containedClass <- attr(x, "containedClass")
     x <- NextMethod()
-    core(x) <- base
+    x <- restore_chain_core(x, base)
     fun <- get(paste0("as.", containedClass))
     x <- fun(reorder_sentopicsmodel(x))
   }
@@ -1067,11 +1147,7 @@ melt.sentopicsmodel <- function(data, ..., include_docvars = FALSE) {
 `as.list.multi_chains` <- function(x, copy = TRUE, ...) {
   x <- unclass(x)
   for (i in seq_along(x)) {
-    if (copy) {
-      core(x[[i]]) <- data.table::copy(attr(x, "base"))
-    } else {
-      core(x[[i]]) <- attr(x, "base")
-    }
+    x[[i]] <- restore_chain_core(x[[i]], attr(x, "base"), copy = copy)
   }
 
   fun <- get(paste0("as.", attr(x, "containedClass")))

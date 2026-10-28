@@ -1,9 +1,44 @@
+sentiment_columns <- function(vars) {
+  names(vars)[
+    names(vars) %in%
+      c(".sentiment", ".sentiment_scaled") |
+      startsWith(names(vars), ".s_")
+  ]
+}
+
+# Synchronize the public token view and its owning chain's small cache. The
+# cache is a regular list with attributes, so copying a model also copies it.
+store_sentiment_docvars <- function(
+  x,
+  vars,
+  derived = isTRUE(attr(x$tokens, "sentiment_not_external"))
+) {
+  data.table::setattr(x$tokens, "docvars", vars)
+  data.table::setattr(x$tokens, "sentiment_not_external", if (derived) TRUE)
+  data.table::setattr(x, "sentiment_not_external", if (derived) TRUE)
+  cache <- attr(x$tokens, "sentiment_cache")
+  if (!is.null(cache)) {
+    data.table::setattr(cache, "columns", vars[sentiment_columns(vars)])
+    data.table::setattr(cache, "derived", derived)
+  }
+  invisible(NULL)
+}
+
 # Remove only model-derived sentiment after a sampler state change. External
 # sentiment is deliberately stable across fits and resets. Token provenance is
 # also needed when a chain is exposed through a temporary class-conversion view.
 invalidate_model_sentiment <- function(x) {
+  cache <- attr(x, "sentiment_cache")
+  if (is.null(cache)) {
+    cache <- attr(x$tokens, "sentiment_cache")
+  }
   derived <- isTRUE(attr(x, "sentiment_not_external")) ||
-    isTRUE(attr(x$tokens, "sentiment_not_external"))
+    isTRUE(attr(x$tokens, "sentiment_not_external")) ||
+    isTRUE(attr(cache, "derived"))
+  if (derived && !is.null(cache)) {
+    data.table::setattr(cache, "columns", list())
+    data.table::setattr(cache, "derived", FALSE)
+  }
   if (derived && is.null(x$tokens)) {
     attr(x, "sentiment_not_external") <- NULL
     return(x)
@@ -235,8 +270,6 @@ sentopics_sentiment <- function(
     stopifnot(identical(res$.id, names(x$tokens)))
 
     docvars$`.sentiment` <- res$`.sentiment`
-    data.table::setattr(x$tokens, "docvars", docvars)
-    message("Sentiment computed and assigned internally")
   } else {
     LIST <- lapply(
       stats::setNames(
@@ -266,12 +299,9 @@ sentopics_sentiment <- function(
     data.table::setcolorder(res, c(".id", ".sentiment"))
 
     docvars <- utils::modifyList(docvars, res[, -".id"])
-    data.table::setattr(x$tokens, "docvars", docvars)
-    message("Sentiment computed and assigned internally")
   }
-  ## to recompute at the end of merge_topics, need this attribute
-  data.table::setattr(x, "sentiment_not_external", TRUE)
-  data.table::setattr(x$tokens, "sentiment_not_external", TRUE)
+  store_sentiment_docvars(x, docvars, derived = TRUE)
+  message("Sentiment computed and assigned internally")
 
   if (include_docvars) {
     res <- cbind(res, docvars(x$tokens))
@@ -292,6 +322,13 @@ sentopics_sentiment <- function(
   }
   if (anyNA(value)) {
     stop("NA sentiment not allowed.")
+  }
+
+  # Replacement follows R's value semantics, unlike cache writes by getters.
+  # Detach the cache when assigning sentiment to an extracted chain view.
+  cache <- attr(x$tokens, "sentiment_cache")
+  if (!is.null(cache)) {
+    attr(x$tokens, "sentiment_cache") <- data.table::copy(cache)
   }
 
   docvars <- attr(x$tokens, "docvars")
@@ -315,8 +352,7 @@ sentopics_sentiment <- function(
   } else {
     x$tokens$`.sentiment` <- value
   }
-  attr(x, "sentiment_not_external") <- NULL
-  data.table::setattr(x$tokens, "sentiment_not_external", NULL)
+  store_sentiment_docvars(x, attr(x$tokens, "docvars"), derived = FALSE)
 
   x
 }
@@ -514,7 +550,7 @@ sentopics_labels <- function(x, flat = TRUE) {
     }
 
     names(docvars) <- docvar_names
-    attr(x$tokens, "docvars") <- docvars
+    store_sentiment_docvars(x, docvars)
   }
 
   x
@@ -680,7 +716,7 @@ sentiment_series <- function(
       }
 
       ## putting back the results in docvars
-      data.table::setattr(x$tokens, "docvars", docvars)
+      store_sentiment_docvars(x, docvars)
     }
   }
 

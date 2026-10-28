@@ -72,6 +72,16 @@ multiple processes. This requires the specification of a parallel strategy
 using \code{\link[future:plan]{future::plan()}}. See the examples below.
 }
 
+\section{Chain metadata}{
+
+Tokens, non-sentiment document variables, vocabulary and fixed priors are
+stored once in the shared core. Each chain stores only its own raw and
+scaled sentiment columns. Accessing a chain assembles a temporary token
+view with those columns; computing sentiment does not change another
+chain's values. \code{as.list(chains)} makes independent copies; \code{copy = FALSE}
+retains references to the shared core and each chain's sentiment cache.
+}
+
 \examples{
 model <- rJST(ECB_press_conferences_tokens)
 fit(model, 10)

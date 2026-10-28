@@ -463,6 +463,9 @@ fit.sentopicsmodel <- function(
 
   ## force deep copy
   object <- data.table::copy(object)
+  if (isTRUE(iterations > 0)) {
+    object <- invalidate_model_sentiment(object)
+  }
 
   if (nChains == 1) {
     if (!is.null(seed)) {
@@ -638,16 +641,23 @@ fit.multi_chains <- function(
   ...
 ) {
   start_time <- Sys.time()
+  object <- data.table::copy(object)
 
   ## CMD check
   chains <- NULL
 
   nChains <- attr(object, "nChains")
   base <- attr(object, "base")
+  if (isTRUE(iterations > 0)) {
+    base <- invalidate_model_sentiment(base)
+  }
   containedClass <- attr(object, "containedClass")
 
   object <- unclass(object) ## unclass to prevent usage of `[[.multi_chains`
   object <- lapply(object, as.sentopicsmodel) ## return to sentopicsmodel objects
+  if (isTRUE(iterations > 0)) {
+    object <- lapply(object, invalidate_model_sentiment)
+  }
 
   ## erase posterior in each chain to limit memory transfers
   for (i in seq_along(object)) {
@@ -845,8 +855,9 @@ grow.multi_chains <- fit.multi_chains
 #' model <- fit(model, 10)
 #' reset(model)
 reset <- function(object) {
-  ## make copy or assignment are reset by reference
-  object$za <- data.table::copy(object$za)
+  ## Preserve the caller's assignments and cached metadata.
+  object <- data.table::copy(object)
+  object <- invalidate_model_sentiment(object)
 
   class <- class(object)[1]
   object <- as.sentopicsmodel(object)

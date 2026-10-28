@@ -1,5 +1,8 @@
 # sentopics 1.0.2 (unreleased)
 
+* Invalidate model-derived raw and scaled sentiment after continued fitting
+  or reset, while retaining externally assigned sentiment and the input model.
+
 * Corrected tied FREX ranks in `top_words()` to use empirical CDFs,
   and fixed the documented FREX formula.
 

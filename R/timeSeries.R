@@ -1,3 +1,32 @@
+# Remove only model-derived sentiment after a sampler state change. External
+# sentiment is deliberately stable across fits and resets. Token provenance is
+# also needed when a chain is exposed through a temporary class-conversion view.
+invalidate_model_sentiment <- function(x) {
+  derived <- isTRUE(attr(x, "sentiment_not_external")) ||
+    isTRUE(attr(x$tokens, "sentiment_not_external"))
+  if (derived && is.null(x$tokens)) {
+    attr(x, "sentiment_not_external") <- NULL
+    return(x)
+  }
+  if (derived) {
+    tokens <- x$tokens
+    vars <- attr(tokens, "docvars")
+    remove <- c(
+      ".sentiment",
+      ".sentiment_scaled",
+      grep("^\\.s_", names(vars), value = TRUE)
+    )
+    for (name in intersect(remove, names(vars))) {
+      vars[[name]] <- NULL
+    }
+    attr(tokens, "docvars") <- vars
+    attr(tokens, "sentiment_not_external") <- NULL
+    x$tokens <- tokens
+    attr(x, "sentiment_not_external") <- NULL
+  }
+  x
+}
+
 #' Internal sentiment
 #'
 #' @family sentopics helpers
@@ -63,6 +92,11 @@
 #'   `tokens` docvars. If a `.sentiment` docvar already exists and
 #'   `override = FALSE`, the value is returned without recomputing or modifying
 #'   the model.
+#'
+#'   Continuing estimation with positive iterations or resetting a model clears
+#'   model-derived raw and scaled sentiment, so the next extraction uses the new
+#'   sampler state. Externally assigned sentiment is retained. A zero-iteration
+#'   fit preserves an existing sentiment cache.
 #'
 #' @export
 #' @examples
@@ -237,6 +271,7 @@ sentopics_sentiment <- function(
   }
   ## to recompute at the end of merge_topics, need this attribute
   data.table::setattr(x, "sentiment_not_external", TRUE)
+  data.table::setattr(x$tokens, "sentiment_not_external", TRUE)
 
   if (include_docvars) {
     res <- cbind(res, docvars(x$tokens))
@@ -281,6 +316,7 @@ sentopics_sentiment <- function(
     x$tokens$`.sentiment` <- value
   }
   attr(x, "sentiment_not_external") <- NULL
+  data.table::setattr(x$tokens, "sentiment_not_external", NULL)
 
   x
 }

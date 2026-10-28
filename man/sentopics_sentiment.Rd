@@ -68,6 +68,11 @@ When sentiment is computed, the result is cached by modifying the model's
 \code{tokens} docvars. If a \code{.sentiment} docvar already exists and
 \code{override = FALSE}, the value is returned without recomputing or modifying
 the model.
+
+Continuing estimation with positive iterations or resetting a model clears
+model-derived raw and scaled sentiment, so the next extraction uses the new
+sampler state. Externally assigned sentiment is retained. A zero-iteration
+fit preserves an existing sentiment cache.
 }
 \section{Methods}{
 

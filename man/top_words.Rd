@@ -71,7 +71,7 @@ topic-word probability and topic exclusivity using the following
 score:
 \deqn{\text{FREX}_{k,v}=\left(\frac{w}{\text{ECDF}\left(
   \frac{\phi_{k,v}}{\sum_{j=1}^K\phi_{k,v}}\right)}
-+ \frac{1-w}{\text{ECDF}\left(\phi_{k,v}\right)} \right)^{-1},} for
+  + \frac{1-w}{\text{ECDF}\left(\phi_{k,v}\right)} \right)^{-1},} for
 topic \eqn{k}, vocabulary word \eqn{v}, number of topics \eqn{K} and
 weight \eqn{w}, where \eqn{\text{ECDF}} is the empirical cumulative
 distribution function.

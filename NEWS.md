@@ -1,5 +1,9 @@
 # sentopics 1.0.2 (unreleased)
 
+* Explain why `merge_topics()` recomputes rJST sentiment from pooled counts
+  and priors, and how to aggregate original sentiment contributions instead.
+  Add regression coverage for the pooled posterior calculation.
+
 * Reject `rJST(fitted_lda, lexicon = ...)` when lexicon preprocessing changes
   the fitted tokens or vocabulary, with guidance to initialize a new model.
 

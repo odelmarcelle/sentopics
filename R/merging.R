@@ -14,6 +14,18 @@
 #'   document-topic and topic-word probabilities are derived from the aggregated
 #'   assignments.
 #'
+#'   For rJST, the sentiment probabilities within a merged theme are also
+#'   recomputed from pooled sentiment counts and pooled `gamma` priors.
+#'   For each document, theme B and sentiment s, the new probability is
+#'   `sum(n[k,s] + gamma[k,s]) / sum(n[k,] + gamma[k,])`, where both sums
+#'   include all topics k in B and the denominator also sums over sentiments.
+#'   The theme's topic probability instead uses pooled topic counts and
+#'   `alpha` priors. These two sets of weights generally differ, so merging
+#'   topics can change document sentiment, even without further sampling.
+#'   It is an aggregation of assignments, rather than a sum of the original
+#'   posterior sentiment contributions. To retain those contributions, use
+#'   [sentiment_breakdown()] on the original model and sum the desired topics.
+#'
 #'   Note that the output of this function does not constitute an estimated
 #'   topic model, but merely an aggregation to ease the analysis. It is not
 #'   advised to use \code{\link[=fit.sentopicsmodel]{fit()}} on the merged topic

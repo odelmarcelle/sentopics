@@ -1,5 +1,8 @@
 # sentopics 1.0.2 (unreleased)
 
+* Reject `rJST(fitted_lda, lexicon = ...)` when lexicon preprocessing changes
+  the fitted tokens or vocabulary, with guidance to initialize a new model.
+
 * Reject unsupported sentiment-layer conversions in `as.LDA()` with a clear
   error and document its structural conversion contract.
 

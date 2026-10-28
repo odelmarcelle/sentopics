@@ -112,6 +112,13 @@ rJST.default <- function(
 #'   retains the previously estimated topics and randomly assigns sentiment to
 #'   every word of the corpus. The new model will retain the iteration count of
 #'   the initial [LDA] model.
+#'
+#'   The lexicon must preserve the fitted LDA model's token sequence and
+#'   vocabulary order. Valence shifters can compound words (for example,
+#'   `not good`) and therefore change that sequence. Such a transition is
+#'   rejected because the existing topic assignments no longer identify the
+#'   same words. In that case, initialize `rJST()` directly from the original
+#'   tokens with the lexicon and fit the new model.
 #' @export
 rJST.LDA <- function(x, lexicon = NULL, S = 3, gamma = 5, ...) {
   check_model_count(S, "S", 1)
@@ -140,6 +147,17 @@ rJST.LDA <- function(x, lexicon = NULL, S = 3, gamma = 5, ...) {
   x$L2prior <- gamma
 
   vocabulary <- makeVocabulary(x$tokens, lexicon, S)
+  if (
+    !identical(cleanPadding(x$tokens), cleanPadding(vocabulary$toks)) ||
+      !identical(x$vocabulary$word, vocabulary$vocabulary$word)
+  ) {
+    stop(
+      "The lexicon changes the fitted LDA token sequence or vocabulary. ",
+      "Existing topic assignments cannot be retained. Initialize rJST() ",
+      "from the original tokens with this lexicon and fit the new model.",
+      call. = FALSE
+    )
+  }
   x$tokens <- vocabulary$toks
   x$vocabulary <- vocabulary$vocabulary
 

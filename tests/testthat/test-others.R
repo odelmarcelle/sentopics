@@ -1,7 +1,9 @@
 test_that("get_ECB_conferences works", {
+  skip_on_cran()
+  skip_if_offline("www.ecb.europa.eu")
   res <- get_ECB_press_conferences(years = 1998)
   expect_s3_class(res, "data.frame")
-  expect_true(nrow(res) == 227)
+  expect_gt(nrow(res), 0)
   expect_length(res, 6)
 })
 

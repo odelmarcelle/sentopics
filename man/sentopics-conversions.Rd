@@ -22,4 +22,9 @@ A \strong{sentopics} model of the relevant class
 \description{
 Internal conversions between \strong{sentopics} models.
 }
+\details{
+These helpers rename the internal layers for the corresponding
+model structure; they do not estimate a different statistical model.
+See \code{\link[=as.LDA]{as.LDA()}} for the restrictions on converting to a single topic layer.
+}
 \keyword{internal}

@@ -1,5 +1,8 @@
 # sentopics 1.0.2 (unreleased)
 
+* Reject unsupported sentiment-layer conversions in `as.LDA()` with a clear
+  error and document its structural conversion contract.
+
 * Report missing raw sentiment stored through `docvars()` with an actionable
   error, and clarify that `na.rm` does not permit incomplete document sentiment.
 

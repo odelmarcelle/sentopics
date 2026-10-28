@@ -279,6 +279,13 @@ round_posterior_counts <- function(
 #'   a deterministic integer minimum-cost flow computation, up to floating-point
 #'   precision. Both methods retain the source `theta` and `phi` unchanged.
 #'
+#'   For a model already created by sentopics, `as.LDA()` is a structural
+#'   conversion: it requires topics in the first layer and a single inner
+#'   layer. It does not marginalize or refit sentiment layers. In particular,
+#'   JST models and rJST models with multiple sentiments are rejected. To
+#'   estimate an LDA model from their documents, use `LDA(x$tokens)` followed
+#'   by `fit()`. An existing LDA model is returned unchanged.
+#'
 #' @return A S3 list of class `LDA`, as if it was created and estimated using
 #'   [LDA()] and \code{\link[=fit.sentopicsmodel]{fit()}}.
 #'
@@ -833,6 +840,9 @@ LDAvis <- function(x, ...) {
 #' @param x A **sentopics** model
 #'
 #' @return A **sentopics** model of the relevant class
+#' @details These helpers rename the internal layers for the corresponding
+#'   model structure; they do not estimate a different statistical model.
+#'   See [as.LDA()] for the restrictions on converting to a single topic layer.
 #' @export
 as.sentopicsmodel <- function(x) {
   UseMethod("as.sentopicsmodel")
@@ -1004,6 +1014,17 @@ as.sentopicsmodel.default <- function(x) {
 
 #' @export
 as.LDA.sentopicsmodel <- function(x, ...) {
+  if (inherits(x, "LDA")) {
+    return(x)
+  }
+  x <- as.sentopicsmodel(x)
+  if (!isTRUE(attr(x, "reverse")) || x$L2 != 1L) {
+    stop(
+      "as.LDA() requires topics in the first layer and a single inner layer; ",
+      "it does not collapse sentiment layers. Fit LDA() to the tokens instead.",
+      call. = FALSE
+    )
+  }
   rename <- stats::setNames(names(x), names(x))
   translate <- stats::setNames(
     c(
@@ -1054,9 +1075,8 @@ as.LDA.sentopicsmodel <- function(x, ...) {
 }
 #' @export
 as.LDA.multi_chains <- function(x, ...) {
-  # atrs <- attributes(x)
-  # x <- lapply(unclass(x), as.LDA)
-  # attributes(x) <- atrs
+  # Validate the layer structure before changing how chains are exposed.
+  as.LDA(x[[1L]])
   attr(x, "containedClass") <- "LDA"
   x
 }

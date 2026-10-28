@@ -77,6 +77,13 @@ probabilities and the source probabilities, subject to its required margins.
 The implied probabilities include the conversion's model priors. This uses
 a deterministic integer minimum-cost flow computation, up to floating-point
 precision. Both methods retain the source \code{theta} and \code{phi} unchanged.
+
+For a model already created by sentopics, \code{as.LDA()} is a structural
+conversion: it requires topics in the first layer and a single inner
+layer. It does not marginalize or refit sentiment layers. In particular,
+JST models and rJST models with multiple sentiments are rejected. To
+estimate an LDA model from their documents, use \code{LDA(x$tokens)} followed
+by \code{fit()}. An existing LDA model is returned unchanged.
 }
 \examples{
 \donttest{

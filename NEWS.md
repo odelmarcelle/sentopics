@@ -1,5 +1,8 @@
 # sentopics 1.0.2 (unreleased)
 
+* Document the intentional in-place caching of raw and scaled sentiment,
+  including how time-series functions reuse the stored scaling parameters.
+
 * Isolate each chain's raw and scaled sentiment cache while keeping tokens,
   ordinary document variables and fixed priors in a shared core. Accessing
   chains with `[[`, `$`, or `as.list(copy = FALSE)` assembles temporary views;

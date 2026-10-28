@@ -93,6 +93,14 @@ Both methods will lead to the same result for a JST model containing only
 negative and positive sentiments.
 }
 
+\section{Side effects}{
+
+Computing model-derived sentiment caches \code{.sentiment} and, for rJST,
+\verb{.s_*} document variables on \code{x} without requiring assignment of the return
+value. Calls that reuse the cache do not recompute it. The cache belongs to
+that model or chain. \code{\link[=sentiment_series]{sentiment_series()}} may also cache scaled values.
+}
+
 \examples{
 \donttest{# sentiment from an external source can be added to the model
 lda <- LDA(ECB_press_conferences_tokens)

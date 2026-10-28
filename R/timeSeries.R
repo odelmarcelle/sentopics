@@ -133,6 +133,12 @@ invalidate_model_sentiment <- function(x) {
 #'   sampler state. Externally assigned sentiment is retained. A zero-iteration
 #'   fit preserves an existing sentiment cache.
 #'
+#' @section Side effects:
+#'   Computing model-derived sentiment caches `.sentiment` and, for rJST,
+#'   `.s_*` document variables on `x` without requiring assignment of the return
+#'   value. Calls that reuse the cache do not recompute it. The cache belongs to
+#'   that model or chain. [sentiment_series()] may also cache scaled values.
+#'
 #' @export
 #' @examples
 #' \donttest{# sentiment from an external source can be added to the model
@@ -568,6 +574,16 @@ sentopics_labels <- function(x, flat = TRUE) {
 #' @description Compute a sentiment time series based on the internal sentiment
 #'   and dates of a `sentopicsmodel`. The time series computation supports
 #'   multiple sampling period and optionally allow computing a moving average.
+#'
+#' @section Side effects:
+#'   With `scale = TRUE`, this function deliberately stores `.sentiment_scaled`
+#'   and any `.s_*_scaled` document variables on the input model, using the
+#'   normalization parameters of the returned series. These document-level
+#'   values are reused by [sentiment_breakdown()] and [sentiment_topics()].
+#'   With `scale = FALSE`, no scaled values are stored; [sentopics_sentiment()]
+#'   can still cache raw sentiment when it is first computed. Use
+#'   [data.table::copy()] to obtain an independent model when its cached metadata
+#'   must remain unchanged.
 #'
 #' @return A time series of sentiment, stored as an [xts::xts] or
 #'   data.frame.

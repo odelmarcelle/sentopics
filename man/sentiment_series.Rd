@@ -52,6 +52,18 @@ Compute a sentiment time series based on the internal sentiment
 and dates of a \code{sentopicsmodel}. The time series computation supports
 multiple sampling period and optionally allow computing a moving average.
 }
+\section{Side effects}{
+
+With \code{scale = TRUE}, this function deliberately stores \code{.sentiment_scaled}
+and any \verb{.s_*_scaled} document variables on the input model, using the
+normalization parameters of the returned series. These document-level
+values are reused by \code{\link[=sentiment_breakdown]{sentiment_breakdown()}} and \code{\link[=sentiment_topics]{sentiment_topics()}}.
+With \code{scale = FALSE}, no scaled values are stored; \code{\link[=sentopics_sentiment]{sentopics_sentiment()}}
+can still cache raw sentiment when it is first computed. Use
+\code{\link[data.table:copy]{data.table::copy()}} to obtain an independent model when its cached metadata
+must remain unchanged.
+}
+
 \examples{
 \donttest{
 lda <- LDA(ECB_press_conferences_tokens)

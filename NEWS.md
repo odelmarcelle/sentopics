@@ -1,4 +1,4 @@
-# sentopics 1.0.2 (unreleased)
+# sentopics 1.0.2
 
 * Document the topic-oriented preprocessing of `ECB_press_conferences_tokens`,
   the absence of lexicon negators, and the token requirements for valence

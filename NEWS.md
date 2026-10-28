@@ -1,5 +1,8 @@
 # sentopics 1.0.2 (unreleased)
 
+* Validate finite positive active priors and integer iteration, layer and cycle
+  counts before sampling, preserving the inactive LDA prior and lexicon zeros.
+
 * Document the intentional in-place caching of raw and scaled sentiment,
   including how time-series functions reuse the stored scaling parameters.
 

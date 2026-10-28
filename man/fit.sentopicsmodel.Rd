@@ -37,8 +37,8 @@
 \arguments{
 \item{object}{a model created with the \code{\link[=LDA]{LDA()}}, \code{\link[=JST]{JST()}} or \code{\link[=rJST]{rJST()}} function.}
 
-\item{iterations}{the number of iterations by which the model should be
-fitted.}
+\item{iterations}{a finite nonnegative integer giving the number of additional
+Gibbs iterations. Zero rebuilds the current output without drawing samples.}
 
 \item{nChains}{if set above 1, the model will be fitted multiple times
 from various starting positions. Latent variables will be re-initialized if

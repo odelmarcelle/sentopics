@@ -393,8 +393,8 @@ generics::fit
 #'   sampler MCMC.
 #'
 #' @param object a model created with the [LDA()], [JST()] or [rJST()] function.
-#' @param iterations the number of iterations by which the model should be
-#'   fitted.
+#' @param iterations a finite nonnegative integer giving the number of additional
+#'   Gibbs iterations. Zero rebuilds the current output without drawing samples.
 #' @param nChains if set above 1, the model will be fitted multiple times
 #'   from various starting positions. Latent variables will be re-initialized if
 #'   `object` has not been fitted before.
@@ -517,6 +517,8 @@ fit.sentopicsmodel <- function(
   seed = NULL,
   ...
 ) {
+  check_model_count(iterations, "iterations")
+  check_model_count(nChains, "nChains", 1)
   start_time <- Sys.time()
 
   ## force deep copy
@@ -705,6 +707,7 @@ fit.multi_chains <- function(
   seed = NULL,
   ...
 ) {
+  check_model_count(iterations, "iterations")
   start_time <- Sys.time()
   object <- data.table::copy(object)
 

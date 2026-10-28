@@ -114,6 +114,8 @@ rJST.default <- function(
 #'   the initial [LDA] model.
 #' @export
 rJST.LDA <- function(x, lexicon = NULL, S = 3, gamma = 5, ...) {
+  check_model_count(S, "S", 1)
+  check_model_prior(gamma, "gamma", allow_zero = S == 1)
   if (x$it < 1) {
     stop("Requires an estimated LDA model.")
   }
@@ -307,6 +309,23 @@ sentopicsmodel <- function(
   count <- index <- word <- NULL # due to NSE notes in R CMD check
 
   ## Check arguments
+  check_model_count(L1, "L1", 1)
+  check_model_count(L2, "L2", 1)
+  check_model_count(L1cycle, "L1cycle")
+  check_model_count(L2cycle, "L2cycle")
+  check_model_prior(
+    L1prior,
+    if (reverse) "alpha / L1prior" else "gamma / L1prior"
+  )
+  check_model_prior(
+    L2prior,
+    if (reverse) "gamma / L2prior" else "alpha / L2prior",
+    allow_zero = L2 == 1
+  )
+  check_model_prior(beta, "beta")
+  if (length(beta) != 1L) {
+    stop("`beta` must be a single prior value.", call. = FALSE)
+  }
   if (L1 < 1 || L2 < 1) {
     stop(
       "The number of topic and sentiments should be equal or greater than 1."

@@ -1,3 +1,41 @@
+check_model_count <- function(value, name, minimum = 0) {
+  if (
+    !is.numeric(value) ||
+      length(value) != 1L ||
+      is.na(value) ||
+      !is.finite(value) ||
+      value < minimum ||
+      value != floor(value) ||
+      value > .Machine$integer.max
+  ) {
+    stop(
+      "`",
+      name,
+      "` must be a finite integer greater than or equal to ",
+      minimum,
+      ".",
+      call. = FALSE
+    )
+  }
+}
+
+check_model_prior <- function(value, name, allow_zero = FALSE) {
+  invalid <- !is.numeric(value) ||
+    length(value) == 0L ||
+    any(!is.finite(value)) ||
+    any(if (allow_zero) value < 0 else value <= 0)
+  if (invalid) {
+    stop(
+      "`",
+      name,
+      "` must contain finite ",
+      if (allow_zero) "nonnegative" else "strictly positive",
+      " prior values.",
+      call. = FALSE
+    )
+  }
+}
+
 ## function extracting c++ model and transform it to a R object
 extract_cppModel <- function(x, base) {
   rModel <- list()

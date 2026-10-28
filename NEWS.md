@@ -1,5 +1,8 @@
 # sentopics 1.0.2 (unreleased)
 
+* Report missing raw sentiment stored through `docvars()` with an actionable
+  error, and clarify that `na.rm` does not permit incomplete document sentiment.
+
 * Validate finite positive active priors and integer iteration, layer and cycle
   counts before sampling, preserving the inactive LDA prior and lexicon zeros.
 

@@ -139,6 +139,12 @@ invalidate_model_sentiment <- function(x) {
 #'   value. Calls that reuse the cache do not recompute it. The cache belongs to
 #'   that model or chain. [sentiment_series()] may also cache scaled values.
 #'
+#'   Raw document sentiment must be complete, including when it was added through
+#'   `docvars()`. Missing raw values are rejected when read as well as by the
+#'   replacement function. Use the replacement function to validate external
+#'   sentiment; `override = TRUE` can recompute sentiment for a fitted JST or
+#'   rJST model.
+#'
 #' @export
 #' @examples
 #' \donttest{# sentiment from an external source can be added to the model
@@ -178,6 +184,25 @@ sentopics_sentiment <- function(
   docvars <- attr(x$tokens, "docvars")
 
   if (!override & ".sentiment" %in% names(docvars)) {
+    raw_cols <- c(
+      ".sentiment",
+      names(docvars)[
+        startsWith(names(docvars), ".s_") & !grepl("_scaled$", names(docvars))
+      ]
+    )
+    missing <- raw_cols[vapply(
+      raw_cols,
+      function(name) anyNA(docvars[[name]]),
+      logical(1)
+    )]
+    if (length(missing)) {
+      stop(
+        "Stored sentiment contains missing values in ",
+        paste(missing, collapse = ", "),
+        ". Supply complete values with `sentopics_sentiment(x) <- value`, or recompute model sentiment with `override = TRUE`.",
+        call. = FALSE
+      )
+    }
     if (!quiet & !inherits(x, "LDA")) {
       message(
         "'.sentiment' docvars found. Returning these values. To re-compute sentiment, please set `override = TRUE`."
@@ -1153,6 +1178,8 @@ plot_sentiment_breakdown <- function(
 #'   data.frame.
 #' @param ... other arguments passed on to [zoo::rollapply()] or [mean()] and
 #'   [sd()].
+#'   `na.rm` controls rolling summaries and scaling, not missing document-level
+#'   sentiment: raw document sentiment must be complete.
 #'
 #' @details A topical sentiment is computed at the document level for each
 #'   topic. For an LDA model, the sentiment of each topic is considered equal to

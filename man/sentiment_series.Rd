@@ -41,7 +41,9 @@ series.}
 data.frame.}
 
 \item{...}{other arguments passed on to \code{\link[zoo:rollapply]{zoo::rollapply()}} or \code{\link[=mean]{mean()}} and
-\code{\link[=sd]{sd()}}.}
+\code{\link[=sd]{sd()}}.
+\code{na.rm} controls rolling summaries and scaling, not missing document-level
+sentiment: raw document sentiment must be complete.}
 }
 \value{
 A time series of sentiment, stored as an \link[xts:xts]{xts::xts} or

@@ -99,6 +99,12 @@ Computing model-derived sentiment caches \code{.sentiment} and, for rJST,
 \verb{.s_*} document variables on \code{x} without requiring assignment of the return
 value. Calls that reuse the cache do not recompute it. The cache belongs to
 that model or chain. \code{\link[=sentiment_series]{sentiment_series()}} may also cache scaled values.
+
+Raw document sentiment must be complete, including when it was added through
+\code{docvars()}. Missing raw values are rejected when read as well as by the
+replacement function. Use the replacement function to validate external
+sentiment; \code{override = TRUE} can recompute sentiment for a fitted JST or
+rJST model.
 }
 
 \examples{

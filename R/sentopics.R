@@ -28,36 +28,54 @@ NULL
 #'
 "_PACKAGE"
 
-#' Corpus of press conferences from the European Central Bank
+#' Corpus of ECB monetary policy statements
 #'
-#' @description A corpus of 260 ECB press conference, split into 4224
-#'   paragraphs. The corpus contains a *docvars* indicating the date
-#'   of the press conference.
+#' @description A corpus of 290 ECB monetary policy statements and related
+#' policy briefings from June 1998 to October 2026, split into 4942 paragraphs.
+#' The document variable `.date` records the date of each communication.
 #'
+#' @details The corpus is drawn from the ECB introductory-statement indexes.
+#' Institutional communications unrelated to monetary policy, slide-only
+#' entries, podcast links and separate monetary-policy decision releases
+#' accompanying a conference statement are excluded. The July 2021 strategy
+#' conference and the August 2007 policy briefing are included.
+#' Original item and paragraph identifiers are preserved, so a policy
+#' statement can be distinguished from another event on the same date.
+#' The sample ends with the statement of 29 October 2026.
+#' The selection and reasons for exclusion are recorded in the
+#' [exclusion list](https://github.com/odelmarcelle/sentopics/blob/master/data-raw/ECB_corpus_exclusions.csv)
+#' in the [GitHub repository's data-preparation sources](https://github.com/odelmarcelle/sentopics/tree/master/data-raw).
+#' These source files are not installed with the package.
+#' [get_ECB_press_conferences()] retrieves all indexed communications before
+#' this selection.
 #'
 #' @examples
-#' docvars(ECB_press_conferences)
+#' quanteda::docvars(ECB_press_conferences)
 #'
 #' @format A [quanteda::corpus] object.
-#' @seealso [ECB_press_conferences_tokens]
+#' @seealso [ECB_press_conferences_tokens], [get_ECB_press_conferences()]
 #'
-#' @source \url{https://www.ecb.europa.eu/press/pubbydate/html/index.en.html?name_of_publication=Speech}.
+#' @source Annual ECB introductory-statement indexes, 1998 to 2026; for example,
+#' \url{https://www.ecb.europa.eu/press/press_conference/monetary-policy-statement/2026/html/index_include.en.html}.
 "ECB_press_conferences"
 
 #' Tokenized press conferences
 #'
 #' @description The pre-processed and tokenized version of the
-#'   [ECB_press_conferences] corpus of press conferences. The processing
+#'   [ECB_press_conferences] corpus. The processing
 #'   involved the following steps:
 #'
-#'   - Remove paragraphs shorter than 10 words
+#'   - Remove paragraphs with ten or fewer lexical tokens
 #'   - Removal of stop words
 #'   - Part-of-speech tagging, following which only nouns, proper nouns and
 #'   adjective were retained.
 #'   - Detection and merging of frequent compound words
 #'   - Frequency-based cleaning of rare and very common words
 #'
-#' @details This preprocessing is intended for topic analysis. None of the
+#' @details Tokenization and part-of-speech tagging use **spacyr** 1.3.0 with
+#'   **spaCy** 3.8.7 and the English model `en_core_web_sm` 3.8.0.
+#'
+#'   This preprocessing is intended for topic analysis. None of the
 #'   negators in [LoughranMcDonald] remains in the shipped tokens, so its
 #'   negation handling has no effect on models initialized from this dataset.
 #'   For an analysis that needs negation, start from [ECB_press_conferences]
@@ -71,7 +89,8 @@ NULL
 #' @format A [quanteda::tokens] object.
 #' @seealso [ECB_press_conferences]
 #'
-#' @source \url{https://www.ecb.europa.eu/press/pubbydate/html/index.en.html?name_of_publication=Speech}.
+#' @source Annual ECB introductory-statement indexes, 1998 to 2026; for example,
+#' \url{https://www.ecb.europa.eu/press/press_conference/monetary-policy-statement/2026/html/index_include.en.html}.
 "ECB_press_conferences_tokens"
 
 #' Loughran-McDonald lexicon

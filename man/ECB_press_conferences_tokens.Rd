@@ -8,17 +8,18 @@
 A \link[quanteda:tokens]{quanteda::tokens} object.
 }
 \source{
-\url{https://www.ecb.europa.eu/press/pubbydate/html/index.en.html?name_of_publication=Speech}.
+Annual ECB introductory-statement indexes, 1998 to 2026; for example,
+\url{https://www.ecb.europa.eu/press/press_conference/monetary-policy-statement/2026/html/index_include.en.html}.
 }
 \usage{
 ECB_press_conferences_tokens
 }
 \description{
 The pre-processed and tokenized version of the
-\link{ECB_press_conferences} corpus of press conferences. The processing
+\link{ECB_press_conferences} corpus. The processing
 involved the following steps:
 \itemize{
-\item Remove paragraphs shorter than 10 words
+\item Remove paragraphs with ten or fewer lexical tokens
 \item Removal of stop words
 \item Part-of-speech tagging, following which only nouns, proper nouns and
 adjective were retained.
@@ -27,6 +28,9 @@ adjective were retained.
 }
 }
 \details{
+Tokenization and part-of-speech tagging use \strong{spacyr} 1.3.0 with
+\strong{spaCy} 3.8.7 and the English model \code{en_core_web_sm} 3.8.0.
+
 This preprocessing is intended for topic analysis. None of the
 negators in \link{LoughranMcDonald} remains in the shipped tokens, so its
 negation handling has no effect on models initialized from this dataset.

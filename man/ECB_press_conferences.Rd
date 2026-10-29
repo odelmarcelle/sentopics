@@ -3,26 +3,43 @@
 \docType{data}
 \name{ECB_press_conferences}
 \alias{ECB_press_conferences}
-\title{Corpus of press conferences from the European Central Bank}
+\title{Corpus of ECB monetary policy statements}
 \format{
 A \link[quanteda:corpus]{quanteda::corpus} object.
 }
 \source{
-\url{https://www.ecb.europa.eu/press/pubbydate/html/index.en.html?name_of_publication=Speech}.
+Annual ECB introductory-statement indexes, 1998 to 2026; for example,
+\url{https://www.ecb.europa.eu/press/press_conference/monetary-policy-statement/2026/html/index_include.en.html}.
 }
 \usage{
 ECB_press_conferences
 }
 \description{
-A corpus of 260 ECB press conference, split into 4224
-paragraphs. The corpus contains a \emph{docvars} indicating the date
-of the press conference.
+A corpus of 290 ECB monetary policy statements and related
+policy briefings from June 1998 to October 2026, split into 4942 paragraphs.
+The document variable \code{.date} records the date of each communication.
+}
+\details{
+The corpus is drawn from the ECB introductory-statement indexes.
+Institutional communications unrelated to monetary policy, slide-only
+entries, podcast links and separate monetary-policy decision releases
+accompanying a conference statement are excluded. The July 2021 strategy
+conference and the August 2007 policy briefing are included.
+Original item and paragraph identifiers are preserved, so a policy
+statement can be distinguished from another event on the same date.
+The sample ends with the statement of 29 October 2026.
+The selection and reasons for exclusion are recorded in the
+\href{https://github.com/odelmarcelle/sentopics/blob/master/data-raw/ECB_corpus_exclusions.csv}{exclusion list}
+in the \href{https://github.com/odelmarcelle/sentopics/tree/master/data-raw}{GitHub repository's data-preparation sources}.
+These source files are not installed with the package.
+\code{\link[=get_ECB_press_conferences]{get_ECB_press_conferences()}} retrieves all indexed communications before
+this selection.
 }
 \examples{
-docvars(ECB_press_conferences)
+quanteda::docvars(ECB_press_conferences)
 
 }
 \seealso{
-\link{ECB_press_conferences_tokens}
+\link{ECB_press_conferences_tokens}, \code{\link[=get_ECB_press_conferences]{get_ECB_press_conferences()}}
 }
 \keyword{datasets}

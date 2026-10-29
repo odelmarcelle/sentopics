@@ -39,21 +39,21 @@ pre-processing functions.
 ``` r
 library("sentopics")
 print(ECB_press_conferences_tokens, 2)
-# Tokens consisting of 3,860 documents and 5 docvars.
+# Tokens consisting of 4,568 documents and 4 docvars.
 # 1_1 :
-#  [1] "outcome"           "meeting"           "decision"         
-#  [4] ""                  "ecb"               "general"          
-#  [7] "council"           "governing_council" "executive"        
-# [10] "board"             "accordance"        "escb"             
-# [ ... and 7 more ]
-# 
+#  [1] "outcome"           "meeting"           "decision"
+#  [4] ""                  "ecb"               "general"
+#  [7] "council"           "governing_council" "executive"
+# [10] "board"             "accordance"        "escb"
+# [ ... and 8 more ]
+#
 # 1_2 :
-#  [1] ""              "state"         "government"    "member"       
-#  [5] "executive"     "board"         "ecb"           "president"    
-#  [9] "vice"          "president"     "date"          "establishment"
-# [ ... and 13 more ]
-# 
-# [ reached max_ndoc ... 3,858 more documents ]
+#  [1] ""           "state"      "government" "member"     "executive"
+#  [6] "board"      "ecb"        "president"  "vice"       ""
+# [11] "president"  "date"
+# [ ... and 14 more ]
+#
+# [ reached max_ndoc ... 4,566 more documents ]
 set.seed(123)
 lda <- LDA(ECB_press_conferences_tokens, K = 3, alpha = .1)
 lda <- fit(lda, 100)

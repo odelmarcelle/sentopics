@@ -1,7 +1,24 @@
 # Press conference --------------------------------------------------------
 
+# The parser preserves the ECB index. The packaged corpus selects monetary
+# policy statements and related policy briefings before preprocessing.
+# Match exclusions by date and title so the selection does not depend on the
+# sequence of item identifiers returned by a future download.
+
+# Tokenization runtime for the 29 October 2026 snapshot:
+# Python 3.12.14, spaCy 3.8.7, en_core_web_sm 3.8.0, spacyr 1.3.0,
+# quanteda 4.3.1 and quanteda.textstats 0.97.2.
+# Python dependencies are pinned in ECB_preprocessing_requirements.txt.
+# Set RETICULATE_PYTHON to the corresponding environment before running.
+
 library(quanteda)
-ECB_press_conferences <- get_ECB_press_conferences()
+ECB_press_conferences <- get_ECB_press_conferences(years = 1998:2026)
+exclusions <- read.csv("data-raw/ECB_corpus_exclusions.csv", encoding = "UTF-8")
+event_key <- function(x) paste(x$date, x$title, sep = "\r")
+stopifnot(all(event_key(exclusions) %in% event_key(ECB_press_conferences)))
+ECB_press_conferences <- ECB_press_conferences[
+  !event_key(ECB_press_conferences) %in% event_key(exclusions),
+]
 # ECB_press_conferences2 <- ECB_press_conferences[, list(
 #   date = unique(date),
 #   title = paste0(unique(title), " -- ", section_title[1]),

@@ -1,8 +1,36 @@
+# sentopics 1.1.0
+
+* Restrict `ECB_press_conferences` and `ECB_press_conferences_tokens` to
+  monetary policy statements and related policy briefings. The packaged
+  sample now contains 290 communications and 4,942 original paragraphs,
+  from June 1998 through 29 October 2026. Exclude unrelated institutional
+  communications, slide-only entries, podcast links and separate decision
+  releases accompanying conference statements. Preserve original item and paragraph identifiers,
+  including the policy statement sharing the date of the cash-changeover
+  event. Record the exclusions and their reasons in the
+  [GitHub repository's data-preparation sources](https://github.com/odelmarcelle/sentopics/tree/master/data-raw).
+  This changes the data used by existing analyses.
+
+* Fix `get_ECB_press_conferences()` to extract paragraphs with arbitrary HTML
+  attributes, including `id`, while continuing to exclude the Q&A transcript.
+  Separate host welcome addresses from the President's statement, and remove
+  website navigation and transcript correction notices. The parser continues
+  to return every indexed HTML item; dataset curation takes place in the
+  GitHub repository's `data-raw` sources.
+
+* Extend both ECB corpora through the statement of 29 October 2026, and
+  update the parser's default year range to 1998--2026.
+
+* Rebuild both ECB corpora with the updated parser, restoring omitted
+  substantive paragraphs in 2021 and correcting speaker sections.
+  Apply sample selection before tokenization and frequency-based cleaning.
+  Use spaCy 3.8.7 and en_core_web_sm 3.8.0, and record the Python dependencies.
+
 # sentopics 1.0.2
 
 * Document the topic-oriented preprocessing of `ECB_press_conferences_tokens`,
   the absence of lexicon negators, and the token requirements for valence
-  shifters to affect sentiment. The shipped dataset is unchanged.
+  shifters to affect sentiment.
 
 * Explain why `merge_topics()` recomputes rJST sentiment from pooled counts
   and priors, and how to aggregate original sentiment contributions instead.

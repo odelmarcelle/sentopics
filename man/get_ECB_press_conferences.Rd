@@ -5,7 +5,7 @@
 \title{Download press conferences from the European Central Bank}
 \usage{
 get_ECB_press_conferences(
-  years = 1998:2021,
+  years = 1998:2026,
   language = "en",
   data.table = TRUE
 )
@@ -16,14 +16,15 @@ get_ECB_press_conferences(
 \item{language}{the language in which press conferences should be retrieved}
 
 \item{data.table}{if TRUE, returns a \link[data.table:data.table]{data.table::data.table}. Otherwise, return a list
-in which each element is a press conference.}
+in which each element corresponds to an indexed HTML page.}
 }
 \value{
-Depending on the arguments, returns either a data.frame or a
-\link[quanteda:tokens]{quanteda::tokens} object containing press conferences of the ECB.
+A \link[data.table:data.table]{data.table::data.table} of extracted paragraphs when
+\code{data.table = TRUE}, or a list with one element per indexed HTML page.
 }
 \description{
-This helper function automatically retrieve the full data set of
-press conferences made available by the ECB. It implements a number of
-pre-processing steps used to remove the Q&A section from the text.
+Retrieves the HTML pages linked from the ECB's annual
+introductory-statement indexes and extracts their paragraphs before Q&A.
+Website navigation and correction notices are removed, and host welcome
+addresses are kept in separate sections when identified in the page.
 }

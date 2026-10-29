@@ -39,9 +39,10 @@ LDA <- function(x, K = 5, alpha = 1, beta = 0.01) {
 #' of the 18th ACM conference on Information and knowledge management*,
 #' 375--384.
 #'
-#' Lin, C., He, Y., Everson, R. and Ruger, S. (2012). [Weakly Supervised Joint
-#' Sentiment-Topic Detection from Text](https://ieeexplore.ieee.org/document/5710933).
+#' Lin, C., He, Y., Everson, R. and Ruger, S. (2012). Weakly Supervised Joint
+#' Sentiment-Topic Detection from Text.
 #' *IEEE Transactions on Knowledge and Data Engineering*, 24(6), 1134–-1145.
+#' \doi{10.1109/TKDE.2011.48}.
 #'
 #' @inherit sentopicsmodel
 #'
@@ -219,9 +220,10 @@ rJST.LDA <- function(x, lexicon = NULL, S = 3, gamma = 5, ...) {
 #' of the 18th ACM conference on Information and knowledge management*,
 #' 375--384.
 #'
-#' Lin, C., He, Y., Everson, R. and Ruger, S. (2012). [Weakly Supervised Joint
-#' Sentiment-Topic Detection from Text](https://ieeexplore.ieee.org/document/5710933).
+#' Lin, C., He, Y., Everson, R. and Ruger, S. (2012). Weakly Supervised Joint
+#' Sentiment-Topic Detection from Text.
 #' *IEEE Transactions on Knowledge and Data Engineering*, 24(6), 1134–-1145.
+#' \doi{10.1109/TKDE.2011.48}.
 #'
 #' @inherit rJST
 #' @export

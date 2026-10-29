@@ -167,24 +167,26 @@ get_ECB_speeches <- function(
 
 #' Download press conferences from the European Central Bank
 #'
-#' @description This helper function automatically retrieve the full data set of
-#'   press conferences made available by the ECB. It implements a number of
-#'   pre-processing steps used to remove the Q&A section from the text.
+#' @description Retrieves the HTML pages linked from the ECB's annual
+#'   introductory-statement indexes and extracts their paragraphs before Q&A.
+#'   Website navigation and correction notices are removed, and host welcome
+#'   addresses are kept in separate sections when identified in the page.
 #'
 #' @param years the years for which press conferences should be retrieved
 #' @param language the language in which press conferences should be retrieved
 #' @param data.table if TRUE, returns a [data.table::data.table]. Otherwise, return a list
-#'   in which each element is a press conference.
+#'   in which each element corresponds to an indexed HTML page.
 #'
-#' @return Depending on the arguments, returns either a data.frame or a
-#'   [quanteda::tokens] object containing press conferences of the ECB.
+#' @return A [data.table::data.table] of extracted paragraphs when
+#'   `data.table = TRUE`, or a list with one element per indexed HTML page.
 get_ECB_press_conferences <- function(
-  years = 1998:2021,
+  years = 1998:2026,
   language = "en",
   data.table = TRUE
 ) {
   # R CMD check:
   paragraph_id <- doc_id <- sections <- NULL
+  p_open <- "(?i)<p\\b(?:[^>\"']|\"[^\"]*\"|'[^']*')*>"
 
   res <- lapply(stats::setNames(nm = years), function(year) {
     ## Get index page
@@ -284,7 +286,7 @@ get_ECB_press_conferences <- function(
 
       ## First attempt at removing questions
       html <- sub(
-        "<p>[ ]?(<em>)?[ ]?(<strong>)?[ ]?(<em>)?[ ]?\"?[ ]?Question[ ]?(\\(translation\\))?:.*",
+        paste0(p_open, "[ ]?(<em>)?[ ]?(<strong>)?[ ]?(<em>)?[ ]?\"?[ ]?Question[ ]?(\\(translation\\))?:.*"),
         "",
         html,
         perl = TRUE
@@ -293,13 +295,13 @@ get_ECB_press_conferences <- function(
 
       ## First attempt but based on last line of statement
       html <- sub(
-        "<p>[ ]?We are now at your disposal for questions.[ ]?</p>\\K.*",
+        paste0(p_open, "[ ]?We are now at your disposal for questions.[ ]?</p>\\K.*"),
         "",
         html,
         perl = TRUE
       )
       html <- sub(
-        "<p>[ ]?We are now ready to take your questions.[ ]?</p>\\K.*",
+        paste0(p_open, "[ ]?We are now ready to take your questions.[ ]?</p>\\K.*"),
         "",
         html,
         perl = TRUE
@@ -315,11 +317,16 @@ get_ECB_press_conferences <- function(
 
       ## Third attempt based on specific cases detected with kwic()
       html <- sub(
-        "<p>[ ]?(<strong>)?[ ]?My (first )?question would be.*",
+        paste0(p_open, "[ ]?(<strong>)?[ ]?My (first )?question would be.*"),
         "",
         html,
         perl = TRUE
       )
+
+      # Keep a host welcome separate from the President's statement.
+      html <- sub(
+        "(?s)(<h2[^>]*>.*?</h2>)(.*?)(<h2[^>]*>\\s*Welcome address.*?\\* \\* \\*\\s*</p>)",
+        "\\1\\2<div class=\"titlepage\">\\3\\1", html, perl = TRUE)
 
       title <- gsub(
         "<.*?>",
@@ -347,12 +354,18 @@ get_ECB_press_conferences <- function(
             )[[1]]
           )[1],
           content = gsub(
-            "<.*?>",
+            paste0(p_open, "|<.*?>"),
             "",
-            regmatches(html, gregexpr("<p>(?s).*?</p>", html, perl = TRUE))[[1]]
+            regmatches(html, gregexpr(paste0("(?is)", p_open, ".*?</p\\s*>"), html, perl = TRUE))[[1]], perl = TRUE
           )
         )
       })
+
+      # Remove website navigation and transcript correction notices.
+      website <- "(?i)(Click here for|^With|^Jump to) (?:a |the )?transcript of (?:the )?questions and answers\\.?|^The first paragraph.*transcription error\\.?$"
+      for (i in seq_along(sections)) {
+        sections[[i]]$content <- Filter(nzchar, trimws(gsub(website, "", sections[[i]]$content, perl = TRUE)))
+      }
 
       res <- list(
         title = title,

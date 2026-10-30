@@ -1,4 +1,5 @@
 test_that("stop words do not prevent Picault-Renault n-gram matches", {
+  skip_on_cran()
   texts <- c(
     "risks price stability",
     paste("risks", c("a", "the", "an", "of", "to"), "price stability")
@@ -18,6 +19,7 @@ test_that("stop words do not prevent Picault-Renault n-gram matches", {
 })
 
 test_that("Picault-Renault stop-word removal can be overridden", {
+  skip_on_cran()
   text <- quanteda::corpus("risks to price stability")
   filtered <- compute_PicaultRenault_scores(text)
   unfiltered <- compute_PicaultRenault_scores(text, stopwords = character())
@@ -42,6 +44,7 @@ test_that("Picault-Renault stop-word removal can be overridden", {
 })
 
 test_that("default stop words preserve sentiment-bearing negations", {
+  skip_on_cran()
   text <- quanteda::corpus("not constrained")
   expect_equal(
     unname(compute_PicaultRenault_scores(text)),

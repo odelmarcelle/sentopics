@@ -200,11 +200,9 @@ test_that("rebuild rejects inconsistent token and assignment dimensions", {
   )
 })
 
-scores <- compute_PicaultRenault_scores(ECB_press_conferences)
-EC <- scores[names(ECB_press_conferences_tokens), "EC"]
-
 test_that("merge_topics works", {
   toks <- ECB_press_conferences_tokens[1:50]
+  EC <- ecb_test_sentiment(toks)
   model <- LDA(toks)
   sentopics_sentiment(model) <- EC[names(model$tokens)]
   merged <- merge_topics(model, as.list(1:5))

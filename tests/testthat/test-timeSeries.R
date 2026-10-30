@@ -1,7 +1,6 @@
-toks <- ECB_press_conferences_tokens
-scores <- compute_PicaultRenault_scores(ECB_press_conferences)
+toks <- ecb_test_tokens()
 jst <- fit(JST(toks, lexicon = LoughranMcDonald), 1, displayProgress = FALSE)
-EC <- scores[names(jst$tokens), "EC"]
+EC <- ecb_test_sentiment(toks)
 
 jst$tokens$.sentiment <- EC
 sentopics_date(jst) <- NULL
@@ -76,14 +75,14 @@ test_that("sentiment works", {
 test_that("date works", {
   expect_error(sentopics_date(jst), "No dates stored")
 
-  sentopics_date(jst) <- ECB_press_conferences_tokens$.date
-  expect_message(sentopics_date(jst) <- ECB_press_conferences_tokens$.date)
+  sentopics_date(jst) <- toks$.date
+  expect_message(sentopics_date(jst) <- toks$.date)
 
   expect_identical(
     sentopics_date(jst),
     data.table(
       .id = names(toks),
-      .date = as.Date(ECB_press_conferences_tokens$.date)
+      .date = as.Date(toks$.date)
     )
   )
 })
@@ -151,7 +150,7 @@ test_that("internal rJST sentiment follows numeric topic order for K >= 10", {
   expect_equal(sentiment$.sentiment, expected)
 })
 
-sentopics_date(jst) <- ECB_press_conferences_tokens$.date
+sentopics_date(jst) <- toks$.date
 
 test_that("sentiment_series works", {
   skip_if_not_installed("xts")
@@ -162,7 +161,7 @@ test_that("sentiment_series works", {
   expect_false(isTRUE(all.equal(s1_1, s2, check.attributes = FALSE)))
 
   rjst <- fit(
-    rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald),
+    rJST(toks, lexicon = LoughranMcDonald),
     1,
     displayProgress = FALSE
   )
@@ -172,7 +171,7 @@ test_that("sentiment_series works", {
   s1_2 <- sentiment_series(rjst)
   expect_false(isTRUE(all.equal(s1_2, s2, check.attributes = FALSE)))
 
-  lda <- fit(LDA(ECB_press_conferences_tokens), 1, displayProgress = FALSE)
+  lda <- fit(LDA(toks), 1, displayProgress = FALSE)
   sentopics_sentiment(lda) <- EC
   s1_3 <- sentiment_series(lda)
 
@@ -192,7 +191,7 @@ test_that("sentiment_series works", {
 
   sentiment_series(lda, period = "day", rolling_window = 30, as.xts = FALSE)
 
-  lda <- LDA(ECB_press_conferences_tokens[1:50])
+  lda <- LDA(toks[1:50])
   expect_error(sentiment_series(lda))
   expect_error(sentiment_series(lda, period = "day"))
 })
@@ -200,7 +199,7 @@ test_that("sentiment_series works", {
 
 test_that("series functions works for LDA", {
   skip_if_not_installed("xts")
-  lda <- LDA(ECB_press_conferences_tokens)
+  lda <- LDA(toks)
   sentopics_sentiment(lda) <- EC
   expect_silent(res <- sentiment_series(lda))
   expect_equal(mean(res), 0)
@@ -208,8 +207,7 @@ test_that("series functions works for LDA", {
   lda <- fit(lda, 1, displayProgress = FALSE)
 
   expect_silent(sentiment_topics(lda))
-  scores <- compute_PicaultRenault_scores(ECB_press_conferences)
-  sentopics_sentiment(lda) <- scores[names(lda$tokens), "EC"]
+  sentopics_sentiment(lda) <- EC[names(lda$tokens)]
   expect_silent(breakdown <- sentiment_breakdown(lda))
   expect_silent(proportion_topics(lda))
 
@@ -244,7 +242,7 @@ test_that("identity period returns document-level breakdowns", {
 })
 
 test_that("series functions works for rJST", {
-  rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
+  rjst <- rJST(toks, lexicon = LoughranMcDonald)
   rjst <- fit(rjst, 10, displayProgress = FALSE)
   sentopics_sentiment(rjst) <- EC
 
@@ -295,7 +293,7 @@ test_that("series functions works for rJST", {
 
 
 test_that("series functions works for rJST - internal sentiment", {
-  rjst <- rJST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
+  rjst <- rJST(toks, lexicon = LoughranMcDonald)
   rjst <- fit(rjst, 10, displayProgress = FALSE)
 
   expect_message(sentiment_breakdown(rjst), "Sentiment computed and assigned")
@@ -346,7 +344,7 @@ test_that("series functions works for rJST - internal sentiment", {
 
 test_that("series functions works for JST", {
   skip_if_not_installed("xts")
-  jst <- JST(ECB_press_conferences_tokens, lexicon = LoughranMcDonald)
+  jst <- JST(toks, lexicon = LoughranMcDonald)
   jst <- fit(jst, 10, displayProgress = FALSE)
 
   expect_error(sentiment_breakdown(jst))

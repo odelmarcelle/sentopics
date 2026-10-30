@@ -63,6 +63,7 @@ test_that("functions works", {
 })
 
 test_that("test convergence", {
+  skip_on_cran()
   vocab <- generateVocab(
     nTopics = 3,
     nSentiments = 2,

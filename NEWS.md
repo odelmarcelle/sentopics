@@ -1,3 +1,7 @@
+# sentopics 1.1.1 (unreleased)
+
+* Skip some slow tests on CRAN.
+
 # sentopics 1.1.0
 
 * Restrict `ECB_press_conferences` and `ECB_press_conferences_tokens` to
@@ -25,6 +29,16 @@
   substantive paragraphs in 2021 and correcting speaker sections.
   Apply sample selection before tokenization and frequency-based cleaning.
   Use spaCy 3.8.7 and en_core_web_sm 3.8.0, and record the Python dependencies.
+
+* Skip the expensive Picault-Renault regression tests and stochastic JST/rJST
+  convergence tests on CRAN. They continue to run with `devtools::test()`.
+
+* Reduce time-series test fixtures and use deterministic external sentiment
+  values in time-series and merging tests, avoiding repeated full-corpus
+  Picault-Renault scoring while retaining the dedicated scoring regression.
+
+* Use smaller datasets and shorter source-model fits in conversion tests while
+  retaining their posterior, count, integrity and output comparisons.
 
 # sentopics 1.0.2
 

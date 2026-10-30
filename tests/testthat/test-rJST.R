@@ -25,6 +25,7 @@ test_that("rJST works", {
 })
 
 test_that("invalid hyperparameter updates do not corrupt the model", {
+  skip_on_cran()
   model <- rJST(
     ECB_press_conferences_tokens[1],
     K = 20,
@@ -62,6 +63,7 @@ test_that("functions works", {
 })
 
 test_that("test convergence", {
+  skip_on_cran()
   vocab <- generateVocab(
     nTopics = 3,
     nSentiments = 2,

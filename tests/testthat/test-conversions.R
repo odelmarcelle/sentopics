@@ -1,3 +1,5 @@
+# These tests compare converted outputs with their source models, so the
+# source fits only need valid posteriors rather than statistical convergence.
 test_that("from STM", {
   skip_if_not_installed("stm")
   skip_if_not_installed("tm")
@@ -15,7 +17,8 @@ test_that("from STM", {
     3,
     verbose = FALSE,
     prevalence = ~ treatment + s(pid_rep),
-    data = out$meta
+    data = out$meta,
+    max.em.its = 2
   )
 
   lda <- as.LDA(stm, out$documents)
@@ -58,11 +61,12 @@ test_that("from lda", {
   K <- 5 ## Num clusters
   data("cora.documents")
   data("cora.vocab")
+  cora.documents <- cora.documents[1:100]
   lda <- lda.collapsed.gibbs.sampler(
     cora.documents,
     K, ## Num clusters
     cora.vocab,
-    100, ## Num iterations
+    20, ## Num iterations (only conversion is tested)
     0.1,
     0.1
   )
@@ -94,10 +98,11 @@ test_that("from topicmodels", {
   skip_if_not_installed("topicmodels")
   library("topicmodels")
   data("AssociatedPress", package = "topicmodels")
+  AssociatedPress <- AssociatedPress[1:100, ]
   lda <- topicmodels::LDA(
     AssociatedPress,
     method = "Gibbs",
-    control = list(alpha = 0.1, iter = 100),
+    control = list(alpha = 0.1, iter = 20),
     k = 5
   )
 
@@ -143,8 +148,9 @@ test_that("from topicmodels", {
 test_that("from seededlda", {
   skip_if_not_installed("seededlda")
   library("seededlda")
+  dfm <- quanteda::dfm(ecb_test_tokens())
   lda <- textmodel_lda(
-    quanteda::dfm(ECB_press_conferences_tokens),
+    dfm,
     k = 6,
     max_iter = 100
   )
@@ -175,7 +181,7 @@ test_that("from seededlda", {
     `monetary policy` = c("monetary_policy", "monetary", "interest_rate")
   ))
   slda <- textmodel_seededlda(
-    quanteda::dfm(ECB_press_conferences_tokens),
+    dfm,
     dict,
     residual = TRUE,
     max_iter = 100
@@ -217,7 +223,7 @@ test_that("from keyATM", {
     model = "base",
     no_keyword_topics = 5,
     keywords = bills_keywords,
-    options = list(iterations = 100)
+    options = list(iterations = 20)
   )
   LDA <- as.LDA(out, keyATM_docs)
 

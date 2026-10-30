@@ -83,6 +83,7 @@ test_that("top_words methods works", {
 })
 
 test_that("hyperparameter update cycles update the correct priors", {
+  skip_on_cran()
   set.seed(1)
   initial <- sentopicsmodel(
     toks,

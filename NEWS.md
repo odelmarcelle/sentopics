@@ -2,6 +2,8 @@
 
 * Skip some slow tests on CRAN.
 
+* Pass the sunburst chart rotation to Plotly as a numeric value.
+
 # sentopics 1.1.0
 
 * Restrict `ECB_press_conferences` and `ECB_press_conferences_tokens` to

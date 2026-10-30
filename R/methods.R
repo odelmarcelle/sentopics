@@ -255,7 +255,7 @@ plot.sentopicsmodel <- function(x, nWords = 15, layers = 3, sort = FALSE, ...) {
     parents = data$parent,
     values = data$value,
     type = "sunburst",
-    rotation = "180",
+    rotation = 180,
     branchvalues = "total",
     leaf = list(opacity = 1),
     marker = list(colors = data$color),
